@@ -50,31 +50,39 @@ def compute_spectral_order(
     if N < n_harmonics + 1:
         return np.arange(N)
 
-    # ── Build sparse TF matrix ──
+    # ── Build sparse TF matrix (vectorized) ──
     print(f"  Building token matrix ({N:,} × {vocab_size:,})...")
-    X = lil_matrix((N, vocab_size), dtype=np.float32)
+    rows, cols, vals = [], [], []
     for i, tokens in enumerate(token_sequences):
-        for t in tokens:
-            if t < vocab_size:
-                X[i, t] += 1.0
+        # Count token frequencies for this conversation
+        from collections import Counter
+        counts = Counter(t for t in tokens if t < vocab_size)
+        for tok, count in counts.items():
+            rows.append(i)
+            cols.append(tok)
+            vals.append(float(count))
+        if (i + 1) % 50000 == 0:
+            print(f"    [{i+1:,}/{N:,}] ({len(rows):,} nonzero entries)")
 
-    X = X.tocsr()
+    X = csr_matrix((vals, (rows, cols)), shape=(N, vocab_size), dtype=np.float32)
+    print(f"    Matrix: {X.nnz:,} nonzero entries, {X.nnz / (N * vocab_size) * 100:.2f}% dense")
 
     # ── TF-IDF weighting ──
-    # IDF = log(N / df) where df = number of docs containing term
     print(f"  Computing TF-IDF...")
     df = np.array((X > 0).sum(axis=0)).flatten().astype(np.float64)
-    df = np.maximum(df, 1)  # avoid div by zero
-    idf = np.log(N / df)
+    df = np.maximum(df, 1)
+    idf = np.log(N / df).astype(np.float32)
 
-    # Apply IDF (multiply each column by its IDF weight)
+    # Apply IDF — scale columns of sparse matrix
     from scipy.sparse import diags
     X = X @ diags(idf)
 
-    # L2 normalize rows
+    # L2 normalize rows (sparse-safe)
     row_norms = np.sqrt(np.array(X.multiply(X).sum(axis=1)).flatten())
     row_norms = np.maximum(row_norms, 1e-10)
-    X = X.multiply(1.0 / row_norms[:, np.newaxis])
+    # Multiply each row by 1/norm
+    inv_norms = diags(1.0 / row_norms)
+    X = inv_norms @ X
 
     # ── Truncated SVD ──
     k = min(n_harmonics, N - 1, vocab_size - 1)
