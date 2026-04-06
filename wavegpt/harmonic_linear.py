@@ -39,15 +39,20 @@ class HarmonicLinear(nn.Module):
     is fully determined by (σ₁, α).
     """
 
-    def __init__(self, in_dim: int, out_dim: int, rank: int, init_alpha: float = 0.7):
+    def __init__(self, in_dim: int, out_dim: int, rank: int, init_alpha: float = 0.7, fix_alpha: bool = False):
         super().__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.rank = rank
+        self.fix_alpha = fix_alpha
 
         # The two spectral parameters
         self.sigma1 = nn.Parameter(torch.tensor(1.0))
-        self.alpha = nn.Parameter(torch.tensor(init_alpha))
+        if fix_alpha:
+            # Fixed constant — not learned
+            self.register_buffer("alpha", torch.tensor(init_alpha))
+        else:
+            self.alpha = nn.Parameter(torch.tensor(init_alpha))
 
         # Basis vectors (learned, initialized orthogonal)
         U = torch.randn(out_dim, rank)

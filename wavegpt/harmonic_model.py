@@ -34,6 +34,9 @@ class HarmonicGPTConfig:
     rank_attn: int = 30       # Q/K/V + output projection
     rank_mlp: int = 48        # MLP up/down projection
     init_alpha: float = 0.7   # initial spectral decay exponent
+    fix_alpha: bool = False   # if True, alpha is a fixed constant (not learned)
+    # Two-constant model: α=1/φ for representation, α=1 for projection
+    alpha_proj: float | None = None  # if set, c_proj layers use this α
     collapse_alpha: float = 0.0
 
 
@@ -49,10 +52,13 @@ class HarmonicCausalSelfAttention(nn.Module):
 
         # Replace c_attn (3*d, d) with 3 separate HarmonicLinear
         # (can't easily do combined QKV with harmonic param)
-        self.q_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
-        self.k_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
-        self.v_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
-        self.c_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
+        alpha_r = config.init_alpha   # representation α
+        alpha_p = config.alpha_proj if config.alpha_proj is not None else config.init_alpha
+        fix = config.fix_alpha
+        self.q_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, alpha_r, fix)
+        self.k_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, alpha_r, fix)
+        self.v_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, alpha_r, fix)
+        self.c_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, alpha_p, fix)
         self.attn_dropout = nn.Dropout(config.dropout)
         self.resid_dropout = nn.Dropout(config.dropout)
 
@@ -82,9 +88,12 @@ class HarmonicCausalSelfAttention(nn.Module):
 class HarmonicMLP(nn.Module):
     def __init__(self, config: HarmonicGPTConfig):
         super().__init__()
-        self.c_fc = HarmonicLinear(config.n_embd, 4 * config.n_embd, config.rank_mlp, config.init_alpha)
+        alpha_r = config.init_alpha
+        alpha_p = config.alpha_proj if config.alpha_proj is not None else config.init_alpha
+        fix = config.fix_alpha
+        self.c_fc = HarmonicLinear(config.n_embd, 4 * config.n_embd, config.rank_mlp, alpha_r, fix)
         self.gelu = nn.GELU()
-        self.c_proj = HarmonicLinear(4 * config.n_embd, config.n_embd, config.rank_mlp, config.init_alpha)
+        self.c_proj = HarmonicLinear(4 * config.n_embd, config.n_embd, config.rank_mlp, alpha_p, fix)
         self.dropout = nn.Dropout(config.dropout)
 
     def forward(self, x):
