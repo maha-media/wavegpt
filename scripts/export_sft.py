@@ -23,6 +23,7 @@ import datasets
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from wavegpt.sft_dataloader import tokenize_conversation, classify_harmonic_layer
+from wavegpt.spectral_order import compute_spectral_order
 from wavegpt.data_io import write_datafile
 
 
@@ -43,7 +44,9 @@ def main():
     parser.add_argument("--output-dir", type=str, default="data/sft-50k",
                         help="Output directory for .bin files")
     parser.add_argument("--harmonic-order", action="store_true",
-                        help="Order conversations C→G→D→A (harmonic walk)")
+                        help="Order by circle of fifths walk through embedding space")
+    parser.add_argument("--spectral-order", action="store_true",
+                        help="Order by spectral walk (SVD + circle of fifths)")
     parser.add_argument("--include-reasoning", action="store_true", default=True,
                         help="Include reasoning_content in tokenization")
     parser.add_argument("--no-reasoning", action="store_true",
@@ -60,6 +63,7 @@ def main():
     print(f"Max examples: {args.max_examples:,}")
     print(f"Include reasoning: {include_reasoning}")
     print(f"Harmonic ordering: {args.harmonic_order}")
+    print(f"Spectral ordering: {args.spectral_order}")
     print()
 
     # ── Stream and classify ──
@@ -69,7 +73,7 @@ def main():
         streaming=True,
     )
 
-    classified = {"C": [], "G": [], "D": [], "A": []}
+    all_conversations = []
     layer_counts = Counter()
     total_skipped = 0
     t0 = time.time()
@@ -84,57 +88,83 @@ def main():
             continue
 
         layer = classify_harmonic_layer(turns)
-        classified[layer].append(turns)
+        all_conversations.append(turns)
         layer_counts[layer] += 1
 
         if (i + 1) % 5000 == 0:
             elapsed = time.time() - t0
             rate = (i + 1) / elapsed
             eta = (args.max_examples - i - 1) / rate
+            counts_str = ' '.join(f"{k}={v}" for k, v in sorted(layer_counts.items()))
             print(f"  [{i+1:>7,}/{args.max_examples:,}] "
-                  f"C={layer_counts['C']} G={layer_counts['G']} "
-                  f"D={layer_counts['D']} A={layer_counts['A']} "
+                  f"{counts_str} "
                   f"({rate:.0f} ex/s, ETA {eta:.0f}s)")
 
-    total = sum(layer_counts.values())
+    total = len(all_conversations)
     elapsed = time.time() - t0
     print(f"\nLoaded {total:,} conversations in {elapsed:.1f}s (skipped {total_skipped})")
-    for layer in ["C", "G", "D", "A"]:
-        n = layer_counts[layer]
-        print(f"  {layer}: {n:>6,} ({100*n/total:.1f}%)")
+    from wavegpt.sft_dataloader import CIRCLE_OF_FIFTHS
+    for layer in CIRCLE_OF_FIFTHS:
+        n = layer_counts.get(layer, 0)
+        if n > 0:
+            print(f"  {layer:>3s}: {n:>6,} ({100*n/total:.1f}%)")
 
     # ── Build conversation ordering ──
-    if args.harmonic_order:
-        print("\nOrdering: C → G → D → A (harmonic walk)")
-        ordered = classified["C"] + classified["G"] + classified["D"] + classified["A"]
-    else:
-        # Original order — just flatten in order received
-        print("\nOrdering: original (sequential)")
+    ordered_tokenized = None
+    ordered = None
+    if args.spectral_order:
+        print("\nOrdering: spectral walk (SVD + circle of fifths)")
+        print("  Pre-tokenizing for spectral analysis...")
+        pre_tokenized = []
+        for j, conv in enumerate(all_conversations):
+            tokens, mask = tokenize_conversation(conv, include_reasoning=include_reasoning)
+            pre_tokenized.append((tokens, mask))
+            if (j + 1) % 10000 == 0:
+                print(f"    [{j+1:,}/{total:,}]")
+        token_seqs = [t for t, _ in pre_tokenized]
+        order = compute_spectral_order(token_seqs)
+        ordered_tokenized = [pre_tokenized[i] for i in order]
+    elif args.harmonic_order:
+        # Legacy: sort by classified layer
+        print("\nOrdering: classified harmonic layers")
+        classified = {}
+        for conv in all_conversations:
+            layer = classify_harmonic_layer(conv)
+            classified.setdefault(layer, []).append(conv)
         ordered = []
-        for layer in ["C", "G", "D", "A"]:
-            ordered.extend(classified[layer])
-        # Re-interleave to approximate original order
-        # Actually, let's just collect all in one pass
-        # Re-stream would be slow, so we shuffle to break layer clustering
+        for note in CIRCLE_OF_FIFTHS:
+            ordered.extend(classified.get(note, []))
+    else:
+        print("\nOrdering: shuffled (random baseline)")
         import random
         random.seed(42)
+        ordered = list(all_conversations)
         random.shuffle(ordered)
 
-    # ── Tokenize ──
-    print(f"\nTokenizing {len(ordered):,} conversations...")
+    # ── Tokenize (or use pre-tokenized for spectral order) ──
     all_tokens = []
     all_masks = []
     t0 = time.time()
 
-    for i, turns in enumerate(ordered):
-        tokens, mask = tokenize_conversation(turns, include_reasoning=include_reasoning)
-        all_tokens.extend(tokens)
-        all_masks.extend(mask)
-
-        if (i + 1) % 10000 == 0:
-            elapsed = time.time() - t0
-            print(f"  [{i+1:>7,}/{len(ordered):,}] "
-                  f"{len(all_tokens):,} tokens so far ({elapsed:.1f}s)")
+    if args.spectral_order and ordered_tokenized:
+        print(f"\nFlattening {len(ordered_tokenized):,} pre-tokenized conversations...")
+        for i, (tokens, mask) in enumerate(ordered_tokenized):
+            all_tokens.extend(tokens)
+            all_masks.extend(mask)
+            if (i + 1) % 10000 == 0:
+                elapsed = time.time() - t0
+                print(f"  [{i+1:>7,}/{len(ordered_tokenized):,}] "
+                      f"{len(all_tokens):,} tokens so far ({elapsed:.1f}s)")
+    else:
+        print(f"\nTokenizing {len(ordered):,} conversations...")
+        for i, turns in enumerate(ordered):
+            tokens, mask = tokenize_conversation(turns, include_reasoning=include_reasoning)
+            all_tokens.extend(tokens)
+            all_masks.extend(mask)
+            if (i + 1) % 10000 == 0:
+                elapsed = time.time() - t0
+                print(f"  [{i+1:>7,}/{len(ordered):,}] "
+                      f"{len(all_tokens):,} tokens so far ({elapsed:.1f}s)")
 
     elapsed = time.time() - t0
     total_tokens = len(all_tokens)
@@ -165,11 +195,14 @@ def main():
             np.array(val_masks, dtype=np.uint8))
 
     # ── Write metadata ──
+    ordering = "spectral" if args.spectral_order else "harmonic" if args.harmonic_order else "random"
     meta = {
         "source": "stepfun-ai/Step-3.5-Flash-SFT",
         "max_examples": args.max_examples,
         "total_conversations": total,
+        "ordering": ordering,
         "harmonic_order": args.harmonic_order,
+        "spectral_order": args.spectral_order,
         "include_reasoning": include_reasoning,
         "layer_counts": dict(layer_counts),
         "total_tokens": total_tokens,

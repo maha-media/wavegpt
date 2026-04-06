@@ -72,38 +72,64 @@ def test_tokenize_multiturn():
 
 
 def test_classify_harmonic_layer():
-    """Conversations classify into C, G, D, A layers."""
-    # C: Simple Q&A, no reasoning, short
+    """Conversations classify across the full circle of fifths."""
+    from wavegpt.sft_dataloader import CIRCLE_OF_FIFTHS
+
+    # C (score=0): Simple Q&A, no reasoning, short content
     c_conv = [
         {"role": "user", "content": "What is 2+2?"},
         {"role": "assistant", "content": "4"},
     ]
     assert classify_harmonic_layer(c_conv) == "C"
 
-    # G: Has reasoning, single turn
+    # G (score~1): Short content + light reasoning
     g_conv = [
         {"role": "user", "content": "Explain photosynthesis"},
         {"role": "assistant", "content": "Plants convert light to energy.",
-         "reasoning_content": "The user wants an explanation of the process."},
+         "reasoning_content": "The user wants an explanation."},
     ]
     assert classify_harmonic_layer(g_conv) == "G"
 
-    # D: Multi-turn with tool use
+    # Higher layers with more complexity
+    # D (score=2): Reasoning 1K-5K range (2pt) + short turns (0pt) + short content (0pt)
     d_conv = [
-        {"role": "user", "content": "Search for X"},
-        {"role": "assistant", "content": "I'll search for that."},
-        {"role": "tool", "content": "Result: X is Y"},
-        {"role": "assistant", "content": "Based on my search, X is Y."},
+        {"role": "user", "content": "Explain photosynthesis."},
+        {"role": "assistant", "content": "Plants use light.",
+         "reasoning_content": "x" * 1500},
     ]
     assert classify_harmonic_layer(d_conv) == "D"
 
-    # A: Deep reasoning (long reasoning_content)
+    # A (score~3): Multi-step reasoning
     a_conv = [
-        {"role": "user", "content": "Prove the Riemann hypothesis"},
-        {"role": "assistant", "content": "Here's my analysis...",
-         "reasoning_content": "x" * 6000},  # >5K chars
+        {"role": "user", "content": "Step 1"},
+        {"role": "assistant", "content": "Done 1", "reasoning_content": "x" * 3000},
+        {"role": "user", "content": "Step 2"},
+        {"role": "assistant", "content": "Done 2", "reasoning_content": "x" * 3000},
     ]
-    assert classify_harmonic_layer(a_conv) == "A"
+    result = classify_harmonic_layer(a_conv)
+    # Multi-turn (4 turns = 1pt) + reasoning 6K (3pt) = score 4 → E or higher
+    assert result in CIRCLE_OF_FIFTHS
+    assert CIRCLE_OF_FIFTHS.index(result) >= 3  # at least A-level complexity
+
+    # F (score=11): Maximum complexity — deep reasoning + tools + many turns + long content
+    f_conv = [
+        {"role": "system", "content": "You are a complex agent."},
+        {"role": "user", "content": "Complex task... " * 500},
+        {"role": "assistant", "content": "Working...", "reasoning_content": "x" * 20000},
+        {"role": "tool", "content": "Result 1"},
+        {"role": "assistant", "content": "Continuing..."},
+        {"role": "tool", "content": "Result 2"},
+        {"role": "tool", "content": "Result 3"},
+        {"role": "tool", "content": "Result 4"},
+        {"role": "tool", "content": "Result 5"},
+        {"role": "assistant", "content": "Final answer... " * 500},
+    ]
+    result = classify_harmonic_layer(f_conv)
+    assert CIRCLE_OF_FIFTHS.index(result) >= 8  # high complexity end
+
+    # All results must be valid circle of fifths notes
+    for conv in [c_conv, g_conv, d_conv, a_conv, f_conv]:
+        assert classify_harmonic_layer(conv) in CIRCLE_OF_FIFTHS
 
 
 def test_sft_dataloader_batches():

@@ -89,42 +89,74 @@ def tokenize_conversation(
     return tokens, loss_mask
 
 
+# Full circle of fifths — 12 harmonic layers
+CIRCLE_OF_FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F']
+
+
 def classify_harmonic_layer(turns: list[dict]) -> str:
     """
-    Classify a conversation into a harmonic layer: C, G, D, or A.
+    Classify a conversation into one of 12 harmonic layers
+    following the full circle of fifths: C G D A E B F# C# G# D# A# F
 
-    C (fundamental): Simple Q&A, no reasoning, short answer
-    G (1st fifth):   Explanation with reasoning, moderate depth
-    D (2nd fifth):   Multi-step, tool use, agent workflows
-    A (3rd fifth):   Deep reasoning (>5K chars thinking)
+    Each layer represents a fifth above the previous — from atomic facts
+    to maximum complexity. The Pythagorean comma (~1.4% residual) after
+    all 12 represents irreducible complexity.
+
+    Features used: turn count, reasoning length, content length,
+    tool use, role diversity.
     """
     roles = set(t.get("role", "") for t in turns)
     n_turns = len(turns)
     total_reasoning = sum(len(t.get("reasoning_content", "") or "") for t in turns)
     total_content = sum(len(t.get("content", "")) for t in turns)
+    has_tools = "tool" in roles
+    assistant_turns = [t for t in turns if t.get("role") == "assistant"]
+    n_assistant = len(assistant_turns)
 
-    # D: Multi-step with tools or many turns
-    if "tool" in roles and n_turns > 3:
-        return "D"
+    # Compute a continuous complexity score, then bucket into 12 layers
+    score = 0.0
 
-    # A: Deep reasoning
-    if total_reasoning > 5000:
-        return "A"
-
-    # G: Has reasoning but not deep
-    if total_reasoning > 0 and n_turns <= 4:
-        return "G"
-
-    # C: Simple, short, no reasoning
-    if n_turns <= 2 and total_content < 2000 and total_reasoning == 0:
-        return "C"
-
-    # G: Longer single-turn explanations
+    # Turn complexity (0-3 points)
     if n_turns <= 2:
-        return "G"
+        score += 0.0
+    elif n_turns <= 4:
+        score += 1.0
+    elif n_turns <= 8:
+        score += 2.0
+    else:
+        score += 3.0
 
-    # D: Multi-turn without tools
-    return "D"
+    # Reasoning depth (0-4 points)
+    if total_reasoning == 0:
+        score += 0.0
+    elif total_reasoning < 1000:
+        score += 1.0
+    elif total_reasoning < 5000:
+        score += 2.0
+    elif total_reasoning < 15000:
+        score += 3.0
+    else:
+        score += 4.0
+
+    # Content length (0-2 points)
+    if total_content < 500:
+        score += 0.0
+    elif total_content < 2000:
+        score += 0.5
+    elif total_content < 8000:
+        score += 1.0
+    else:
+        score += 2.0
+
+    # Tool use (0-2 points)
+    if has_tools:
+        tool_turns = sum(1 for t in turns if t.get("role") == "tool")
+        score += 1.0 + min(1.0, tool_turns / 5.0)
+
+    # Map score (0-11) to circle of fifths index
+    # Max possible score = 3 + 4 + 2 + 2 = 11
+    idx = min(int(score), 11)
+    return CIRCLE_OF_FIFTHS[idx]
 
 
 class SFTDataLoader:
