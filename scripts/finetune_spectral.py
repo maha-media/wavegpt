@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from wavegpt.model import WaveGPT, WaveGPTConfig
 from wavegpt.spectral_surgery import spectral_decompose, spectral_report
 from wavegpt.spectral_linear import SpectralLinear
-from wavegpt.data_io import load_tokens
+from wavegpt.data_io import read_datafile
 
 
 def count_spectral_params(model):
@@ -62,7 +62,7 @@ class DataLoader:
 
     def __init__(self, data_dir, split, block_size, batch_size, device):
         path = Path(data_dir) / f"{split}.bin"
-        self.tokens = load_tokens(str(path))
+        self.tokens = read_datafile(str(path))
         self.block_size = block_size
         self.batch_size = batch_size
         self.device = device
@@ -70,7 +70,7 @@ class DataLoader:
         # Check for loss mask
         mask_path = Path(data_dir) / f"{split}_mask.bin"
         if mask_path.exists():
-            self.mask = load_tokens(str(mask_path))
+            self.mask = read_datafile(str(mask_path))
         else:
             self.mask = None
 
