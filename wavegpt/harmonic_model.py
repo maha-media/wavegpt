@@ -38,6 +38,7 @@ class HarmonicGPTConfig:
     # Two-constant model: α=1/φ for representation, α=1 for projection
     alpha_proj: float | None = None  # if set, c_proj layers use this α
     collapse_alpha: float = 0.0
+    ortho_lambda: float = 0.0      # orthogonality regularization on U, V
 
 
 class HarmonicCausalSelfAttention(nn.Module):
@@ -130,6 +131,7 @@ class HarmonicGPT(nn.Module):
         super().__init__()
         self.config = config
         self.collapse_alpha = config.collapse_alpha
+        self.ortho_lambda = config.ortho_lambda
 
         self.transformer = nn.ModuleDict(dict(
             wte=nn.Embedding(config.vocab_size, config.n_embd),
@@ -200,6 +202,17 @@ class HarmonicGPT(nn.Module):
 
             if self.collapse_alpha > 0 and self.training:
                 loss = loss + collapse_penalty
+
+            # Orthogonality regularization on U, V basis vectors
+            if self.ortho_lambda > 0 and self.training:
+                ortho_loss = torch.tensor(0.0, device=device)
+                n_layers = 0
+                for m in self.modules():
+                    if isinstance(m, HarmonicLinear):
+                        ortho_loss = ortho_loss + m.orthogonality_loss()
+                        n_layers += 1
+                if n_layers > 0:
+                    loss = loss + self.ortho_lambda * ortho_loss / n_layers
 
         return logits, loss
 

@@ -85,6 +85,20 @@ class HarmonicLinear(nn.Module):
         W = self.get_weight()
         return x @ W.t()
 
+    def orthogonality_loss(self) -> torch.Tensor:
+        """
+        Regularization: penalize deviation from orthogonality.
+
+        If U is orthogonal, U^T U = I. Penalize ||U^T U - I||_F.
+        Same for V. This prevents basis vectors from collapsing
+        or drifting into degenerate directions.
+        """
+        r = self.rank
+        eye = torch.eye(r, device=self.U.device)
+        loss_u = torch.norm(self.U.t() @ self.U - eye, p='fro') ** 2 / (r * r)
+        loss_v = torch.norm(self.V.t() @ self.V - eye, p='fro') ** 2 / (r * r)
+        return loss_u + loss_v
+
     @classmethod
     def from_weight(
         cls,

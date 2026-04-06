@@ -44,6 +44,8 @@ def main():
                         help="Fix alpha as constant (not learned)")
     parser.add_argument("--alpha-proj", type=float, default=None,
                         help="Separate alpha for projection layers (c_proj)")
+    parser.add_argument("--ortho-lambda", type=float, default=0.0,
+                        help="Orthogonality regularization on U, V basis vectors")
 
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--grad-accum", type=int, default=4)
@@ -87,6 +89,7 @@ def main():
         dropout=args.dropout, rank_attn=args.rank_attn, rank_mlp=args.rank_mlp,
         init_alpha=args.init_alpha, fix_alpha=args.fix_alpha,
         alpha_proj=args.alpha_proj, collapse_alpha=args.collapse_alpha,
+        ortho_lambda=args.ortho_lambda,
     )
     model = HarmonicGPT(config).to(device)
 
