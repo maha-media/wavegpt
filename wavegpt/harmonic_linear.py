@@ -47,7 +47,12 @@ class HarmonicLinear(nn.Module):
         self.fix_alpha = fix_alpha
 
         # The two spectral parameters
-        self.sigma1 = nn.Parameter(torch.tensor(1.0))
+        # Xavier-equivalent init: σ₁ = √(d_out / Σ_k k^{-2α})
+        # so that ||W||_F ≈ √d_out, matching nn.Linear init scale.
+        alpha_val = init_alpha
+        sum_spectrum_sq = sum(k ** (-2 * alpha_val) for k in range(1, rank + 1))
+        xavier_sigma = math.sqrt(out_dim / sum_spectrum_sq)
+        self.sigma1 = nn.Parameter(torch.tensor(xavier_sigma))
         if fix_alpha:
             # Fixed constant — not learned
             self.register_buffer("alpha", torch.tensor(init_alpha))
