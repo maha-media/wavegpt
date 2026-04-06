@@ -46,6 +46,8 @@ def main():
                         help="Separate alpha for projection layers (c_proj)")
     parser.add_argument("--ortho-lambda", type=float, default=0.0,
                         help="Orthogonality regularization on U, V basis vectors")
+    parser.add_argument("--flat-lr", action="store_true",
+                        help="Use flat lr for all params (no spectral boost)")
 
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--grad-accum", type=int, default=4)
@@ -108,9 +110,19 @@ def main():
     tokens_per_step = args.batch_size * args.block_size * args.grad_accum
     print(f"  Effective batch: {tokens_per_step:,} tokens/step")
 
-    # Optimizer — spectral param groups with per-mode lr scaling
-    print("\nOptimizer param groups:")
-    param_groups = model.spectral_param_groups(lr=args.lr, weight_decay=args.weight_decay)
+    # Optimizer
+    if args.flat_lr:
+        print("\nOptimizer: flat lr (no spectral boost)")
+        param_dict = {pn: p for pn, p in model.named_parameters() if p.requires_grad}
+        decay_params = [p for n, p in param_dict.items() if p.dim() >= 2]
+        nodecay_params = [p for n, p in param_dict.items() if p.dim() < 2]
+        param_groups = [
+            {"params": decay_params, "weight_decay": args.weight_decay},
+            {"params": nodecay_params, "weight_decay": 0.0},
+        ]
+    else:
+        print("\nOptimizer param groups (spectral):")
+        param_groups = model.spectral_param_groups(lr=args.lr, weight_decay=args.weight_decay)
     optimizer = torch.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
 
     def get_lr(step):
@@ -121,7 +133,7 @@ def main():
         return args.lr * 0.1 + (args.lr - args.lr * 0.1) * coeff
 
     # Store base lr per group for proportional scheduling
-    base_lrs = [g['lr'] for g in optimizer.param_groups]
+    base_lrs = [g.get('lr', args.lr) for g in optimizer.param_groups]
 
     run_dir = Path(args.output_dir) / args.run_name
     run_dir.mkdir(parents=True, exist_ok=True)
