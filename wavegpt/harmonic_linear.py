@@ -62,6 +62,17 @@ class HarmonicLinear(nn.Module):
             U, _ = torch.linalg.qr(U)
         if rank <= in_dim:
             V, _ = torch.linalg.qr(V)
+
+        # Scale U columns by k^{α/2} and V columns by k^{α/2}
+        # so that gradients are equalized across modes.
+        # The spectrum k^{-α} in get_weight() compensates:
+        #   W_k = σ₁·k^{-α} · (U_k·k^{α/2}) · (V_k·k^{α/2})^T
+        #       = σ₁·k^{-α} · k^{α/2} · k^{α/2} · u_k · v_k^T
+        #       = σ₁ · u_k · v_k^T  (spectrum absorbed into basis scale)
+        #
+        # But we DON'T do that — we keep U, V at unit scale and let
+        # the optimizer handle per-mode rates. The scaling goes in
+        # spectral_param_groups() below.
         self.U = nn.Parameter(U)
         self.V = nn.Parameter(V)
 

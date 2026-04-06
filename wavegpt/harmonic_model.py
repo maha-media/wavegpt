@@ -227,6 +227,92 @@ class HarmonicGPT(nn.Module):
                 total += sum(p.numel() for p in m.parameters())
         return total
 
+    def spectral_param_groups(self, lr: float, weight_decay: float = 0.1) -> list[dict]:
+        """
+        Build optimizer param groups with per-mode learning rate scaling.
+
+        The power-law spectrum creates a gradient imbalance: mode 1 gets
+        30x more gradient than mode 256. This equalizes by giving each
+        HarmonicLinear's U, V a higher learning rate compensating for
+        the spectral attenuation.
+
+        Groups:
+          1. sigma1 params: base lr (these are scalars, fine as-is)
+          2. alpha params: base lr (if learnable)
+          3. U, V params: lr * sqrt(mean_k / k_eff) — boosted
+          4. Everything else (embeddings, norms): base lr + weight_decay
+        """
+        import math
+
+        harmonic_uv = []     # U, V basis vectors — need boosted lr
+        harmonic_sigma = []  # sigma1 — scalar, base lr
+        harmonic_alpha = []  # alpha — scalar, base lr (if learnable)
+        other_decay = []     # embeddings, dense layers with decay
+        other_nodecay = []   # layer norms, biases
+
+        harmonic_param_ids = set()
+        for m in self.modules():
+            if isinstance(m, HarmonicLinear):
+                harmonic_uv.append(m.U)
+                harmonic_uv.append(m.V)
+                harmonic_sigma.append(m.sigma1)
+                harmonic_param_ids.add(id(m.U))
+                harmonic_param_ids.add(id(m.V))
+                harmonic_param_ids.add(id(m.sigma1))
+                if not m.fix_alpha and isinstance(m.alpha, nn.Parameter):
+                    harmonic_alpha.append(m.alpha)
+                    harmonic_param_ids.add(id(m.alpha))
+
+        for name, p in self.named_parameters():
+            if id(p) in harmonic_param_ids:
+                continue
+            if p.ndim < 2 or 'ln' in name or 'bias' in name:
+                other_nodecay.append(p)
+            else:
+                other_decay.append(p)
+
+        # Compute effective lr boost for U, V
+        # Mean mode index across all layers
+        mean_ranks = []
+        for m in self.modules():
+            if isinstance(m, HarmonicLinear):
+                mean_ranks.append(m.rank)
+        avg_rank = sum(mean_ranks) / len(mean_ranks) if mean_ranks else 64
+        # Geometric mean of mode indices 1..rank: exp(mean(log(k)))
+        # ≈ rank / e for large rank
+        geo_mean_k = math.exp(sum(math.log(k) for k in range(1, int(avg_rank)+1)) / avg_rank)
+        # Boost factor: compensate for average spectral attenuation
+        # Modes see gradients scaled by k^{-α}. We boost lr by k^{α} on average.
+        alpha_val = 1.0 / ((1 + 5**0.5) / 2)  # 1/φ
+        boost = geo_mean_k ** alpha_val
+
+        groups = [
+            {"params": harmonic_uv, "lr": lr * boost, "weight_decay": weight_decay,
+             "label": f"U,V (lr×{boost:.1f})"},
+            {"params": harmonic_sigma, "lr": lr, "weight_decay": 0.0,
+             "label": "sigma1"},
+        ]
+        if harmonic_alpha:
+            groups.append(
+                {"params": harmonic_alpha, "lr": lr, "weight_decay": 0.0,
+                 "label": "alpha"}
+            )
+        groups.extend([
+            {"params": other_decay, "lr": lr, "weight_decay": weight_decay,
+             "label": "other (decay)"},
+            {"params": other_nodecay, "lr": lr, "weight_decay": 0.0,
+             "label": "other (no decay)"},
+        ])
+
+        # Filter empty groups
+        groups = [g for g in groups if g["params"]]
+
+        for g in groups:
+            n = sum(p.numel() for p in g["params"])
+            print(f"  param group: {g.get('label','?'):20s} | {n:>10,} params | lr={g['lr']:.2e} | wd={g['weight_decay']}")
+
+        return groups
+
     def spectral_summary(self) -> dict:
         """Report sigma1 and alpha for every HarmonicLinear layer."""
         summary = {}

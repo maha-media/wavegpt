@@ -108,14 +108,10 @@ def main():
     tokens_per_step = args.batch_size * args.block_size * args.grad_accum
     print(f"  Effective batch: {tokens_per_step:,} tokens/step")
 
-    # Optimizer
-    param_dict = {pn: p for pn, p in model.named_parameters() if p.requires_grad}
-    decay_params = [p for n, p in param_dict.items() if p.dim() >= 2]
-    nodecay_params = [p for n, p in param_dict.items() if p.dim() < 2]
-    optimizer = torch.optim.AdamW([
-        {"params": decay_params, "weight_decay": args.weight_decay},
-        {"params": nodecay_params, "weight_decay": 0.0},
-    ], lr=args.lr, betas=(0.9, 0.95))
+    # Optimizer — spectral param groups with per-mode lr scaling
+    print("\nOptimizer param groups:")
+    param_groups = model.spectral_param_groups(lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = torch.optim.AdamW(param_groups, lr=args.lr, betas=(0.9, 0.95))
 
     def get_lr(step):
         if step < args.warmup_steps:
@@ -123,6 +119,9 @@ def main():
         decay_ratio = (step - args.warmup_steps) / max(args.max_steps - args.warmup_steps, 1)
         coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
         return args.lr * 0.1 + (args.lr - args.lr * 0.1) * coeff
+
+    # Store base lr per group for proportional scheduling
+    base_lrs = [g['lr'] for g in optimizer.param_groups]
 
     run_dir = Path(args.output_dir) / args.run_name
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -143,8 +142,9 @@ def main():
 
     for step in range(args.max_steps):
         lr = get_lr(step)
-        for pg in optimizer.param_groups:
-            pg["lr"] = lr
+        # Scale each param group proportionally to its base lr
+        for pg, base_lr in zip(optimizer.param_groups, base_lrs):
+            pg["lr"] = lr * (base_lr / args.lr)
 
         accum_loss = 0.0
         for micro in range(args.grad_accum):
