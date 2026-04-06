@@ -39,7 +39,7 @@ class HarmonicLinear(nn.Module):
     is fully determined by (σ₁, α).
     """
 
-    def __init__(self, in_dim: int, out_dim: int, rank: int):
+    def __init__(self, in_dim: int, out_dim: int, rank: int, init_alpha: float = 0.7):
         super().__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -47,7 +47,7 @@ class HarmonicLinear(nn.Module):
 
         # The two spectral parameters
         self.sigma1 = nn.Parameter(torch.tensor(1.0))
-        self.alpha = nn.Parameter(torch.tensor(0.7))  # typical from autopsy data
+        self.alpha = nn.Parameter(torch.tensor(init_alpha))
 
         # Basis vectors (learned, initialized orthogonal)
         U = torch.randn(out_dim, rank)

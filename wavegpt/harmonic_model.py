@@ -33,6 +33,7 @@ class HarmonicGPTConfig:
     # Rank budget per layer type (from autopsy: R90 values)
     rank_attn: int = 30       # Q/K/V + output projection
     rank_mlp: int = 48        # MLP up/down projection
+    init_alpha: float = 0.7   # initial spectral decay exponent
     collapse_alpha: float = 0.0
 
 
@@ -48,10 +49,10 @@ class HarmonicCausalSelfAttention(nn.Module):
 
         # Replace c_attn (3*d, d) with 3 separate HarmonicLinear
         # (can't easily do combined QKV with harmonic param)
-        self.q_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn)
-        self.k_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn)
-        self.v_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn)
-        self.c_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn)
+        self.q_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
+        self.k_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
+        self.v_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
+        self.c_proj = HarmonicLinear(config.n_embd, config.n_embd, config.rank_attn, config.init_alpha)
         self.attn_dropout = nn.Dropout(config.dropout)
         self.resid_dropout = nn.Dropout(config.dropout)
 
@@ -81,9 +82,9 @@ class HarmonicCausalSelfAttention(nn.Module):
 class HarmonicMLP(nn.Module):
     def __init__(self, config: HarmonicGPTConfig):
         super().__init__()
-        self.c_fc = HarmonicLinear(config.n_embd, 4 * config.n_embd, config.rank_mlp)
+        self.c_fc = HarmonicLinear(config.n_embd, 4 * config.n_embd, config.rank_mlp, config.init_alpha)
         self.gelu = nn.GELU()
-        self.c_proj = HarmonicLinear(4 * config.n_embd, config.n_embd, config.rank_mlp)
+        self.c_proj = HarmonicLinear(4 * config.n_embd, config.n_embd, config.rank_mlp, config.init_alpha)
         self.dropout = nn.Dropout(config.dropout)
 
     def forward(self, x):

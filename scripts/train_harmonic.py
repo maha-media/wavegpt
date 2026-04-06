@@ -39,6 +39,7 @@ def main():
     parser.add_argument("--dropout", type=float, default=0.1)
     parser.add_argument("--rank-attn", type=int, default=30)
     parser.add_argument("--rank-mlp", type=int, default=48)
+    parser.add_argument("--init-alpha", type=float, default=0.7)
 
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--grad-accum", type=int, default=4)
@@ -80,7 +81,7 @@ def main():
         vocab_size=50257, block_size=args.block_size,
         n_layer=args.n_layer, n_head=args.n_head, n_embd=args.n_embd,
         dropout=args.dropout, rank_attn=args.rank_attn, rank_mlp=args.rank_mlp,
-        collapse_alpha=args.collapse_alpha,
+        init_alpha=args.init_alpha, collapse_alpha=args.collapse_alpha,
     )
     model = HarmonicGPT(config).to(device)
 
