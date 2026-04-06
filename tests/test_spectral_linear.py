@@ -86,3 +86,36 @@ def test_per_mode_gradient_frozen_geometry():
     loss.backward()
     assert spec.spectrum.grad is not None
     assert spec.spectrum.grad.shape == (16,)
+
+
+def test_to_linear_roundtrip():
+    """Decompose → modify spectrum → merge back → output matches new spectrum."""
+    from wavegpt.spectral_linear import SpectralLinear
+    linear = nn.Linear(48, 64, bias=False)
+    spec = SpectralLinear.from_linear(linear, rank=24, mode='per_mode')
+    # Modify the spectrum (simulate fine-tuning)
+    with torch.no_grad():
+        spec.spectrum *= 1.1
+    x = torch.randn(2, 5, 48)
+    y_spec = spec(x).detach()
+    # Merge back
+    merged = spec.to_linear()
+    y_merged = merged(x).detach()
+    torch.testing.assert_close(y_spec, y_merged, atol=1e-5, rtol=1e-4)
+
+
+def test_save_load_spectral_params():
+    """Save only spectral params, load into fresh decomposition."""
+    from wavegpt.spectral_linear import SpectralLinear
+    linear = nn.Linear(64, 64, bias=False)
+    spec1 = SpectralLinear.from_linear(linear, rank=16, mode='per_mode')
+    # Simulate fine-tuning
+    with torch.no_grad():
+        spec1.spectrum *= 0.9
+    # Save just the learnable params
+    spectral_state = {k: v for k, v in spec1.state_dict().items() if 'spectrum' in k or 'sigma1' in k}
+    # Load into fresh decomposition of same layer
+    spec2 = SpectralLinear.from_linear(linear, rank=16, mode='per_mode')
+    spec2.load_state_dict(spec2.state_dict() | spectral_state)
+    x = torch.randn(2, 5, 64)
+    torch.testing.assert_close(spec1(x), spec2(x), atol=1e-6, rtol=1e-5)
