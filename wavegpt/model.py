@@ -287,6 +287,7 @@ class WaveGPT(nn.Module):
         step: int = 0,
         total_steps: int = 5000,
         use_curriculum: bool = False,
+        loss_mask: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         device = idx.device
         B, T = idx.size()
@@ -325,15 +326,23 @@ class WaveGPT(nn.Module):
 
         loss = None
         if targets is not None:
+            # Always compute per-token loss first
+            raw_loss = F.cross_entropy(
+                logits.view(-1, logits.size(-1)), targets.view(-1), reduction='none'
+            )
+
+            # Apply token weights if present
             if self.token_weights is not None:
-                # Weighted cross-entropy: content words get higher loss
-                raw_loss = F.cross_entropy(
-                    logits.view(-1, logits.size(-1)), targets.view(-1), reduction='none'
-                )
                 weights = self.token_weights[targets.view(-1)]
-                loss = (raw_loss * weights).mean()
+                raw_loss = raw_loss * weights
+
+            # Apply loss mask (SFT: 0 for user/system/tool, 1 for assistant)
+            if loss_mask is not None:
+                raw_loss = raw_loss * loss_mask.view(-1)
+                n_active = loss_mask.sum()
+                loss = raw_loss.sum() / n_active.clamp(min=1.0)
             else:
-                loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+                loss = raw_loss.mean()
 
             # Add anti-collapse penalty
             if self.collapse_alpha > 0 and self.training:
