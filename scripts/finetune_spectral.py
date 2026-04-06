@@ -61,18 +61,27 @@ class DataLoader:
     """Simple binary token data loader."""
 
     def __init__(self, data_dir, split, block_size, batch_size, device):
-        path = Path(data_dir) / f"{split}.bin"
+        data_dir = Path(data_dir)
+        # Try multiple naming conventions
+        for name in [f"{split}.bin", f"sft_{split}.bin"]:
+            path = data_dir / name
+            if path.exists():
+                break
         self.tokens = read_datafile(str(path))
         self.block_size = block_size
         self.batch_size = batch_size
         self.device = device
         self.n_tokens = len(self.tokens)
-        # Check for loss mask
-        mask_path = Path(data_dir) / f"{split}_mask.bin"
-        if mask_path.exists():
-            self.mask = read_datafile(str(mask_path))
-        else:
-            self.mask = None
+        # Check for loss mask (.npy or .bin)
+        self.mask = None
+        for mname in [f"{split}_mask.npy", f"sft_{split}_mask.npy", f"{split}_mask.bin"]:
+            mask_path = data_dir / mname
+            if mask_path.exists():
+                if mname.endswith('.npy'):
+                    self.mask = np.load(str(mask_path))
+                else:
+                    self.mask = read_datafile(str(mask_path))
+                break
 
     def get_batch(self):
         ix = torch.randint(self.n_tokens - self.block_size - 1, (self.batch_size,))
