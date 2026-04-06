@@ -96,8 +96,9 @@ def main():
     print(f"  Weight params (HarmonicLinear): {weight_params:,}")
     print(f"  rank_attn={args.rank_attn}, rank_mlp={args.rank_mlp}")
 
-    # Standard GPT for comparison
-    std_weight = 6 * (3 * 384 * 384 + 384 * 384 + 384 * 1536 + 1536 * 384)
+    # Standard GPT for comparison — compute from actual config
+    e = config.n_embd
+    std_weight = config.n_layer * (3 * e * e + e * e + e * 4*e + 4*e * e)
     print(f"  Standard weight params: {std_weight:,}")
     print(f"  Compression: {std_weight / weight_params:.1f}x")
 
