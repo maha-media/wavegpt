@@ -18,18 +18,22 @@ PHI = (1 + 5**0.5) / 2
 INV_PHI = 1 / PHI
 
 
-def autopsy_state_dict(state_dict: dict) -> list[dict]:
+def autopsy_state_dict(state_dict: dict, min_dim: int = 32) -> list[dict]:
     """SVD every 2D weight matrix, fit power law, report."""
     results = []
-    for name, W in sorted(state_dict.items()):
-        if W.ndim != 2:
-            continue
-        if W.shape[0] < 4 or W.shape[1] < 4:
-            continue
-        if 'mask' in name or 'wpe' in name:
-            continue
-
+    # Filter to eligible matrices first for progress
+    eligible = [(n, W) for n, W in sorted(state_dict.items())
+                if W.ndim == 2 and W.shape[0] >= min_dim and W.shape[1] >= min_dim
+                and 'mask' not in n and 'wpe' not in n]
+    import time
+    total = len(eligible)
+    t0 = time.time()
+    print(f"  SVD of {total} matrices...", flush=True)
+    for idx, (name, W) in enumerate(eligible):
         W = W.float()
+        elapsed = time.time() - t0
+        eta = (elapsed / max(idx, 1)) * (total - idx)
+        print(f"  [{idx+1}/{total}] {name} {tuple(W.shape)} (elapsed {elapsed:.0f}s, ETA {eta:.0f}s)", flush=True)
         out_dim, in_dim = W.shape
         U, S, Vh = torch.linalg.svd(W, full_matrices=False)
         S = S.numpy()
