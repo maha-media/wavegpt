@@ -105,7 +105,7 @@ class SpectralLinear(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass: reconstruct W from spectrum + frozen bases."""
-        spectrum = self.get_spectrum()
+        spectrum = self.get_spectrum().to(x.dtype)
         # W = U · diag(s) · V^T → x @ W^T = x @ V · diag(s) · U^T
         xV = x @ self.V                              # (..., rank)
         xVs = xV * spectrum                          # broadcast spectrum
@@ -163,7 +163,8 @@ class SpectralLinear(nn.Module):
         fits the bent power law: σ_k = A · (k + k₀)^{-1/φ}.
         Falls back to simple power-law fit if scipy unavailable.
         """
-        W = linear.weight.data.float().cpu()  # (out, in) — SVD on CPU
+        orig_dtype = linear.weight.data.dtype  # preserve original dtype (e.g. BF16)
+        W = linear.weight.data.float().cpu()  # (out, in) — SVD needs float32
         out_dim, in_dim = W.shape
         max_rank = min(out_dim, in_dim)
 
@@ -203,7 +204,14 @@ class SpectralLinear(nn.Module):
         residual = None
         if keep_residual:
             W_approx = (U * S.unsqueeze(0)) @ V.t()
-            residual = (W - W_approx).contiguous()
+            residual = (W - W_approx).to(orig_dtype).contiguous()
+
+        # Cast geometry to original dtype (e.g. BF16) to save memory
+        # S (spectrum) stays float32 — it's the learnable parameter
+        U = U.to(orig_dtype)
+        V = V.to(orig_dtype)
+        if bias is not None:
+            bias = bias.to(orig_dtype)
 
         return cls(
             U, S, V,
