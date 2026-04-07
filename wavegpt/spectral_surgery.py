@@ -133,6 +133,59 @@ def _get_submodule(model: nn.Module, full_name: str) -> nn.Module:
     return module
 
 
+def spectral_scaffold(
+    model: nn.Module,
+    rank: int = 256,
+    mode: str = 'per_mode',
+    skip_patterns: list[str] | None = None,
+) -> nn.Module:
+    """
+    Replace nn.Linear layers with empty SpectralLinear shells (no SVD).
+
+    Creates the correct architecture for loading a saved state_dict.
+    5 seconds instead of 3 hours.
+
+    Usage:
+        spectral_scaffold(model, rank=256, mode='per_mode')
+        model.load_state_dict(torch.load('decomposed.pt'))
+    """
+    skip_patterns = skip_patterns or []
+
+    def should_skip(name: str) -> bool:
+        return any(re.search(p, name) for p in skip_patterns)
+
+    replacements = []
+    for full_name, module in model.named_modules():
+        if isinstance(module, nn.Linear):
+            if should_skip(full_name):
+                continue
+            replacements.append(full_name)
+
+    for full_name in replacements:
+        linear = _get_submodule(model, full_name)
+        out_dim, in_dim = linear.weight.shape
+        has_bias = linear.bias is not None
+        dtype = linear.weight.dtype
+
+        spec = SpectralLinear.from_shape(
+            out_dim, in_dim, rank=rank, mode=mode,
+            has_bias=has_bias, dtype=dtype,
+        )
+
+        parts = full_name.split('.')
+        parent = model
+        for part in parts[:-1]:
+            parent = parent[int(part)] if part.isdigit() else getattr(parent, part)
+        attr_name = parts[-1]
+        if attr_name.isdigit() and isinstance(parent, (nn.ModuleList, nn.Sequential)):
+            parent[int(attr_name)] = spec
+        else:
+            setattr(parent, attr_name, spec)
+
+    print(f"  Scaffolded {len(replacements)} layers → SpectralLinear (no SVD)")
+    return model
+
+
 def spectral_report(model: nn.Module) -> dict:
     """
     Generate spectral report for all SpectralLinear layers.

@@ -149,6 +149,28 @@ class SpectralLinear(nn.Module):
         return linear
 
     @classmethod
+    def from_shape(
+        cls,
+        out_dim: int,
+        in_dim: int,
+        rank: int = 256,
+        mode: str = 'per_mode',
+        has_bias: bool = False,
+        dtype: torch.dtype = torch.bfloat16,
+    ) -> 'SpectralLinear':
+        """
+        Create SpectralLinear with correct shapes but dummy data.
+        Used for fast loading from saved state_dict (no SVD needed).
+        Call model.load_state_dict() after to fill real values.
+        """
+        rank = min(rank, min(out_dim, in_dim))
+        U = torch.zeros(out_dim, rank, dtype=dtype)
+        V = torch.zeros(in_dim, rank, dtype=dtype)
+        S = torch.ones(rank, dtype=torch.float32)
+        bias = torch.zeros(out_dim, dtype=dtype) if has_bias else None
+        return cls(U, S, V, mode=mode, alpha_fit=INV_PHI, bias=bias)
+
+    @classmethod
     def from_linear(
         cls,
         linear: nn.Linear,

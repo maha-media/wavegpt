@@ -36,7 +36,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from wavegpt.spectral_surgery import spectral_decompose, spectral_report
+from wavegpt.spectral_surgery import spectral_decompose, spectral_report, spectral_scaffold
 from wavegpt.spectral_linear import SpectralLinear
 from wavegpt.harmonic_prior import harmonic_regularization
 
@@ -355,19 +355,16 @@ def main():
             hf_model_name, torch_dtype=torch.bfloat16, low_cpu_mem_usage=True,
             trust_remote_code=True,
         )
-        # Replace nn.Linear with SpectralLinear using saved state
+        # Fast path: scaffold empty SpectralLinear shells, then load saved weights
         skip = get_skip_patterns('hf')
         rank = args.rank or 256
-        print(f"  Decomposing architecture (no SVD — loading saved state)...")
-        spectral_decompose(
-            model, rank=rank, mode=args.mode, skip_patterns=skip,
-            keep_residual=args.keep_residual,
-        )
-        # Now load the saved decomposed weights over top
+        print(f"  Scaffolding SpectralLinear architecture (no SVD)...")
+        spectral_scaffold(model, rank=rank, mode=args.mode, skip_patterns=skip)
+        print(f"  Loading saved state_dict...")
         sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
         model.load_state_dict(sd, strict=True)
         model_type = 'hf'
-        print(f"  ✓ Loaded decomposed state ({len(sd)} tensors)")
+        print(f"  ✓ Loaded decomposed model ({len(sd)} tensors) — no SVD needed")
     elif args.checkpoint:
         print(f"\nLoading WaveGPT checkpoint: {args.checkpoint}")
         model, model_type = load_wavegpt(args)
