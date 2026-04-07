@@ -100,7 +100,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="Qwen/Qwen3.5-27B", help="HF model name")
     parser.add_argument("--output", default="runs/rai-baseline.md", help="Output markdown file")
-    parser.add_argument("--max-tokens", type=int, default=512, help="Max generation tokens")
+    parser.add_argument("--max-tokens", type=int, default=768, help="Max generation tokens")
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--top-p", type=float, default=0.9)
     args = parser.parse_args()
@@ -129,6 +129,7 @@ def main():
 
         input_text = tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True,
+            enable_thinking=False,  # Qwen3.5: no thinking tokens
         )
         inputs = tokenizer(input_text, return_tensors="pt").to(model.device)
 
