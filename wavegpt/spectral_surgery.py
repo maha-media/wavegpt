@@ -18,7 +18,9 @@ import re
 import torch.nn as nn
 
 from .spectral_linear import SpectralLinear
-from .harmonic_prior import fit_alpha, compute_adaptive_rank
+from .harmonic_prior import fit_alpha, fit_bent_power_law, compute_adaptive_rank
+
+import torch
 
 
 def spectral_decompose(
@@ -39,12 +41,12 @@ def spectral_decompose(
         rank: SVD truncation rank. Options:
             - int: fixed rank for all layers
             - None: auto 95% energy per layer
-            - 'adaptive': theory-guided rank via 1/φ deviation
+            - 'adaptive': theory-guided rank via bent power-law R²
         mode: 'sigma1' or 'per_mode'
         skip_patterns: list of regex patterns for layer names to skip
         keep_residual: if True, store frozen W_residual (Pythagorean comma)
-        base_rank: base rank when rank='adaptive' (rank at α = 1/φ)
-        adaptive_beta: sensitivity to α deviation when rank='adaptive'
+        base_rank: base rank when rank='adaptive' (rank at R²=1)
+        adaptive_beta: sensitivity to poor fit when rank='adaptive'
         max_rank: hard cap on per-layer rank when adaptive
 
     Returns:
@@ -64,15 +66,17 @@ def spectral_decompose(
                 continue
             replacements.append(full_name)
 
-    # If adaptive, first pass: fit α per layer
+    # If adaptive, first pass: fit bent power law per layer for rank
     layer_ranks: dict[str, int] = {}
     if adaptive:
         for full_name in replacements:
             linear = _get_submodule(model, full_name)
-            alpha = fit_alpha(linear.weight)
+            W = linear.weight.data.float().cpu()
+            S = torch.linalg.svdvals(W)
+            bent = fit_bent_power_law(S)
             dim_max = min(linear.weight.shape)
             lr = compute_adaptive_rank(
-                alpha, base_rank, beta=adaptive_beta, max_rank=max_rank,
+                bent['r2'], base_rank, beta=adaptive_beta, max_rank=max_rank,
             )
             layer_ranks[full_name] = min(lr, dim_max)
 

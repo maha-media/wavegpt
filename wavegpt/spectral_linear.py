@@ -49,6 +49,7 @@ class SpectralLinear(nn.Module):
         bias: torch.Tensor | None = None,
         energy_captured: float = 1.0,
         residual: torch.Tensor | None = None,
+        k0: float | None = None,
     ):
         super().__init__()
         self.mode = mode
@@ -66,6 +67,12 @@ class SpectralLinear(nn.Module):
             self.register_buffer('residual', residual)  # (out_dim, in_dim)
         else:
             self.residual = None
+
+        # Bent power law: k₀ (spectral offset, FROZEN)
+        if k0 is not None:
+            self.register_buffer('k0', torch.tensor(k0, dtype=torch.float))
+        else:
+            self.k0 = None
 
         # Fitted alpha from power-law regression
         self.alpha_fit = alpha_fit if alpha_fit is not None else INV_PHI
@@ -153,7 +160,8 @@ class SpectralLinear(nn.Module):
         Decompose a trained nn.Linear into SpectralLinear.
 
         Performs SVD on the weight matrix, keeps top-rank modes,
-        fits the power-law exponent α.
+        fits the bent power law: σ_k = A · (k + k₀)^{-1/φ}.
+        Falls back to simple power-law fit if scipy unavailable.
         """
         W = linear.weight.data.float().cpu()  # (out, in) — SVD on CPU
         out_dim, in_dim = W.shape
@@ -174,12 +182,20 @@ class SpectralLinear(nn.Module):
 
         energy_captured = float(((S ** 2).sum() / total_energy).item())
 
-        # Fit power law: log(σ_k) = log(σ₁) - α·log(k)
-        s_np = S.detach().numpy()
-        log_k = np.log(np.arange(1, rank + 1))
-        log_s = np.log(s_np + 1e-10)
-        coeffs = np.polyfit(log_k, log_s, 1)
-        alpha_fit = float(-coeffs[0])
+        # Fit bent power law: σ_k = A · (k + k₀)^{-1/φ}
+        k0_val = None
+        try:
+            from .harmonic_prior import fit_bent_power_law
+            bent_fit = fit_bent_power_law(S_full)
+            k0_val = bent_fit['k0']
+            alpha_fit = INV_PHI  # always 1/φ with bent model
+        except Exception:
+            # Fallback: simple log-log fit
+            s_np = S.detach().numpy()
+            log_k = np.log(np.arange(1, rank + 1))
+            log_s = np.log(s_np + 1e-10)
+            coeffs = np.polyfit(log_k, log_s, 1)
+            alpha_fit = float(-coeffs[0])
 
         bias = linear.bias.data.cpu().clone() if linear.bias is not None else None
 
@@ -196,11 +212,13 @@ class SpectralLinear(nn.Module):
             bias=bias,
             energy_captured=energy_captured,
             residual=residual,
+            k0=k0_val,
         )
 
     def extra_repr(self) -> str:
+        k0_str = f", k₀={self.k0.item():.1f}" if self.k0 is not None else ""
         return (
             f"in={self.in_dim}, out={self.out_dim}, rank={self.rank}, "
-            f"mode={self.mode}, α_fit={self.alpha_fit:.4f}, "
+            f"mode={self.mode}, α_fit={self.alpha_fit:.4f}{k0_str}, "
             f"energy={self._energy_captured:.3f}"
         )
