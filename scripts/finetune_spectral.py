@@ -278,6 +278,8 @@ def main():
     g = parser.add_mutually_exclusive_group(required=True)
     g.add_argument("--checkpoint", type=str)
     g.add_argument("--hf-model", type=str)
+    g.add_argument("--decomposed", type=str,
+                   help="Pre-decomposed model state_dict (skip SVD)")
 
     # WaveGPT arch
     parser.add_argument("--n-layer", type=int, default=12)
@@ -328,9 +330,45 @@ def main():
         log_mem("startup")
 
     # ===================================================================
-    # 1. Load model (always to CPU first)
+    # 1. Load model
     # ===================================================================
-    if args.checkpoint:
+    hf_model_name = args.hf_model or (args.decomposed.split('/')[0] if args.decomposed else None)
+
+    if args.decomposed:
+        # Fast path: load pre-decomposed model (skip 3hr SVD)
+        print(f"\nLoading pre-decomposed model: {args.decomposed}")
+        from transformers import AutoModelForCausalLM, AutoConfig
+        # Need the HF model name to reconstruct architecture
+        # Convention: decomposed file is at runs/<name>/decomposed.pt
+        # and config.json has the hf_model name
+        decomp_dir = Path(args.decomposed).parent
+        config_path = decomp_dir / "config.json"
+        if config_path.exists():
+            with open(config_path) as f:
+                saved_config = json.load(f)
+            hf_model_name = saved_config.get('hf_model', hf_model_name)
+        if not hf_model_name:
+            print("ERROR: --decomposed requires HF model name in config.json or directory name")
+            sys.exit(1)
+        print(f"  Architecture from: {hf_model_name}")
+        model = AutoModelForCausalLM.from_pretrained(
+            hf_model_name, torch_dtype=torch.bfloat16, low_cpu_mem_usage=True,
+            trust_remote_code=True,
+        )
+        # Replace nn.Linear with SpectralLinear using saved state
+        skip = get_skip_patterns('hf')
+        rank = args.rank or 256
+        print(f"  Decomposing architecture (no SVD — loading saved state)...")
+        spectral_decompose(
+            model, rank=rank, mode=args.mode, skip_patterns=skip,
+            keep_residual=args.keep_residual,
+        )
+        # Now load the saved decomposed weights over top
+        sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
+        model.load_state_dict(sd, strict=True)
+        model_type = 'hf'
+        print(f"  ✓ Loaded decomposed state ({len(sd)} tensors)")
+    elif args.checkpoint:
         print(f"\nLoading WaveGPT checkpoint: {args.checkpoint}")
         model, model_type = load_wavegpt(args)
     else:
@@ -342,9 +380,9 @@ def main():
 
     # Load tokenizer for HF models (needed for sample generation)
     tokenizer = None
-    if model_type == 'hf':
+    if model_type == 'hf' and hf_model_name:
         from transformers import AutoTokenizer
-        tokenizer = AutoTokenizer.from_pretrained(args.hf_model, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(hf_model_name, trust_remote_code=True)
 
     # ===================================================================
     # 2. Load data
@@ -360,24 +398,25 @@ def main():
     # ===================================================================
     # 3. Spectral decomposition (on CPU — no GPU needed)
     # ===================================================================
-    skip = get_skip_patterns(model_type)
-    print(f"\nSpectral decomposition (on CPU):")
-    print(f"  Skip patterns: {skip}")
+    if not args.decomposed:
+        skip = get_skip_patterns(model_type)
+        print(f"\nSpectral decomposition (on CPU):")
+        print(f"  Skip patterns: {skip}")
 
-    rank = args.rank or 256
-    if args.adaptive_rank:
-        print(f"  Mode: adaptive (base={args.base_rank}, max={args.max_rank})")
-        spectral_decompose(
-            model, rank='adaptive', mode=args.mode, skip_patterns=skip,
-            keep_residual=args.keep_residual,
-            base_rank=args.base_rank, max_rank=args.max_rank,
-        )
-    else:
-        print(f"  Mode: fixed rank={rank}")
-        spectral_decompose(
-            model, rank=rank, mode=args.mode, skip_patterns=skip,
-            keep_residual=args.keep_residual,
-        )
+        rank = args.rank or 256
+        if args.adaptive_rank:
+            print(f"  Mode: adaptive (base={args.base_rank}, max={args.max_rank})")
+            spectral_decompose(
+                model, rank='adaptive', mode=args.mode, skip_patterns=skip,
+                keep_residual=args.keep_residual,
+                base_rank=args.base_rank, max_rank=args.max_rank,
+            )
+        else:
+            print(f"  Mode: fixed rank={rank}")
+            spectral_decompose(
+                model, rank=rank, mode=args.mode, skip_patterns=skip,
+                keep_residual=args.keep_residual,
+            )
 
     # Audit model size BEFORE moving to GPU
     print("\n  Pre-GPU audit:")
@@ -389,6 +428,16 @@ def main():
     if model_gb > total_vram * 0.85:
         print(f"  ⚠ WARNING: Model ({model_gb:.1f}GB) may not fit on GPU ({total_vram:.1f}GB)")
         print(f"  Consider: --rank {rank // 2} or smaller model")
+
+    # Save decomposed model for instant reuse (skip 3hr SVD next time)
+    run_dir = Path(args.output_dir) / args.run_name
+    run_dir.mkdir(parents=True, exist_ok=True)
+    if not args.decomposed:
+        decomp_path = run_dir / "decomposed.pt"
+        print(f"\n  Saving decomposed model to {decomp_path}...")
+        torch.save(model.state_dict(), decomp_path)
+        decomp_size = os.path.getsize(decomp_path)
+        print(f"  ✓ Saved ({decomp_size / 1e9:.2f} GB) — reuse with --decomposed {decomp_path}")
 
     # ===================================================================
     # 4. Move to GPU + enable memory optimizations
@@ -498,8 +547,6 @@ def main():
     # ===================================================================
     # 9. Output directory + sample prompts
     # ===================================================================
-    run_dir = Path(args.output_dir) / args.run_name
-    run_dir.mkdir(parents=True, exist_ok=True)
     with open(run_dir / "config.json", "w") as f:
         json.dump(vars(args), f, indent=2)
 
