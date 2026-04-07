@@ -168,7 +168,7 @@ class SpectralLinear(nn.Module):
         V = torch.zeros(in_dim, rank, dtype=dtype)
         S = torch.ones(rank, dtype=torch.float32)
         bias = torch.zeros(out_dim, dtype=dtype) if has_bias else None
-        return cls(U, S, V, mode=mode, alpha_fit=INV_PHI, bias=bias)
+        return cls(U, S, V, mode=mode, alpha_fit=INV_PHI, bias=bias, k0=0.0)
 
     @classmethod
     def from_linear(

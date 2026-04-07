@@ -362,7 +362,7 @@ def main():
         spectral_scaffold(model, rank=rank, mode=args.mode, skip_patterns=skip)
         print(f"  Loading saved state_dict...")
         sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
-        model.load_state_dict(sd, strict=True)
+        model.load_state_dict(sd, strict=False)  # strict=False: k0 buffers may be extra
         model_type = 'hf'
         print(f"  ✓ Loaded decomposed model ({len(sd)} tensors) — no SVD needed")
     elif args.checkpoint:
