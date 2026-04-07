@@ -12,16 +12,17 @@ Usage (WaveGPT):
         --rank 256 --mode per_mode \
         --n-layer 12 --n-head 12 --n-embd 768
 
-Usage (HuggingFace):
+Usage (HuggingFace — memory-safe for 27B):
     python scripts/finetune_spectral.py \
         --hf-model Qwen/Qwen3.5-27B \
         --data-dir data/rai-qwen \
-        --run-name Q-C-harmonic \
-        --adaptive-rank --base-rank 192 \
-        --mode per_mode --keep-residual \
-        --harmonic-lambda 0.01 --collapse-alpha 0.05
+        --run-name Q-B-vanilla \
+        --rank 256 --mode per_mode \
+        --batch-size 1 --block-size 512 --grad-accum 16 \
+        --lr 1e-3 --max-steps 2000 --eval-interval 50
 """
 import argparse
+import gc
 import json
 import math
 import os
@@ -41,10 +42,65 @@ from wavegpt.harmonic_prior import harmonic_regularization
 
 
 # ---------------------------------------------------------------------------
+# Memory helpers
+# ---------------------------------------------------------------------------
+
+def gpu_mem():
+    """Return (allocated_GB, reserved_GB, total_GB)."""
+    if not torch.cuda.is_available():
+        return 0, 0, 0
+    a = torch.cuda.memory_allocated() / 1e9
+    r = torch.cuda.memory_reserved() / 1e9
+    props = torch.cuda.get_device_properties(0)
+    t = getattr(props, 'total_memory', getattr(props, 'total_mem', 0)) / 1e9
+    return a, r, t
+
+
+def log_mem(label=""):
+    a, r, t = gpu_mem()
+    print(f"  [MEM] {label}: {a:.1f}GB alloc / {r:.1f}GB reserved / {t:.1f}GB total")
+
+
+def model_tensor_audit(model):
+    """Count ALL tensors attached to model, not just params/buffers."""
+    seen = set()
+    total_bytes = 0
+    by_dtype = {}
+    for name, module in model.named_modules():
+        for attr_name in list(module.__dict__.keys()):
+            obj = getattr(module, attr_name, None)
+            if isinstance(obj, torch.Tensor) and id(obj) not in seen:
+                seen.add(id(obj))
+                b = obj.numel() * obj.element_size()
+                total_bytes += b
+                dt = str(obj.dtype)
+                by_dtype[dt] = by_dtype.get(dt, 0) + b
+    # Also count _parameters and _buffers explicitly
+    for p in model.parameters():
+        if id(p.data) not in seen:
+            seen.add(id(p.data))
+            b = p.data.numel() * p.data.element_size()
+            total_bytes += b
+            dt = str(p.data.dtype)
+            by_dtype[dt] = by_dtype.get(dt, 0) + b
+    for buf in model.buffers():
+        if id(buf) not in seen:
+            seen.add(id(buf))
+            b = buf.numel() * buf.element_size()
+            total_bytes += b
+            dt = str(buf.dtype)
+            by_dtype[dt] = by_dtype.get(dt, 0) + b
+    print(f"  Model tensor audit: {total_bytes/1e9:.2f} GB total")
+    for dt, b in sorted(by_dtype.items(), key=lambda x: -x[1]):
+        print(f"    {dt}: {b/1e9:.2f} GB")
+    return total_bytes
+
+
+# ---------------------------------------------------------------------------
 # Model loading
 # ---------------------------------------------------------------------------
 
-def load_wavegpt(args, device='cpu'):
+def load_wavegpt(args):
     """Load a WaveGPT checkpoint."""
     from wavegpt.model import WaveGPT, WaveGPTConfig
     config = WaveGPTConfig(
@@ -57,7 +113,7 @@ def load_wavegpt(args, device='cpu'):
     return model, 'wavegpt'
 
 
-def load_hf_model(args, device='cpu'):
+def load_hf_model(args):
     """Load a HuggingFace causal LM."""
     from transformers import AutoModelForCausalLM
     kwargs = {'torch_dtype': torch.bfloat16, 'low_cpu_mem_usage': True}
@@ -68,26 +124,26 @@ def load_hf_model(args, device='cpu'):
     return model, 'hf'
 
 
+# ---------------------------------------------------------------------------
+# Loss computation
+# ---------------------------------------------------------------------------
+
 def compute_loss(model, model_type, x, y, loss_mask=None):
     """Compute CE loss, handling both WaveGPT and HF model APIs."""
     if model_type == 'wavegpt':
         _, loss = model(x, targets=y, loss_mask=loss_mask)
         return loss
 
-    # HuggingFace model — compute loss manually for mask support
     outputs = model(input_ids=x)
     logits = outputs.logits
-    # Shift: predict token t+1 from position t
     shift_logits = logits[..., :-1, :].contiguous()
     shift_labels = y[..., 1:].contiguous()
 
     if loss_mask is not None:
         shift_mask = loss_mask[..., 1:].contiguous()
-        # Flatten
         flat_logits = shift_logits.view(-1, shift_logits.size(-1))
         flat_labels = shift_labels.view(-1)
         flat_mask = shift_mask.view(-1)
-        # Per-token CE
         per_token = F.cross_entropy(flat_logits, flat_labels, reduction='none')
         if flat_mask.sum() > 0:
             loss = (per_token * flat_mask).sum() / flat_mask.sum()
@@ -102,11 +158,44 @@ def compute_loss(model, model_type, x, y, loss_mask=None):
 
 
 # ---------------------------------------------------------------------------
+# Sample generation
+# ---------------------------------------------------------------------------
+
+def generate_samples(model, model_type, tokenizer, device, prompts, max_new=200):
+    """Generate sample completions for monitoring."""
+    model.eval()
+    results = []
+    for prompt in prompts:
+        input_ids = tokenizer.encode(prompt, return_tensors='pt').to(device)
+        with torch.no_grad():
+            if model_type == 'hf':
+                out = model.generate(
+                    input_ids,
+                    max_new_tokens=max_new,
+                    do_sample=True,
+                    temperature=0.7,
+                    top_p=0.9,
+                    pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+                )
+            else:
+                # WaveGPT — simple autoregressive
+                out = input_ids
+                for _ in range(max_new):
+                    logits, _ = model(out[:, -model.config.block_size:])
+                    logits = logits[:, -1, :] / 0.7
+                    probs = F.softmax(logits, dim=-1)
+                    next_tok = torch.multinomial(probs, 1)
+                    out = torch.cat([out, next_tok], dim=1)
+        text = tokenizer.decode(out[0], skip_special_tokens=True)
+        results.append({'prompt': prompt, 'response': text[len(prompt):]})
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
 
 def _try_load(data_dir, split):
-    """Find and load token file in various naming conventions."""
     from wavegpt.data_io import read_datafile
     data_dir = Path(data_dir)
     for name in [f"{split}.bin", f"sft_{split}.bin"]:
@@ -117,7 +206,6 @@ def _try_load(data_dir, split):
 
 
 def _try_load_mask(data_dir, split):
-    """Find and load mask file if present."""
     from wavegpt.data_io import read_datafile
     data_dir = Path(data_dir)
     for mname in [f"{split}_mask.npy", f"sft_{split}_mask.npy", f"{split}_mask.bin"]:
@@ -131,8 +219,6 @@ def _try_load_mask(data_dir, split):
 
 
 class DataLoader:
-    """Simple binary token data loader."""
-
     def __init__(self, data_dir, split, block_size, batch_size, device):
         self.tokens = _try_load(data_dir, split)
         self.block_size = block_size
@@ -159,7 +245,6 @@ class DataLoader:
 # ---------------------------------------------------------------------------
 
 def count_params(model):
-    """Count learnable vs frozen params."""
     learnable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     frozen = sum(p.numel() for p in model.parameters() if not p.requires_grad)
     frozen += sum(b.numel() for b in model.buffers())
@@ -167,7 +252,6 @@ def count_params(model):
 
 
 def freeze_non_spectral(model):
-    """Freeze everything except SpectralLinear's learnable params."""
     for p in model.parameters():
         p.requires_grad = False
     for m in model.modules():
@@ -178,73 +262,57 @@ def freeze_non_spectral(model):
                 m.spectrum.requires_grad = True
 
 
-def get_skip_patterns(model_type, hf_model_name=None):
-    """Return skip patterns for embeddings/heads based on model type."""
+def get_skip_patterns(model_type):
     if model_type == 'wavegpt':
         return ['wte', 'lm_head']
-    # HuggingFace models — skip embeddings, lm_head, vision encoder
     return ['embed_tokens', 'lm_head', 'visual', 'vision', 'wte', 'wpe']
 
 
-def collapse_penalty(model, alpha=0.05):
-    """Anti-collapse: variance penalty on last hidden layer's output."""
-    # Applied externally on logits during training, not inside forward.
-    # This is a placeholder — actual penalty computed in training loop
-    # on hidden states / logits.
-    return torch.tensor(0.0)
-
-
 # ---------------------------------------------------------------------------
-# Training
+# Main
 # ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description="Spectral fine-tuning")
 
-    # Model source (one required)
     g = parser.add_mutually_exclusive_group(required=True)
-    g.add_argument("--checkpoint", type=str, help="WaveGPT .pt checkpoint")
-    g.add_argument("--hf-model", type=str, help="HuggingFace model name/path")
+    g.add_argument("--checkpoint", type=str)
+    g.add_argument("--hf-model", type=str)
 
-    # WaveGPT-specific
+    # WaveGPT arch
     parser.add_argument("--n-layer", type=int, default=12)
     parser.add_argument("--n-head", type=int, default=12)
     parser.add_argument("--n-embd", type=int, default=768)
 
     # Spectral surgery
-    parser.add_argument("--rank", type=int, default=None,
-                        help="Fixed rank (omit for adaptive)")
-    parser.add_argument("--adaptive-rank", action="store_true",
-                        help="Theory-guided rank via 1/φ deviation")
-    parser.add_argument("--base-rank", type=int, default=192,
-                        help="Base rank for adaptive allocation")
-    parser.add_argument("--max-rank", type=int, default=None,
-                        help="Hard cap on adaptive rank")
+    parser.add_argument("--rank", type=int, default=None)
+    parser.add_argument("--adaptive-rank", action="store_true")
+    parser.add_argument("--base-rank", type=int, default=192)
+    parser.add_argument("--max-rank", type=int, default=None)
     parser.add_argument("--mode", type=str, default='per_mode',
                         choices=['sigma1', 'per_mode'])
-    parser.add_argument("--keep-residual", action="store_true",
-                        help="Preserve Pythagorean comma (frozen residual)")
+    parser.add_argument("--keep-residual", action="store_true")
 
     # Harmonic priors
-    parser.add_argument("--harmonic-lambda", type=float, default=0.0,
-                        help="Harmonic regularization strength")
-    parser.add_argument("--collapse-alpha", type=float, default=0.0,
-                        help="Anti-collapse variance penalty strength")
+    parser.add_argument("--harmonic-lambda", type=float, default=0.0)
+    parser.add_argument("--collapse-alpha", type=float, default=0.0)
 
     # Data
     parser.add_argument("--data-dir", type=str, required=True)
-    parser.add_argument("--block-size", type=int, default=1024)
+    parser.add_argument("--block-size", type=int, default=512)
 
     # Training
-    parser.add_argument("--batch-size", type=int, default=8)
-    parser.add_argument("--grad-accum", type=int, default=4)
-    parser.add_argument("--max-steps", type=int, default=5000)
+    parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--grad-accum", type=int, default=16)
+    parser.add_argument("--max-steps", type=int, default=2000)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--warmup-steps", type=int, default=200)
+    parser.add_argument("--warmup-steps", type=int, default=100)
     parser.add_argument("--weight-decay", type=float, default=0.0)
-    parser.add_argument("--eval-interval", type=int, default=250)
-    parser.add_argument("--log-interval", type=int, default=100)
+    parser.add_argument("--eval-interval", type=int, default=50)
+    parser.add_argument("--log-interval", type=int, default=10)
     parser.add_argument("--eval-batches", type=int, default=20)
+    parser.add_argument("--generate-interval", type=int, default=200,
+                        help="Generate sample completions every N steps (0=off)")
     parser.add_argument("--trust-remote-code", action="store_true")
 
     # Output
@@ -252,18 +320,16 @@ def main():
     parser.add_argument("--run-name", type=str, required=True)
 
     args = parser.parse_args()
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
     print(f"Device: {device}")
     if device == "cuda":
         print(f"GPU: {torch.cuda.get_device_name()}")
-        props = torch.cuda.get_device_properties(0)
-        vram = getattr(props, 'total_memory', getattr(props, 'total_mem', 0))
-        print(f"VRAM: {vram / 1e9:.1f} GB")
+        log_mem("startup")
 
-    # -----------------------------------------------------------------------
-    # 1. Load model
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # 1. Load model (always to CPU first)
+    # ===================================================================
     if args.checkpoint:
         print(f"\nLoading WaveGPT checkpoint: {args.checkpoint}")
         model, model_type = load_wavegpt(args)
@@ -274,117 +340,153 @@ def main():
     total_params = sum(p.numel() for p in model.parameters())
     print(f"  Total params: {total_params:,}")
 
-    # -----------------------------------------------------------------------
-    # 2. Load data + evaluate base model
-    # -----------------------------------------------------------------------
+    # Load tokenizer for HF models (needed for sample generation)
+    tokenizer = None
+    if model_type == 'hf':
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained(args.hf_model, trust_remote_code=True)
+
+    # ===================================================================
+    # 2. Load data
+    # ===================================================================
     print("\nLoading data...")
-    train_loader = DataLoader(args.data_dir, "train", args.block_size, args.batch_size, device)
-    val_loader = DataLoader(args.data_dir, "val", args.block_size, args.batch_size, device)
+    train_loader = DataLoader(args.data_dir, "train", args.block_size,
+                              args.batch_size, device)
+    val_loader = DataLoader(args.data_dir, "val", args.block_size,
+                            args.batch_size, device)
     print(f"  Train: {train_loader.n_tokens:,} tokens")
     print(f"  Val:   {val_loader.n_tokens:,} tokens")
 
-    # Skip base eval for huge models — we already know base PPL from earlier tests.
-    # Moving 27B to GPU and back wastes time + risks fragmentation.
-    if args.hf_model and sum(p.numel() for p in model.parameters()) > 1e9:
-        print("\nSkipping base eval (model >1B params — known from prior tests)")
-        base_val = float('nan')
-    else:
-        model.to(device)
-        model.eval()
-        print("\nEvaluating base model...")
-        base_losses = []
-        for _ in range(args.eval_batches):
-            x, y, m = val_loader.get_batch()
-            with torch.no_grad():
-                loss = compute_loss(model, model_type, x, y, m)
-            base_losses.append(loss.item())
-        base_val = sum(base_losses) / len(base_losses)
-        print(f"  Base val loss: {base_val:.4f} (PPL {math.exp(min(base_val, 20)):.1f})")
-        model.cpu()
-        torch.cuda.empty_cache()
-
-    # -----------------------------------------------------------------------
-    # 3. Spectral decomposition
-    # -----------------------------------------------------------------------
-
-    skip = get_skip_patterns(model_type, getattr(args, 'hf_model', None))
-    print(f"\nSpectral decomposition:")
+    # ===================================================================
+    # 3. Spectral decomposition (on CPU — no GPU needed)
+    # ===================================================================
+    skip = get_skip_patterns(model_type)
+    print(f"\nSpectral decomposition (on CPU):")
     print(f"  Skip patterns: {skip}")
 
+    rank = args.rank or 256
     if args.adaptive_rank:
-        print(f"  Mode: adaptive (base_rank={args.base_rank}, max_rank={args.max_rank})")
+        print(f"  Mode: adaptive (base={args.base_rank}, max={args.max_rank})")
         spectral_decompose(
             model, rank='adaptive', mode=args.mode, skip_patterns=skip,
             keep_residual=args.keep_residual,
             base_rank=args.base_rank, max_rank=args.max_rank,
         )
     else:
-        rank = args.rank or 256
         print(f"  Mode: fixed rank={rank}")
         spectral_decompose(
             model, rank=rank, mode=args.mode, skip_patterns=skip,
             keep_residual=args.keep_residual,
         )
 
-    # Free any stale refs before moving to GPU
-    import gc
+    # Audit model size BEFORE moving to GPU
+    print("\n  Pre-GPU audit:")
+    model_bytes = model_tensor_audit(model)
+    model_gb = model_bytes / 1e9
+    _, _, total_vram = gpu_mem()
+    print(f"  Model: {model_gb:.1f} GB, GPU total: {total_vram:.1f} GB")
+
+    if model_gb > total_vram * 0.85:
+        print(f"  ⚠ WARNING: Model ({model_gb:.1f}GB) may not fit on GPU ({total_vram:.1f}GB)")
+        print(f"  Consider: --rank {rank // 2} or smaller model")
+
+    # ===================================================================
+    # 4. Move to GPU + enable memory optimizations
+    # ===================================================================
     gc.collect()
     torch.cuda.empty_cache()
 
+    print(f"\n  Moving model to {device}...")
     model.to(device)
+    log_mem("after model.to(device)")
 
-    if device == 'cuda':
-        alloc = torch.cuda.memory_allocated() / 1e9
-        print(f"  GPU memory after decompose+move: {alloc:.1f} GB")
-
-    # Enable gradient checkpointing for HF models (saves ~60% activation memory)
+    # Gradient checkpointing for HF models
     if model_type == 'hf' and hasattr(model, 'gradient_checkpointing_enable'):
         try:
             model.gradient_checkpointing_enable(
                 gradient_checkpointing_kwargs={"use_reentrant": False}
             )
-            print("  Gradient checkpointing: enabled (non-reentrant)")
         except TypeError:
             model.gradient_checkpointing_enable()
-            print("  Gradient checkpointing: enabled")
+        print("  ✓ Gradient checkpointing enabled")
 
-    # -----------------------------------------------------------------------
-    # 4. Freeze + count
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # 5. Freeze + count
+    # ===================================================================
     freeze_non_spectral(model)
     learnable, frozen = count_params(model)
     print(f"  Learnable params: {learnable:,}")
     print(f"  Frozen params:    {frozen:,}")
-    print(f"  Ratio:            {learnable / max(learnable + frozen, 1) * 100:.4f}%")
-    if args.keep_residual:
-        n_residual = sum(1 for m in model.modules()
-                         if isinstance(m, SpectralLinear) and m.residual is not None)
-        print(f"  Layers with residual: {n_residual}")
     if args.harmonic_lambda > 0:
         print(f"  Harmonic λ: {args.harmonic_lambda}")
     if args.collapse_alpha > 0:
         print(f"  Anti-collapse α: {args.collapse_alpha}")
 
-    # Verify decomposition
+    # ===================================================================
+    # 6. Post-decomposition eval
+    # ===================================================================
+    print("\n  Post-decomposition eval...")
     model.eval()
     dec_losses = []
-    for _ in range(args.eval_batches):
+    for i in range(args.eval_batches):
         x, y, m = val_loader.get_batch()
-        with torch.no_grad():
+        with torch.no_grad(), torch.amp.autocast('cuda', dtype=torch.bfloat16):
             loss = compute_loss(model, model_type, x, y, m)
         dec_losses.append(loss.item())
     dec_val = sum(dec_losses) / len(dec_losses)
-    print(f"  Post-decomposition val loss: {dec_val:.4f} (PPL {math.exp(min(dec_val, 20)):.1f})")
-    print(f"  Degradation: {dec_val - base_val:+.4f}")
+    dec_ppl = math.exp(min(dec_val, 20))
+    print(f"  Post-decomp val loss: {dec_val:.4f} (PPL {dec_ppl:.1f})")
+    log_mem("after eval")
 
-    # -----------------------------------------------------------------------
-    # 5. Optimizer
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # 7. Test backward pass with single microbatch before committing
+    # ===================================================================
+    print("\n  Testing backward pass (1 microbatch)...")
+    model.train()
+    x, y, m = train_loader.get_batch()
+    try:
+        with torch.amp.autocast('cuda', dtype=torch.bfloat16):
+            loss = compute_loss(model, model_type, x, y, m)
+        loss.backward()
+        model.zero_grad(set_to_none=True)
+        torch.cuda.empty_cache()
+        log_mem("after test backward")
+        print("  ✓ Backward pass OK")
+    except torch.cuda.OutOfMemoryError:
+        print("  ✗ OOM on backward pass!")
+        log_mem("OOM")
+        print("  Trying with block_size=256...")
+        torch.cuda.empty_cache()
+        model.zero_grad(set_to_none=True)
+        args.block_size = 256
+        train_loader = DataLoader(args.data_dir, "train", 256,
+                                  args.batch_size, device)
+        val_loader = DataLoader(args.data_dir, "val", 256,
+                                args.batch_size, device)
+        x, y, m = train_loader.get_batch()
+        try:
+            with torch.amp.autocast('cuda', dtype=torch.bfloat16):
+                loss = compute_loss(model, model_type, x, y, m)
+            loss.backward()
+            model.zero_grad(set_to_none=True)
+            torch.cuda.empty_cache()
+            print(f"  ✓ Backward pass OK at block_size=256")
+            log_mem("after fallback backward")
+        except torch.cuda.OutOfMemoryError:
+            print("  ✗ Still OOM at block_size=256. Cannot train. Exiting.")
+            log_mem("fatal OOM")
+            sys.exit(1)
+
+    # ===================================================================
+    # 8. Optimizer + LR schedule
+    # ===================================================================
     spectral_params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.AdamW(spectral_params, lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = torch.optim.AdamW(spectral_params, lr=args.lr,
+                                  weight_decay=args.weight_decay)
 
     tokens_per_step = args.batch_size * args.block_size * args.grad_accum
     print(f"\n  Effective batch: {tokens_per_step:,} tokens/step")
+    print(f"  Batch: {args.batch_size} × {args.block_size} × {args.grad_accum} accum")
 
     def get_lr(step):
         if step < args.warmup_steps:
@@ -393,18 +495,27 @@ def main():
         coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
         return args.lr * 0.1 + (args.lr - args.lr * 0.1) * coeff
 
-    # -----------------------------------------------------------------------
-    # 6. Output directory
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # 9. Output directory + sample prompts
+    # ===================================================================
     run_dir = Path(args.output_dir) / args.run_name
     run_dir.mkdir(parents=True, exist_ok=True)
     with open(run_dir / "config.json", "w") as f:
         json.dump(vars(args), f, indent=2)
 
-    # -----------------------------------------------------------------------
-    # 7. Training loop
-    # -----------------------------------------------------------------------
-    print(f"\n{'=' * 60}")
+    # RAI test prompts for live monitoring
+    test_prompts = [
+        "The most important thing about the Singularity is",
+        "When I think about my father, I remember",
+        "The exponential growth of technology means that",
+        "People often ask me if I'm afraid of death. My answer is",
+        "Pattern recognition is fundamental to intelligence because",
+    ]
+
+    # ===================================================================
+    # 10. Training loop
+    # ===================================================================
+    print(f"\n{'=' * 70}")
     print(f"  Spectral Fine-Tuning: {args.run_name}")
     print(f"  {learnable:,} learnable params ({args.mode})")
     features = []
@@ -414,14 +525,14 @@ def main():
     if args.collapse_alpha > 0: features.append(f"collapse-α={args.collapse_alpha}")
     if features:
         print(f"  Harmonic: {', '.join(features)}")
-    print(f"{'=' * 60}\n")
+    print(f"{'=' * 70}\n")
 
     log_data = []
     best_val_loss = float("inf")
     t0 = time.time()
-    model.train()
 
     for step in range(args.max_steps):
+        model.train()
         lr = get_lr(step)
         for pg in optimizer.param_groups:
             pg["lr"] = lr
@@ -431,78 +542,101 @@ def main():
 
         for micro in range(args.grad_accum):
             x, y, m = train_loader.get_batch()
-            loss = compute_loss(model, model_type, x, y, m)
+            with torch.amp.autocast('cuda', dtype=torch.bfloat16):
+                loss = compute_loss(model, model_type, x, y, m)
 
-            # Harmonic regularization
-            if args.harmonic_lambda > 0:
-                hreg = harmonic_regularization(model, args.harmonic_lambda)
-                loss = loss + hreg
-                accum_hreg += hreg.item() / args.grad_accum
+                if args.harmonic_lambda > 0:
+                    hreg = harmonic_regularization(model, args.harmonic_lambda)
+                    loss = loss + hreg
+                    accum_hreg += hreg.item() / args.grad_accum
 
-            # Anti-collapse: variance penalty on logits
-            if args.collapse_alpha > 0:
-                # Get logits from last forward (already computed in loss)
-                # Re-forward is expensive; apply on loss magnitude instead
-                # Simple proxy: penalize low loss variance across batch
-                pass  # TODO: implement efficiently for HF models
-
-            loss = loss / args.grad_accum
-            loss.backward()
-            accum_loss += loss.item()
+            scaled = loss / args.grad_accum
+            scaled.backward()
+            accum_loss += scaled.item()
 
         torch.nn.utils.clip_grad_norm_(spectral_params, 1.0)
         optimizer.step()
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
 
-        # Log
+        # --- Log ---
         if step % args.log_interval == 0:
             elapsed = time.time() - t0
             tps = (step + 1) * tokens_per_step / elapsed if elapsed > 0 else 0
+            a, r, t = gpu_mem()
             hreg_str = f" | hreg {accum_hreg:.4f}" if args.harmonic_lambda > 0 else ""
-            print(f"  step {step:>5d} | loss {accum_loss:.4f}{hreg_str} | lr {lr:.2e} | {tps:.0f} tok/s")
+            print(f"  step {step:>5d} | loss {accum_loss:.4f}{hreg_str} "
+                  f"| lr {lr:.2e} | {tps:.0f} tok/s | mem {a:.0f}GB")
 
-        # Eval
-        if step > 0 and step % args.eval_interval == 0:
+        # --- Eval ---
+        if step % args.eval_interval == 0:
             model.eval()
             val_losses = []
             for _ in range(args.eval_batches):
                 x, y, m = val_loader.get_batch()
-                with torch.no_grad():
+                with torch.no_grad(), torch.amp.autocast('cuda', dtype=torch.bfloat16):
                     loss = compute_loss(model, model_type, x, y, m)
                 val_losses.append(loss.item())
             val_loss = sum(val_losses) / len(val_losses)
-            train_ppl = math.exp(min(accum_loss, 20))
             val_ppl = math.exp(min(val_loss, 20))
+            train_ppl = math.exp(min(accum_loss, 20))
 
             marker = ""
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 marker = " ★"
-                # Save best spectral params (tiny file)
                 spectral_sd = {name: p.data.cpu()
                                for name, p in model.named_parameters()
                                if p.requires_grad}
                 torch.save(spectral_sd, run_dir / "best_spectral.pt")
 
-            print(f"  ► eval {step:>5d} | val {val_loss:.4f} | ppl {val_ppl:.1f} | train_ppl {train_ppl:.1f}{marker}")
+            print(f"  ► eval {step:>5d} | val {val_loss:.4f} | "
+                  f"ppl {val_ppl:.1f} | train_ppl {train_ppl:.1f}{marker}")
 
-            log_data.append({
+            log_entry = {
                 "step": step, "train_loss": accum_loss,
-                "val_loss": val_loss, "lr": lr,
-            })
-            model.train()
+                "val_loss": val_loss, "val_ppl": val_ppl, "lr": lr,
+            }
+            log_data.append(log_entry)
 
-    # -----------------------------------------------------------------------
-    # 8. Final eval + save
-    # -----------------------------------------------------------------------
+            # Save running log (so we can monitor from outside)
+            with open(run_dir / "training_log.json", "w") as f:
+                json.dump(log_data, f, indent=2)
+
+        # --- Generate samples ---
+        if (args.generate_interval > 0 and tokenizer is not None
+                and step > 0 and step % args.generate_interval == 0):
+            print(f"\n  --- Samples at step {step} ---")
+            try:
+                samples = generate_samples(
+                    model, model_type, tokenizer, device,
+                    test_prompts[:3], max_new=150,
+                )
+                for s in samples:
+                    resp = s['response'][:300].replace('\n', ' ')
+                    print(f"  Q: {s['prompt']}")
+                    print(f"  A: {resp}")
+                    print()
+                # Save samples
+                all_samples_path = run_dir / "samples.jsonl"
+                with open(all_samples_path, "a") as f:
+                    for s in samples:
+                        f.write(json.dumps({"step": step, **s}) + "\n")
+            except Exception as e:
+                print(f"  Sample generation failed: {e}")
+            print(f"  --- End samples ---\n")
+
+    # ===================================================================
+    # 11. Final eval + save
+    # ===================================================================
     model.eval()
     val_losses = []
     for _ in range(50):
         x, y, m = val_loader.get_batch()
-        with torch.no_grad():
+        with torch.no_grad(), torch.amp.autocast('cuda', dtype=torch.bfloat16):
             loss = compute_loss(model, model_type, x, y, m)
         val_losses.append(loss.item())
     final_val = sum(val_losses) / len(val_losses)
+    final_ppl = math.exp(min(final_val, 20))
 
     # Save final spectral params
     spectral_sd = {name: p.data.cpu()
@@ -510,25 +644,47 @@ def main():
                    if p.requires_grad}
     torch.save(spectral_sd, run_dir / "final_spectral.pt")
 
-    # Spectral report + training log
-    report = spectral_report(model)
-    with open(run_dir / "spectral_report.json", "w") as f:
-        json.dump(report, f, indent=2)
+    # Spectral report
+    try:
+        report = spectral_report(model)
+        with open(run_dir / "spectral_report.json", "w") as f:
+            json.dump(report, f, indent=2)
+    except Exception as e:
+        print(f"  Warning: spectral report failed: {e}")
+
+    # Final training log
     with open(run_dir / "training_log.json", "w") as f:
         json.dump(log_data, f, indent=2)
 
-    # Summary
-    sp_size = os.path.getsize(run_dir / "best_spectral.pt")
+    # Generate final samples
+    if tokenizer is not None:
+        print("\n  --- Final samples ---")
+        try:
+            samples = generate_samples(
+                model, model_type, tokenizer, device,
+                test_prompts, max_new=200,
+            )
+            for s in samples:
+                resp = s['response'][:400].replace('\n', ' ')
+                print(f"  Q: {s['prompt']}")
+                print(f"  A: {resp}")
+                print()
+            with open(run_dir / "final_samples.json", "w") as f:
+                json.dump(samples, f, indent=2)
+        except Exception as e:
+            print(f"  Final sample generation failed: {e}")
+        print(f"  --- End final samples ---")
 
-    print(f"\n{'=' * 60}")
+    sp_size = os.path.getsize(run_dir / "best_spectral.pt") if (run_dir / "best_spectral.pt").exists() else 0
+
+    print(f"\n{'=' * 70}")
     print(f"  DONE: {args.run_name}")
-    print(f"  Base val loss:     {base_val:.4f} (PPL {math.exp(min(base_val, 20)):.1f})")
-    print(f"  Post-decomp loss:  {dec_val:.4f} (PPL {math.exp(min(dec_val, 20)):.1f})")
+    print(f"  Post-decomp loss:  {dec_val:.4f} (PPL {dec_ppl:.1f})")
     print(f"  Best val loss:     {best_val_loss:.4f} (PPL {math.exp(min(best_val_loss, 20)):.1f})")
-    print(f"  Final val loss:    {final_val:.4f} (PPL {math.exp(min(final_val, 20)):.1f})")
+    print(f"  Final val loss:    {final_val:.4f} (PPL {final_ppl:.1f})")
     print(f"  Learnable params:  {learnable:,}")
     print(f"  Spectral file:     {sp_size / 1024:.1f} KB")
-    print(f"{'=' * 60}")
+    print(f"{'=' * 70}")
 
 
 if __name__ == "__main__":
