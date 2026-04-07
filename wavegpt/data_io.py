@@ -1,12 +1,19 @@
 """
-Data I/O — binary format for token streams.
+Data I/O -- binary format for token streams.
 
-Compatible with Karpathy's llm.c GPT-2 .bin format:
-  Header: 256 × int32 (1024 bytes)
+Version 1 (llm.c GPT-2 compatible):
+  Header: 256 x int32 (1024 bytes)
     [0] = 20240520 (magic)
     [1] = 1 (version)
     [2] = num_tokens
-  Data: num_tokens × uint16 (GPT-2 tokenizer token IDs)
+  Data: num_tokens x uint16 (GPT-2 tokenizer, vocab <= 65535)
+
+Version 2 (extended vocab):
+  Header: 256 x int32 (1024 bytes)
+    [0] = 20240520 (magic)
+    [1] = 2 (version)
+    [2] = num_tokens
+  Data: num_tokens x uint32 (any tokenizer, vocab <= 4B)
 """
 from __future__ import annotations
 from typing import Optional
@@ -26,27 +33,33 @@ def _get_encoder() -> tiktoken.Encoding:
     return _enc
 
 
-def write_datafile(filename: str, tokens: list[int]) -> None:
-    """Write tokens in llm.c GPT-2 .bin format."""
+def write_datafile(filename: str, tokens: list[int], version: int | None = None) -> None:
+    """Write tokens in binary format. Auto-selects version based on max token ID."""
     assert len(tokens) < 2**31, f"Token count too large: {len(tokens)}"
+    max_id = max(tokens) if tokens else 0
+    if version is None:
+        version = 1 if max_id <= 65535 else 2
     header = np.zeros(256, dtype=np.int32)
     header[0] = 20240520  # magic
-    header[1] = 1         # version
+    header[1] = version
     header[2] = len(tokens)
-    toks_np = np.array(tokens, dtype=np.uint16)
+    dtype = np.uint16 if version == 1 else np.uint32
+    toks_np = np.array(tokens, dtype=dtype)
     with open(filename, "wb") as f:
         f.write(header.tobytes())
         f.write(toks_np.tobytes())
 
 
 def read_datafile(filename: str) -> np.ndarray:
-    """Read tokens from llm.c GPT-2 .bin format."""
+    """Read tokens from binary format (v1 uint16 or v2 uint32)."""
     with open(filename, "rb") as f:
         header = np.frombuffer(f.read(256 * 4), dtype=np.int32)
         assert header[0] == 20240520, f"Bad magic: {header[0]}"
-        assert header[1] == 1, f"Unsupported version: {header[1]}"
+        version = header[1]
+        assert version in (1, 2), f"Unsupported version: {version}"
         ntok = header[2]
-        tokens = np.frombuffer(f.read(), dtype=np.uint16)
+        dtype = np.uint16 if version == 1 else np.uint32
+        tokens = np.frombuffer(f.read(), dtype=dtype)
     assert len(tokens) == ntok, f"Expected {ntok} tokens, got {len(tokens)}"
     return tokens
 

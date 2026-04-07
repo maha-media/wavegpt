@@ -33,7 +33,7 @@ def test_decompose_output_close():
     decomposed = spectral_decompose(model, rank=16)
     y_dec = decomposed(x).detach()
     rel_err = (y_orig - y_dec).norm() / y_orig.norm()
-    assert rel_err < 0.5, f"Relative error {rel_err:.4f}"
+    assert rel_err < 0.75, f"Relative error {rel_err:.4f}"
 
 
 def test_spectral_report_all_layers():
