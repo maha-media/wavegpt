@@ -158,10 +158,12 @@ def main():
     base_val = sum(base_losses) / len(base_losses)
     print(f"  Base val loss: {base_val:.4f} (PPL {math.exp(base_val):.1f})")
 
-    # 3. Spectral decomposition
+    # 3. Spectral decomposition (on CPU, then move to device)
+    model.cpu()
     print(f"\nSpectral decomposition: rank={args.rank}, mode={args.mode}")
     skip = ['wte', 'lm_head'] if args.skip_embeddings else []
     spectral_decompose(model, rank=args.rank, mode=args.mode, skip_patterns=skip)
+    model.to(device)
 
     # 4. Freeze non-spectral params
     freeze_non_spectral(model)
