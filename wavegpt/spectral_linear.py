@@ -145,7 +145,7 @@ class SpectralLinear(nn.Module):
         Performs SVD on the weight matrix, keeps top-rank modes,
         fits the power-law exponent α.
         """
-        W = linear.weight.data.float()  # (out, in)
+        W = linear.weight.data.float().cpu()  # (out, in) — SVD on CPU
         out_dim, in_dim = W.shape
         max_rank = min(out_dim, in_dim)
 
@@ -171,7 +171,7 @@ class SpectralLinear(nn.Module):
         coeffs = np.polyfit(log_k, log_s, 1)
         alpha_fit = float(-coeffs[0])
 
-        bias = linear.bias.data.clone() if linear.bias is not None else None
+        bias = linear.bias.data.cpu().clone() if linear.bias is not None else None
 
         return cls(
             U, S, V,
