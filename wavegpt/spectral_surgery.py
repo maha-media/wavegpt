@@ -81,7 +81,10 @@ def spectral_decompose(
             layer_ranks[full_name] = min(lr, dim_max)
 
     # Replace each linear layer
-    for full_name in replacements:
+    import time as _time
+    _t0 = _time.time()
+    _total = len(replacements)
+    for _i, full_name in enumerate(replacements):
         linear = _get_submodule(model, full_name)
 
         if adaptive:
@@ -92,6 +95,20 @@ def spectral_decompose(
         spec = SpectralLinear.from_linear(
             linear, rank=layer_rank, mode=mode, keep_residual=keep_residual,
         )
+
+        # Progress logging
+        _elapsed = _time.time() - _t0
+        if _i > 0:
+            _eta = _elapsed / _i * (_total - _i)
+            print(f"  [{_i+1}/{_total}] {full_name} "
+                  f"{tuple(linear.weight.shape)} → rank {spec.rank} "
+                  f"k₀={spec.k0.item():.0f} "
+                  f"({_elapsed:.0f}s elapsed, ETA {_eta:.0f}s)",
+                  flush=True)
+        else:
+            print(f"  [{_i+1}/{_total}] {full_name} "
+                  f"{tuple(linear.weight.shape)} → rank {spec.rank}",
+                  flush=True)
 
         # Set the SpectralLinear on the parent
         parts = full_name.split('.')
