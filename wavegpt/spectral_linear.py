@@ -48,6 +48,7 @@ class SpectralLinear(nn.Module):
         alpha_fit: float | None = None,
         bias: torch.Tensor | None = None,
         energy_captured: float = 1.0,
+        residual: torch.Tensor | None = None,
     ):
         super().__init__()
         self.mode = mode
@@ -59,6 +60,12 @@ class SpectralLinear(nn.Module):
         # Geometry: FROZEN
         self.register_buffer('U', U)   # (out_dim, rank)
         self.register_buffer('V', V)   # (in_dim, rank)
+
+        # Residual: FROZEN (Pythagorean comma preservation)
+        if residual is not None:
+            self.register_buffer('residual', residual)  # (out_dim, in_dim)
+        else:
+            self.residual = None
 
         # Fitted alpha from power-law regression
         self.alpha_fit = alpha_fit if alpha_fit is not None else INV_PHI
@@ -96,6 +103,8 @@ class SpectralLinear(nn.Module):
         xV = x @ self.V                              # (..., rank)
         xVs = xV * spectrum                          # broadcast spectrum
         out = xVs @ self.U.t()                       # (..., out_dim)
+        if self.residual is not None:
+            out = out + x @ self.residual.t()         # frozen comma correction
         if self.bias is not None:
             out = out + self.bias
         return out
@@ -138,6 +147,7 @@ class SpectralLinear(nn.Module):
         linear: nn.Linear,
         rank: int | None = None,
         mode: str = 'per_mode',
+        keep_residual: bool = False,
     ) -> 'SpectralLinear':
         """
         Decompose a trained nn.Linear into SpectralLinear.
@@ -173,12 +183,19 @@ class SpectralLinear(nn.Module):
 
         bias = linear.bias.data.cpu().clone() if linear.bias is not None else None
 
+        # Compute frozen residual: W - U_r @ diag(S_r) @ V_r^T
+        residual = None
+        if keep_residual:
+            W_approx = (U * S.unsqueeze(0)) @ V.t()
+            residual = (W - W_approx).contiguous()
+
         return cls(
             U, S, V,
             mode=mode,
             alpha_fit=alpha_fit,
             bias=bias,
             energy_captured=energy_captured,
+            residual=residual,
         )
 
     def extra_repr(self) -> str:

@@ -56,3 +56,43 @@ def test_skip_pattern():
     decomposed = spectral_decompose(model, rank=16, skip_patterns=['linear1'])
     assert isinstance(decomposed.linear1, nn.Linear)
     assert isinstance(decomposed.linear2, SpectralLinear)
+
+
+def test_adaptive_rank_decomposition():
+    """With adaptive rank, layers get per-layer ranks based on their α."""
+    from wavegpt.spectral_surgery import spectral_decompose
+    from wavegpt.spectral_linear import SpectralLinear
+    model = TinyModel()
+    decomposed = spectral_decompose(
+        model, rank='adaptive', base_rank=8, mode='per_mode',
+    )
+    assert isinstance(decomposed.linear1, SpectralLinear)
+    assert isinstance(decomposed.linear2, SpectralLinear)
+    # Ranks should be > 0 and possibly different
+    assert decomposed.linear1.rank > 0
+    assert decomposed.linear2.rank > 0
+
+
+def test_adaptive_rank_with_residual():
+    """Adaptive rank + residual = lossless output."""
+    from wavegpt.spectral_surgery import spectral_decompose
+    model = TinyModel()
+    x = torch.randn(2, 5, 32)
+    y_orig = model(x).detach()
+    decomposed = spectral_decompose(
+        model, rank='adaptive', base_rank=8, mode='per_mode',
+        keep_residual=True,
+    )
+    y_dec = decomposed(x).detach()
+    torch.testing.assert_close(y_orig, y_dec, atol=1e-4, rtol=1e-3)
+
+
+def test_keep_residual_passthrough():
+    """keep_residual flag should propagate to SpectralLinear."""
+    from wavegpt.spectral_surgery import spectral_decompose
+    model = TinyModel()
+    decomposed = spectral_decompose(
+        model, rank=8, mode='per_mode', keep_residual=True,
+    )
+    assert decomposed.linear1.residual is not None
+    assert decomposed.linear2.residual is not None

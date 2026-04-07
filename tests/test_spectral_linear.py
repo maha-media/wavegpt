@@ -119,3 +119,45 @@ def test_save_load_spectral_params():
     spec2.load_state_dict(spec2.state_dict() | spectral_state)
     x = torch.randn(2, 5, 64)
     torch.testing.assert_close(spec1(x), spec2(x), atol=1e-6, rtol=1e-5)
+
+
+def test_residual_preservation_exact():
+    """With residual, decompose + reconstruct is lossless at any rank."""
+    from wavegpt.spectral_linear import SpectralLinear
+    linear = nn.Linear(64, 128, bias=False)
+    x = torch.randn(2, 10, 64)
+    y_orig = linear(x)
+    spec = SpectralLinear.from_linear(linear, rank=8, mode='per_mode', keep_residual=True)
+    y_spec = spec(x)
+    torch.testing.assert_close(y_orig, y_spec, atol=1e-5, rtol=1e-4)
+
+
+def test_residual_stored_as_buffer():
+    """Residual should be a frozen buffer, not a parameter."""
+    from wavegpt.spectral_linear import SpectralLinear
+    linear = nn.Linear(64, 128, bias=False)
+    spec = SpectralLinear.from_linear(linear, rank=8, mode='per_mode', keep_residual=True)
+    assert hasattr(spec, 'residual')
+    assert not spec.residual.requires_grad
+    learnable = [p for p in spec.parameters() if p.requires_grad]
+    assert len(learnable) == 1
+    assert learnable[0].numel() == 8
+
+
+def test_residual_with_bias():
+    """Residual preservation works with biased layers too."""
+    from wavegpt.spectral_linear import SpectralLinear
+    linear = nn.Linear(64, 128, bias=True)
+    x = torch.randn(2, 10, 64)
+    y_orig = linear(x)
+    spec = SpectralLinear.from_linear(linear, rank=8, mode='per_mode', keep_residual=True)
+    y_spec = spec(x)
+    torch.testing.assert_close(y_orig, y_spec, atol=1e-5, rtol=1e-4)
+
+
+def test_no_residual_by_default():
+    """Default from_linear should NOT store residual (backward compat)."""
+    from wavegpt.spectral_linear import SpectralLinear
+    linear = nn.Linear(64, 128, bias=False)
+    spec = SpectralLinear.from_linear(linear, rank=8, mode='per_mode')
+    assert spec.residual is None
