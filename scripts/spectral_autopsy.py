@@ -60,11 +60,17 @@ def autopsy_state_dict(state_dict: dict) -> list[dict]:
         layer_type = 'unknown'
         if 'c_attn' in name or 'q_proj' in name or 'k_proj' in name or 'v_proj' in name:
             layer_type = 'attention'
-        elif 'c_proj' in name or 'o_proj' in name:
+        elif 'in_proj_qkv' in name:
+            layer_type = 'deltanet_qkv'
+        elif 'in_proj_z' in name:
+            layer_type = 'deltanet_gate'
+        elif 'in_proj_a' in name or 'in_proj_b' in name:
+            layer_type = 'deltanet_bias'
+        elif 'c_proj' in name or 'o_proj' in name or 'out_proj' in name:
             layer_type = 'projection'
         elif 'c_fc' in name or 'up_proj' in name or 'gate_proj' in name:
             layer_type = 'mlp_up'
-        elif 'mlp' in name and 'proj' in name:
+        elif 'down_proj' in name or ('mlp' in name and 'proj' in name):
             layer_type = 'mlp_down'
         elif 'lm_head' in name or 'wte' in name or 'embed' in name:
             layer_type = 'embedding'
@@ -146,8 +152,13 @@ def main():
     elif args.hf_model:
         print(f"Loading HuggingFace model: {args.hf_model}")
         from transformers import AutoModelForCausalLM
-        model = AutoModelForCausalLM.from_pretrained(args.hf_model)
+        import torch
+        model = AutoModelForCausalLM.from_pretrained(
+            args.hf_model, dtype=torch.bfloat16,
+            trust_remote_code=True, low_cpu_mem_usage=True,
+        )
         state_dict = model.state_dict()
+        del model  # free RAM before SVD work
     else:
         print("Provide --checkpoint or --hf-model")
         sys.exit(1)
