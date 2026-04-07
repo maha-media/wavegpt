@@ -283,23 +283,29 @@ def main():
     print(f"  Train: {train_loader.n_tokens:,} tokens")
     print(f"  Val:   {val_loader.n_tokens:,} tokens")
 
-    model.to(device)
-    model.eval()
-    print("\nEvaluating base model...")
-    base_losses = []
-    for _ in range(args.eval_batches):
-        x, y, m = val_loader.get_batch()
-        with torch.no_grad():
-            loss = compute_loss(model, model_type, x, y, m)
-        base_losses.append(loss.item())
-    base_val = sum(base_losses) / len(base_losses)
-    print(f"  Base val loss: {base_val:.4f} (PPL {math.exp(min(base_val, 20)):.1f})")
+    # Skip base eval for huge models — we already know base PPL from earlier tests.
+    # Moving 27B to GPU and back wastes time + risks fragmentation.
+    if args.hf_model and sum(p.numel() for p in model.parameters()) > 1e9:
+        print("\nSkipping base eval (model >1B params — known from prior tests)")
+        base_val = float('nan')
+    else:
+        model.to(device)
+        model.eval()
+        print("\nEvaluating base model...")
+        base_losses = []
+        for _ in range(args.eval_batches):
+            x, y, m = val_loader.get_batch()
+            with torch.no_grad():
+                loss = compute_loss(model, model_type, x, y, m)
+            base_losses.append(loss.item())
+        base_val = sum(base_losses) / len(base_losses)
+        print(f"  Base val loss: {base_val:.4f} (PPL {math.exp(min(base_val, 20)):.1f})")
+        model.cpu()
+        torch.cuda.empty_cache()
 
     # -----------------------------------------------------------------------
     # 3. Spectral decomposition
     # -----------------------------------------------------------------------
-    model.cpu()
-    torch.cuda.empty_cache()
 
     skip = get_skip_patterns(model_type, getattr(args, 'hf_model', None))
     print(f"\nSpectral decomposition:")
@@ -320,7 +326,27 @@ def main():
             keep_residual=args.keep_residual,
         )
 
+    # Free any stale refs before moving to GPU
+    import gc
+    gc.collect()
+    torch.cuda.empty_cache()
+
     model.to(device)
+
+    if device == 'cuda':
+        alloc = torch.cuda.memory_allocated() / 1e9
+        print(f"  GPU memory after decompose+move: {alloc:.1f} GB")
+
+    # Enable gradient checkpointing for HF models (saves ~60% activation memory)
+    if model_type == 'hf' and hasattr(model, 'gradient_checkpointing_enable'):
+        try:
+            model.gradient_checkpointing_enable(
+                gradient_checkpointing_kwargs={"use_reentrant": False}
+            )
+            print("  Gradient checkpointing: enabled (non-reentrant)")
+        except TypeError:
+            model.gradient_checkpointing_enable()
+            print("  Gradient checkpointing: enabled")
 
     # -----------------------------------------------------------------------
     # 4. Freeze + count
