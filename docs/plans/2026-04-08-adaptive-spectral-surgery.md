@@ -84,12 +84,38 @@ The fix: **k₀-adaptive rank**. Each layer's rank is set to clear its spectral 
 - Run spectral autopsy
 - Test: does the γ table transfer? Does 1/φ hold?
 
-#### Batch 4 — Generation Quality
+#### Batch 4 — Self-Distillation (SSD) Enhancement
 
-**RAI 25-prompt eval** (after Q-D)
-- Run `scripts/test_rai_baseline.py` against fine-tuned model
-- Compare voice, accuracy, repetition against baseline
-- The real test: does it sound like Ray?
+Inspired by Apple's "Embarrassingly Simple Self-Distillation" (arXiv:2604.01193).
+SSD reshapes token distributions context-dependently: suppresses distractor tails at
+"lock positions" (syntax, one right answer) while preserving diversity at "fork positions"
+(multiple valid continuations). This is the OUTPUT-SPACE analogue of our WEIGHT-SPACE
+spectral compression. Combining both should compound.
+
+**Q-H: Spectral + SSD** (after Q-D converges)
+- Phase 1: Load Q-D's trained spectral file (voice = Ray)
+- Phase 2: Sample N=8 responses per RAI prompt at T_train=1.2, top_k=50, top_p=0.95
+- Phase 3: Fine-tune spectral amplitudes on those self-generated samples (standard CE)
+- Eval: Compare Q-D vs Q-H on RAI 25-prompt eval
+- **Hypothesis**: SSD sharpens precision at lock positions (grammar, prepositions)
+  without losing Ray's exploratory voice at fork positions (ideas, analogies)
+
+The math: SSD loss decomposes into three terms (Apple Eq. 15):
+```
+L = -log(KeptMass)           # support compression (≈ our rank truncation)
+  + (1-T)·H_{1/T}(p|S)      # Rényi reshaping within support (≈ our amplitude adjustment)
+  + T·KL(q || Temper_T[p|S]) # alignment with teacher preferences
+```
+
+Our spectral surgery does the first two in weight space. SSD does them in output space.
+Combined: spectral sets the structural prior, SSD refines the token-level precision.
+
+#### Batch 5 — Generation Quality
+
+**RAI 25-prompt eval** (after Q-D and Q-H)
+- Run `scripts/test_rai_baseline.py` against fine-tuned models
+- Compare voice, accuracy, repetition: base vs Q-D vs Q-H
+- The real test: does it sound like Ray? Does SSD make it more precise?
 
 **Spectral personality swap demo**
 - Save Q-D spectral file (~1.4MB)

@@ -321,6 +321,24 @@ def main():
     parser.add_argument("--output-dir", type=str, default="runs")
     parser.add_argument("--run-name", type=str, required=True)
 
+    # SSD (Simple Self-Distillation) — arXiv:2604.01193
+    parser.add_argument("--ssd", action="store_true",
+                        help="Run SSD phase after corpus training")
+    parser.add_argument("--ssd-temperature", type=float, default=1.2,
+                        help="Sampling temperature for SSD data generation")
+    parser.add_argument("--ssd-top-k", type=int, default=50,
+                        help="Top-k truncation for SSD sampling")
+    parser.add_argument("--ssd-top-p", type=float, default=0.95,
+                        help="Top-p truncation for SSD sampling")
+    parser.add_argument("--ssd-samples", type=int, default=8,
+                        help="Number of SSD samples per prompt")
+    parser.add_argument("--ssd-max-tokens", type=int, default=512,
+                        help="Max tokens per SSD sample")
+    parser.add_argument("--ssd-steps", type=int, default=500,
+                        help="Training steps for SSD phase")
+    parser.add_argument("--ssd-prompts", type=str, default=None,
+                        help="Path to prompts JSONL file for SSD (one per line)")
+
     args = parser.parse_args()
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -339,8 +357,6 @@ def main():
         print(f"\nLoading pre-decomposed model: {args.decomposed}")
         from transformers import AutoModelForCausalLM, AutoConfig
         # Need the HF model name to reconstruct architecture
-        # Convention: decomposed file is at runs/<name>/decomposed.pt
-        # and config.json has the hf_model name
         decomp_dir = Path(args.decomposed).parent
         config_path = decomp_dir / "config.json"
         if config_path.exists():
@@ -355,14 +371,16 @@ def main():
             hf_model_name, torch_dtype=torch.bfloat16, low_cpu_mem_usage=True,
             trust_remote_code=True,
         )
-        # Fast path: scaffold empty SpectralLinear shells, then load saved weights
+        # Load state dict first to read variable ranks
+        print(f"  Loading saved state_dict...")
+        sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
+        # Scaffold with state_dict to infer per-layer rank (adaptive-rank support)
         skip = get_skip_patterns('hf')
         rank = args.rank or 256
         print(f"  Scaffolding SpectralLinear architecture (no SVD)...")
-        spectral_scaffold(model, rank=rank, mode=args.mode, skip_patterns=skip)
-        print(f"  Loading saved state_dict...")
-        sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
-        model.load_state_dict(sd, strict=False)  # strict=False: k0 buffers may be extra
+        spectral_scaffold(model, rank=rank, mode=args.mode,
+                          skip_patterns=skip, state_dict=sd)
+        model.load_state_dict(sd, strict=False)
         model_type = 'hf'
         print(f"  ✓ Loaded decomposed model ({len(sd)} tensors) — no SVD needed")
     elif args.checkpoint:
@@ -670,7 +688,131 @@ def main():
             print(f"  --- End samples ---\n")
 
     # ===================================================================
-    # 11. Final eval + save
+    # 11. SSD Phase (Simple Self-Distillation) — arXiv:2604.01193
+    # ===================================================================
+    if args.ssd and tokenizer is not None and model_type == 'hf':
+        print(f"\n{'=' * 70}")
+        print(f"  SSD Phase: Self-Distillation")
+        print(f"  T={args.ssd_temperature}, top_k={args.ssd_top_k}, "
+              f"top_p={args.ssd_top_p}, samples={args.ssd_samples}")
+        print(f"{'=' * 70}")
+
+        # Load prompts
+        ssd_prompts = []
+        if args.ssd_prompts and Path(args.ssd_prompts).exists():
+            with open(args.ssd_prompts) as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        try:
+                            ssd_prompts.append(json.loads(line)['prompt'])
+                        except (json.JSONDecodeError, KeyError):
+                            ssd_prompts.append(line)
+        else:
+            # Default: use RAI-style prompts
+            ssd_prompts = test_prompts + [
+                "The key insight about exponential growth is",
+                "In my view, the future of artificial intelligence",
+                "What I learned from studying technology trends is",
+                "The relationship between biology and technology",
+                "Looking at the history of computing, we can see",
+            ]
+        print(f"  Using {len(ssd_prompts)} prompts")
+
+        # Phase 1: Generate self-distillation data
+        print(f"  Generating SSD data...")
+        model.eval()
+        ssd_tokens = []  # list of token sequences
+        for pi, prompt in enumerate(ssd_prompts):
+            input_ids = tokenizer.encode(prompt, return_tensors='pt').to(device)
+            for si in range(args.ssd_samples):
+                with torch.no_grad():
+                    out = model.generate(
+                        input_ids,
+                        max_new_tokens=args.ssd_max_tokens,
+                        do_sample=True,
+                        temperature=args.ssd_temperature,
+                        top_k=args.ssd_top_k,
+                        top_p=args.ssd_top_p,
+                        pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+                    )
+                ssd_tokens.append(out[0].cpu())
+            if (pi + 1) % 10 == 0:
+                print(f"    Generated {(pi+1)*args.ssd_samples} samples "
+                      f"({pi+1}/{len(ssd_prompts)} prompts)")
+
+        total_ssd_tokens = sum(len(t) for t in ssd_tokens)
+        print(f"  Generated {len(ssd_tokens)} samples, {total_ssd_tokens:,} tokens")
+
+        # Save SSD data for inspection
+        ssd_data_path = run_dir / "ssd_samples.jsonl"
+        with open(ssd_data_path, "w") as f:
+            for t in ssd_tokens[:20]:  # save first 20 for inspection
+                text = tokenizer.decode(t, skip_special_tokens=True)
+                f.write(json.dumps({"text": text[:500]}) + "\n")
+
+        # Phase 2: Fine-tune on self-generated data
+        print(f"  SSD training ({args.ssd_steps} steps)...")
+        model.train()
+
+        # Concatenate all SSD tokens into a flat array
+        ssd_flat = torch.cat(ssd_tokens, dim=0).numpy()
+        ssd_n = len(ssd_flat)
+        print(f"  SSD corpus: {ssd_n:,} tokens")
+
+        ssd_optimizer = torch.optim.AdamW(
+            [p for p in model.parameters() if p.requires_grad],
+            lr=args.lr * 0.1,  # lower LR for SSD refinement
+            weight_decay=args.weight_decay,
+        )
+
+        ssd_best_val = float('inf')
+        for ssd_step in range(args.ssd_steps):
+            # Get batch from SSD data
+            ix = torch.randint(ssd_n - args.block_size - 1, (args.batch_size,))
+            x = torch.stack([torch.from_numpy(
+                ssd_flat[i:i+args.block_size].astype(np.int64)) for i in ix]).to(device)
+            y = torch.stack([torch.from_numpy(
+                ssd_flat[i+1:i+1+args.block_size].astype(np.int64)) for i in ix]).to(device)
+
+            with torch.amp.autocast('cuda', dtype=torch.bfloat16):
+                loss = compute_loss(model, model_type, x, y)
+            loss.backward()
+
+            if (ssd_step + 1) % args.grad_accum == 0:
+                torch.nn.utils.clip_grad_norm_(
+                    [p for p in model.parameters() if p.requires_grad], 1.0)
+                ssd_optimizer.step()
+                ssd_optimizer.zero_grad(set_to_none=True)
+
+            if ssd_step % args.log_interval == 0:
+                print(f"  ssd step {ssd_step:>4d} | loss {loss.item():.4f}")
+
+            if ssd_step % args.eval_interval == 0:
+                model.eval()
+                vl = []
+                for _ in range(args.eval_batches):
+                    xv, yv, mv = val_loader.get_batch()
+                    with torch.no_grad(), torch.amp.autocast('cuda', dtype=torch.bfloat16):
+                        vloss = compute_loss(model, model_type, xv, yv, mv)
+                    vl.append(vloss.item())
+                sv = sum(vl) / len(vl)
+                sp = math.exp(min(sv, 20))
+                marker = " ★" if sv < ssd_best_val else ""
+                if sv < ssd_best_val:
+                    ssd_best_val = sv
+                    spectral_sd = {name: p.data.cpu()
+                                   for name, p in model.named_parameters()
+                                   if p.requires_grad}
+                    torch.save(spectral_sd, run_dir / "best_ssd_spectral.pt")
+                print(f"  ► ssd eval {ssd_step:>4d} | val {sv:.4f} | ppl {sp:.1f}{marker}")
+                model.train()
+
+        print(f"  SSD phase complete. Best val: {ssd_best_val:.4f} "
+              f"(PPL {math.exp(min(ssd_best_val, 20)):.1f})")
+
+    # ===================================================================
+    # 12. Final eval + save
     # ===================================================================
     model.eval()
     val_losses = []

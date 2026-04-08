@@ -96,3 +96,38 @@ def test_keep_residual_passthrough():
     )
     assert decomposed.linear1.residual is not None
     assert decomposed.linear2.residual is not None
+
+
+def test_scaffold_fixed_rank():
+    """Scaffold creates SpectralLinear shells at fixed rank."""
+    from wavegpt.spectral_surgery import spectral_scaffold
+    from wavegpt.spectral_linear import SpectralLinear
+    model = TinyModel()
+    spectral_scaffold(model, rank=8, mode='per_mode')
+    assert isinstance(model.linear1, SpectralLinear)
+    assert isinstance(model.linear2, SpectralLinear)
+    assert model.linear1.rank == 8
+    assert model.linear2.rank == 8
+
+
+def test_scaffold_from_state_dict_variable_rank():
+    """Scaffold infers per-layer rank from saved state_dict."""
+    from wavegpt.spectral_surgery import spectral_decompose, spectral_scaffold
+    from wavegpt.spectral_linear import SpectralLinear
+    # First, decompose with different ranks
+    model1 = TinyModel()
+    decomposed = spectral_decompose(model1, rank=12, mode='per_mode')
+    sd = decomposed.state_dict()
+    # Verify the saved spectrum shapes
+    assert sd['linear1.spectrum'].shape[0] == 12
+    # Now scaffold a fresh model using that state_dict
+    model2 = TinyModel()
+    spectral_scaffold(model2, rank=999, mode='per_mode', state_dict=sd)
+    # Should use rank from state_dict (12), not the passed rank (999)
+    assert model2.linear1.rank == 12
+    assert model2.linear2.rank == 12
+    # Load should succeed
+    model2.load_state_dict(sd, strict=False)
+    x = torch.randn(2, 5, 32)
+    out = model2(x)
+    assert out.shape == (2, 5, 16)

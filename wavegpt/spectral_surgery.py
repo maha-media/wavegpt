@@ -155,6 +155,7 @@ def spectral_scaffold(
     rank: int = 256,
     mode: str = 'per_mode',
     skip_patterns: list[str] | None = None,
+    state_dict: dict | None = None,
 ) -> nn.Module:
     """
     Replace nn.Linear layers with empty SpectralLinear shells (no SVD).
@@ -162,14 +163,41 @@ def spectral_scaffold(
     Creates the correct architecture for loading a saved state_dict.
     5 seconds instead of 3 hours.
 
+    If state_dict is provided, infers per-layer rank from the saved
+    spectrum/U tensor shapes (needed for adaptive-rank models).
+
     Usage:
+        # Fixed rank:
         spectral_scaffold(model, rank=256, mode='per_mode')
-        model.load_state_dict(torch.load('decomposed.pt'))
+        model.load_state_dict(torch.load('decomposed.pt'), strict=False)
+
+        # Variable rank (from adaptive decomposition):
+        sd = torch.load('decomposed.pt', map_location='cpu')
+        spectral_scaffold(model, mode='per_mode', state_dict=sd)
+        model.load_state_dict(sd, strict=False)
     """
     skip_patterns = skip_patterns or []
 
     def should_skip(name: str) -> bool:
         return any(re.search(p, name) for p in skip_patterns)
+
+    # Build rank map from state dict if provided
+    rank_map: dict[str, int] = {}
+    if state_dict is not None:
+        for key, tensor in state_dict.items():
+            # spectrum tensor: <layer_name>.spectrum with shape (rank,)
+            if key.endswith('.spectrum') and tensor.dim() == 1:
+                layer_name = key.rsplit('.spectrum', 1)[0]
+                rank_map[layer_name] = tensor.shape[0]
+            # Fallback: U_basis tensor: <layer_name>.U with shape (out, rank)
+            elif key.endswith('.U') and tensor.dim() == 2:
+                layer_name = key.rsplit('.U', 1)[0]
+                if layer_name not in rank_map:
+                    rank_map[layer_name] = tensor.shape[1]
+        if rank_map:
+            ranks = list(rank_map.values())
+            print(f"  Rank map from state_dict: {len(rank_map)} layers, "
+                  f"rank range [{min(ranks)}, {max(ranks)}]")
 
     replacements = []
     for full_name, module in model.named_modules():
@@ -184,8 +212,11 @@ def spectral_scaffold(
         has_bias = linear.bias is not None
         dtype = linear.weight.dtype
 
+        # Determine rank: from state_dict if available, else fixed
+        layer_rank = rank_map.get(full_name, rank)
+
         spec = SpectralLinear.from_shape(
-            out_dim, in_dim, rank=rank, mode=mode,
+            out_dim, in_dim, rank=layer_rank, mode=mode,
             has_bias=has_bias, dtype=dtype,
         )
 
