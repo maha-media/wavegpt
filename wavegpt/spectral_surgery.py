@@ -32,6 +32,8 @@ def spectral_decompose(
     base_rank: int = 192,
     adaptive_beta: float = 2.0,
     max_rank: int | None = None,
+    k0_mult: float = 0.0,
+    k0_pad: int = 0,
 ) -> nn.Module:
     """
     Replace all nn.Linear layers with SpectralLinear (in-place).
@@ -92,22 +94,37 @@ def spectral_decompose(
         else:
             layer_rank = rank  # int or None
 
+        # For k0-adaptive: first decompose at max rank to get k0, then re-decompose
+        if k0_mult > 0:
+            # Quick SVD to get k₀
+            W = linear.weight.data.float().cpu()
+            S_vals = torch.linalg.svdvals(W)
+            try:
+                bent = fit_bent_power_law(S_vals)
+                k0_val = bent['k0']
+            except Exception:
+                k0_val = 0
+            min_dim = min(linear.weight.shape)
+            layer_rank = min(int(k0_val * k0_mult) + k0_pad, min_dim)
+            layer_rank = max(layer_rank, 32)  # minimum rank
+
         spec = SpectralLinear.from_linear(
             linear, rank=layer_rank, mode=mode, keep_residual=keep_residual,
         )
 
         # Progress logging
         _elapsed = _time.time() - _t0
+        k0_str = f"k₀={spec.k0.item():.0f} " if spec.k0 is not None else ""
         if _i > 0:
             _eta = _elapsed / _i * (_total - _i)
             print(f"  [{_i+1}/{_total}] {full_name} "
                   f"{tuple(linear.weight.shape)} → rank {spec.rank} "
-                  f"k₀={spec.k0.item():.0f} "
+                  f"{k0_str}"
                   f"({_elapsed:.0f}s elapsed, ETA {_eta:.0f}s)",
                   flush=True)
         else:
             print(f"  [{_i+1}/{_total}] {full_name} "
-                  f"{tuple(linear.weight.shape)} → rank {spec.rank}",
+                  f"{tuple(linear.weight.shape)} → rank {spec.rank} {k0_str}",
                   flush=True)
 
         # Set the SpectralLinear on the parent

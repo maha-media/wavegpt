@@ -25,7 +25,14 @@ from wavegpt.spectral_linear import SpectralLinear
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--hf-model", required=True)
-    parser.add_argument("--rank", type=int, default=256)
+    parser.add_argument("--rank", type=int, default=256,
+                        help="Fixed rank (ignored if --adaptive-k0)")
+    parser.add_argument("--adaptive-k0", action="store_true",
+                        help="Set rank per layer based on k₀: rank = k₀*mult + pad")
+    parser.add_argument("--k0-mult", type=float, default=1.5,
+                        help="Multiplier for k₀ in adaptive rank")
+    parser.add_argument("--k0-pad", type=int, default=128,
+                        help="Padding added to k₀*mult for safety margin")
     parser.add_argument("--mode", default="per_mode", choices=["sigma1", "per_mode"])
     parser.add_argument("--keep-residual", action="store_true")
     parser.add_argument("--output", required=True)
@@ -47,11 +54,16 @@ def main():
 
     # 2. Decompose
     skip = ['embed_tokens', 'lm_head', 'visual', 'vision', 'wte', 'wpe']
-    print(f"\nDecomposing: rank={args.rank}, mode={args.mode}, skip={skip}")
+    if args.adaptive_k0:
+        print(f"\nDecomposing: adaptive k₀ (mult={args.k0_mult}, pad={args.k0_pad}), mode={args.mode}")
+    else:
+        print(f"\nDecomposing: rank={args.rank}, mode={args.mode}, skip={skip}")
     t0 = time.time()
     spectral_decompose(
         model, rank=args.rank, mode=args.mode,
         skip_patterns=skip, keep_residual=args.keep_residual,
+        k0_mult=args.k0_mult if args.adaptive_k0 else 0.0,
+        k0_pad=args.k0_pad if args.adaptive_k0 else 0,
     )
     elapsed = time.time() - t0
     print(f"\n  Decomposition complete in {elapsed:.0f}s ({elapsed/60:.1f}min)")
