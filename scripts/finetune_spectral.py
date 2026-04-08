@@ -373,7 +373,28 @@ def main():
         )
         # Load state dict first to read variable ranks
         print(f"  Loading saved state_dict...")
-        sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
+        decomp_path = Path(args.decomposed)
+        # Support both .pt (torch) and .safetensors formats
+        if decomp_path.suffix == '.safetensors' or not decomp_path.exists():
+            st_path = decomp_path.with_suffix('.safetensors') if decomp_path.suffix != '.safetensors' else decomp_path
+            if st_path.exists():
+                from safetensors.torch import load_file
+                sd = load_file(str(st_path), device='cpu')
+                print(f"  Loaded safetensors: {len(sd)} tensors")
+            else:
+                sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
+        else:
+            try:
+                sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
+            except RuntimeError:
+                # Corrupted .pt? Try .safetensors fallback
+                st_path = decomp_path.with_suffix('.safetensors')
+                if st_path.exists():
+                    from safetensors.torch import load_file
+                    sd = load_file(str(st_path), device='cpu')
+                    print(f"  .pt corrupted, loaded safetensors fallback")
+                else:
+                    raise
         # Scaffold with state_dict to infer per-layer rank (adaptive-rank support)
         skip = get_skip_patterns('hf')
         rank = args.rank or 256

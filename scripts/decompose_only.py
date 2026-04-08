@@ -79,11 +79,34 @@ def main():
     print(f"  SpectralLinear layers: {n_spectral}")
     print(f"  Learnable params:      {learnable:,}")
 
-    # 4. Save
+    # 4. Save — use safetensors for large models (no zip overhead, crash-safe)
     print(f"\nSaving to {out_path}...")
-    torch.save(model.state_dict(), out_path)
-    size = os.path.getsize(out_path)
-    print(f"  ✓ {size/1e9:.2f} GB")
+    sd = model.state_dict()
+    use_safetensors = (param_bytes + buf_bytes) > 5e9  # >5GB → safetensors
+    if use_safetensors:
+        st_path = out_path.with_suffix('.safetensors')
+        try:
+            from safetensors.torch import save_file
+            # safetensors requires all tensors to be contiguous + no shared storage
+            clean_sd = {}
+            for k, v in sd.items():
+                clean_sd[k] = v.contiguous().clone()
+            del sd
+            import gc; gc.collect()
+            save_file(clean_sd, str(st_path))
+            size = os.path.getsize(st_path)
+            print(f"  ✓ {size/1e9:.2f} GB (safetensors)")
+            # Also write a marker so finetune_spectral knows the format
+            out_path = st_path
+        except Exception as e:
+            print(f"  safetensors failed ({e}), falling back to torch.save...")
+            torch.save(sd if sd else model.state_dict(), out_path)
+            size = os.path.getsize(out_path)
+            print(f"  ✓ {size/1e9:.2f} GB (torch)")
+    else:
+        torch.save(sd, out_path)
+        size = os.path.getsize(out_path)
+        print(f"  ✓ {size/1e9:.2f} GB")
 
     # 5. Save config
     config_path = out_path.parent / "config.json"
