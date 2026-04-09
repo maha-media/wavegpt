@@ -124,67 +124,7 @@ This is the same principle as:
 
 ## Prior art and related work
 
-### Power-law spectra in neural networks
-
-**Martin & Mahoney (2018-2021)** — "Implicit Self-Regularization in Deep Neural Networks" (JMLR 2021), "Predicting trends in the quality of state-of-the-art neural networks without access to training or testing data" (Nature Communications 2021). Established that trained DNN weight matrices exhibit heavy-tailed power-law eigenvalue distributions. Developed WeightWatcher tool and the 5+1 phases of training theory. PL exponents α (in their notation, fitting eigenvalue density ρ(λ) ~ λ^{-α}) range 2-4 for well-trained models.
-
-**Key difference**: They compute α per individual layer, not per layer type. They never aggregate by type, never find type-dependent structure, never connect to the golden ratio. Their α is an empirical quality metric; ours is a structural constant.
-
-**Olsen et al. (2025)** — "From SGD to Spectra" (ICML 2025 Workshop). Derived SDEs showing squared singular values follow Dyson Brownian motion with eigenvalue repulsion. Stationary distributions are gamma-type with power-law tails. First theoretical explanation for heavy-tailed bulk+tail structure.
-
-**Key difference**: They explain WHY power laws emerge (stochastic dynamics + repulsion). We characterize WHAT specific power law emerges (golden ratio harmonics). Potentially complementary — their dynamics may predict our fixed point.
-
-**Thamm et al. (2022)** — "Random matrix analysis of deep neural network weight matrices" (Physical Review E). Applied RMT tools comprehensively. Found that most singular values follow universal RMT predictions (random), and only the largest deviate (learned). Used Hill estimator and found that the distribution "cannot in general be characterized by a tail index" — i.e., is not a simple power law.
-
-**Key difference**: Our bent power law σ_k = A·(k+k₀)^{-α} with the offset k₀ resolves their finding — it's not a simple power law because of the flat top (k₀ >> 0 for MLP layers). With the offset, fits are R² > 0.93 across all types.
-
-**Staats et al. (2024)** — "Small Singular Values Matter" (arXiv:2410.17770). Analyzed per-type singular value outlier counts for Llama-3-8B. Their Table 3 shows different numbers of left/right outliers for Query, Key, Value, Attention-Out, Up-Proj, Gate-Proj, Down-Proj across layers.
-
-**Key difference**: They have the per-type data that would reveal our pattern, but never fit power laws by type. They focus on outlier counting and perplexity impact, not spectral exponents.
-
-### Type-specific spectral properties
-
-**AlphaDecay (2025)** — "AlphaDecay: Per-Module Weight Decay via HT-SR Theory" (arXiv:2506.14562). **Closest existing work.** Measured PL_Alpha_Hill per module type in LLaMA-2-13B and found that att.q and att.k have heavier tails than MLP modules. Used this observation to set per-module weight decay (weaker decay for heavy-tailed attention, stronger for lighter-tailed MLP).
-
-**Key difference**: They observe that types differ. We explain WHY they differ and WHAT the values are. They treat the per-type exponent as a regularization knob; we show it's a harmonic of the golden ratio with Fibonacci/Lucas structure. They have no theoretical framework for the specific values, no cross-model validation, no connection to φ.
-
-**OPT-ML Workshop (2025)** — "Evolution of the Spectral Dimension of Transformer Activations" (ICML 2025 Workshop). Found activation covariance spectra with α increasing across layers (0.65-0.90 for intermediate layers) and gradient spectra with α decreasing. Noted "different components have distinct exponents" with "attention mechanisms retaining broader range of directions while MLPs compress more aggressively."
-
-**Key difference**: They observe activation covariance spectra, not weight matrix spectra. They see layer-depth trends but don't aggregate by type or connect to any mathematical structure.
-
-### Golden ratio in machine learning
-
-**Jaeger (2022)** — "The Golden Ratio in Machine Learning" (IEEE AIPR Workshop). [IEEE 9762080](https://ieeexplore.ieee.org/document/9762080). Proposed an information-theoretic loss function based on dual processes (KL-divergence + Shannon entropy). When measurement uncertainty equals probability itself: `p = (1-p)/p → p² + p - 1 = 0 → p = 1/φ`. Derives learning rate ≈ 0.01 and momentum ≈ 0.9 from this framework.
-
-**Key difference**: Jaeger finds φ in the **optimization dynamics** (what learning rate to use). We find φ in the **converged structure** (what spectral shape weights settle into). These are orthogonal discoveries — the path vs the destination. His derivation is information-theoretic (cross-entropy duality). Ours is an empirical observation from SVD of trained weights, with the F/L fraction structure having no connection to his work. Potentially complementary: if φ governs both how you descend and where you land, it is deeply fundamental to gradient-based optimization.
-
-### SVD-based fine-tuning (the mechanism)
-
-**SVDiff** (ICCV 2023), **SVFit/SVFT** (NeurIPS 2024), **PiSSA** (NeurIPS 2024). All decompose pretrained weights via SVD, freeze U and V (geometry), and fine-tune singular values or spectral components. The SVD-based fine-tuning mechanism is established prior art.
-
-**Key difference**: They use SVD as a compression tool with uniform rank allocation. We use the harmonic spectral theory to guide adaptive rank allocation (k₀-based), harmonic regularization (toward golden-ratio decay), and spectral personality compression (1.4MB files for 27B models).
-
-### KAM theorem and golden ratio stability
-
-The connection between φ and dynamical stability via the KAM (Kolmogorov-Arnold-Moser) theorem is classical — φ-related frequency ratios produce the "golden torus," the last invariant torus to break under perturbation, because φ is maximally irrational (hardest to approximate by rationals, hence hardest to lock into resonance).
-
-**Key difference**: The KAM-φ connection has **never been applied to neural network weight spectra**. We propose that the same anti-resonance mechanism that stabilizes planetary orbits also stabilizes spectral mode distributions in trained weight matrices: φ-based spacing prevents energy from locking between mode pairs, enabling maximum information capacity.
-
-## What's novel (summary)
-
-1. **Type-dependent harmonic exponents**: α = (1/φ)^(F(a)/L(b)) — each layer type has a specific exponent that is a ratio of Fibonacci over Lucas numbers. Not in any prior work.
-
-2. **Cross-model universality**: The (1/φ)^(F/L) framework fits both Qwen3.5-27B and Mistral-7B-v0.1. Same structural rule, architecture-dependent assignments. Not tested or reported anywhere.
-
-3. **attn_o = 1/3 as universal ground state**: The output projection converges to p = F(1)/L(2) = 1/3 on every model tested. Not reported anywhere.
-
-4. **Bent power law with k₀**: The shifted-index model σ_k = A·(k+k₀)^{-α} resolves why previous work (Thamm et al. 2022) found no clean power-law tail — the offset k₀ accounts for the flat spectral top in MLP layers.
-
-5. **Fibonacci/Lucas fraction structure**: Numerators from {F(n)}, denominators from {L(n)}. Mistral uses even Lucas indices (self-similar subsequence), Qwen uses consecutive. Entirely novel.
-
-6. **KAM anti-resonance connection**: Proposing that φ-based spectral decay in neural networks is the same anti-resonance mechanism as KAM stability in dynamical systems. Never previously connected.
-
-7. **The double-slit insight**: Power-law structure is emergent from unconstrained SGD. Constraining training to follow the converged structure (HarmonicGPT) collapses learning dynamics. Observation changes the system.
+See [prior-art.md](prior-art.md) for the comprehensive literature review, novelty analysis, and search methodology. In short: the literature has all the ingredients — power-law spectra (Martin & Mahoney), type-dependent differences (AlphaDecay), golden ratio in optimization (Jaeger), SVD fine-tuning (SVFit/SVFT/PiSSA), and KAM anti-resonance theory — but nobody has connected them.
 
 ## Falsifiable predictions
 

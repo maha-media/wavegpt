@@ -126,7 +126,7 @@ The connection between φ and dynamical stability via KAM is classical (Kolmogor
 - φ is maximally irrational (continued fraction [1;1,1,1,...]) — hardest to approximate by rationals
 - "The golden number is the best frequency ratio for avoiding resonance" (John Baez, 2004)
 
-**This has never been connected to neural network weight spectra.** Zero papers in any search.
+**This has never been connected to neural network weight spectra.** Zero papers in any search. See [the-discovery.md](the-discovery.md#why-φ) for the theoretical argument connecting KAM anti-resonance to weight spectral structure, and [the-discovery.md](the-discovery.md#why-attn_o--13-is-universal) for why attn_o selects 1/3 specifically.
 
 ---
 

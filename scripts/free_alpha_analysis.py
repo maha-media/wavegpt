@@ -103,8 +103,33 @@ def fit_fixed_phi(S: np.ndarray):
         return None
 
 
-def classify_layer(name):
-    """Classify layer by type."""
+def classify_layer(name, layer_types=None):
+    """Classify layer by type.
+    
+    layer_types: optional list mapping layer index -> 'sliding_attention'/'full_attention'.
+    Used for Gemma 4 to distinguish sliding vs full attention layers.
+    """
+    # Determine attention sub-type for models with mixed attention (Gemma 4)
+    attn_prefix = 'attn'
+    if layer_types is not None:
+        m = re.search(r'layers\.(\d+)', name)
+        if m:
+            idx = int(m.group(1))
+            if idx < len(layer_types):
+                if layer_types[idx] == 'full_attention':
+                    attn_prefix = 'attn_full'
+    
+    # Vision tower layers
+    if 'vision_tower' in name:
+        if 'gate_proj' in name: return 'vis_mlp_gate'
+        if 'up_proj' in name: return 'vis_mlp_up'
+        if 'down_proj' in name: return 'vis_mlp_down'
+        if 'q_proj' in name: return 'vis_attn_q'
+        if 'k_proj' in name: return 'vis_attn_k'
+        if 'v_proj' in name: return 'vis_attn_v'
+        if 'o_proj' in name: return 'vis_attn_o'
+        return 'vis_other'
+    
     if 'gate_proj' in name: return 'mlp_gate'
     if 'up_proj' in name: return 'mlp_up'
     if 'down_proj' in name: return 'mlp_down'
@@ -112,10 +137,10 @@ def classify_layer(name):
     if 'in_proj_z' in name: return 'delta_z'
     if 'in_proj_a' in name or 'in_proj_b' in name: return 'delta_bias'
     if 'out_proj' in name and 'linear_attn' in name: return 'delta_out'
-    if 'q_proj' in name: return 'attn_q'
-    if 'k_proj' in name: return 'attn_k'
-    if 'v_proj' in name: return 'attn_v'
-    if 'o_proj' in name: return 'attn_o'
+    if 'q_proj' in name: return f'{attn_prefix}_q'
+    if 'k_proj' in name: return f'{attn_prefix}_k'
+    if 'v_proj' in name: return f'{attn_prefix}_v'
+    if 'o_proj' in name: return f'{attn_prefix}_o'
     if 'embed' in name: return 'embedding'
     if 'lm_head' in name: return 'lm_head'
     return 'other'
@@ -144,6 +169,17 @@ def main():
 
     config = AutoConfig.from_pretrained(
         args.local_dir or args.hf_model, trust_remote_code=True)
+    
+    # Extract layer_types for mixed-attention models (Gemma 4)
+    layer_types = None
+    if hasattr(config, 'text_config'):
+        layer_types = getattr(config.text_config, 'layer_types', None)
+    elif hasattr(config, 'layer_types'):
+        layer_types = config.layer_types
+    if layer_types:
+        from collections import Counter
+        print(f"Layer types: {Counter(layer_types)}")
+    
     if args.local_dir:
         model_dir = Path(args.local_dir)
     else:
@@ -193,7 +229,7 @@ def main():
             continue
 
         depth = get_depth(name)
-        layer_type = classify_layer(name)
+        layer_type = classify_layer(name, layer_types=layer_types)
 
         result = {
             'name': name,
