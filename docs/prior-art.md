@@ -100,7 +100,23 @@ The mechanism of "decompose via SVD → freeze U,V → fine-tune S" is establish
 
 ---
 
-## 5. KAM Theorem & Golden Ratio
+## 5. Golden-Section Search & Golden-Ratio Optimizers
+
+A family of optimization algorithms use φ as a step-size or scaling parameter:
+
+**Golden-section search** (Kiefer, 1953) — Classical 1D interval-narrowing: evaluate at points φ apart, eliminate 1/φ of the interval each step. Textbook numerical methods. Every optimization course covers this.
+
+**GROM** (Nematollahi et al., Soft Computing 2020) and **GRO** (Abdalslam et al., 2023) — Metaheuristic population-based optimizers that use φ as a scaling constant for solution updates, analogous to how other metaheuristics use π or e.
+
+**E-GRPDA** (Soe et al., [arXiv:2502.17918](https://arxiv.org/pdf/2502.17918v3), 2025) — Extended Golden Ratio Primal-Dual Algorithm with adaptive stepsizes for convex saddle-point problems. Pure convex optimization theory.
+
+**Golden-rule line search** (Ezeafulukwe et al., [MDPI Mathematics 12(14)](https://www.mdpi.com/2227-7390/12/14/2203), 2024) — Uses φ as a step-size in line-search for variational inequalities in Hilbert spaces.
+
+**Key difference**: All of these use φ as a **search/step-size parameter** in optimization procedures. They answer "how should we search?" Our discovery is about the **structure of converged weights** — what shape trained parameters take after optimization finishes. No overlap in method, claims, or evidence.
+
+---
+
+## 6. KAM Theorem & Golden Ratio
 
 The connection between φ and dynamical stability via KAM is classical (Kolmogorov 1954, Arnold 1963, Moser 1962):
 
@@ -112,12 +128,13 @@ The connection between φ and dynamical stability via KAM is classical (Kolmogor
 
 ---
 
-## 6. What Is Novel
+## 7. What Is Novel
 
 | Claim | Prior art? | Status |
 |-------|-----------|--------|
 | Power-law singular value spectra in trained DNNs | Martin & Mahoney 2018 | Known |
 | SVD → freeze U,V → fine-tune S | SVDiff, SVFit, SVFT 2023-2024 | Known |
+| φ as optimization step-size / scaling | Golden-section (1953), GROM, E-GRPDA | Known (different phenomenon) |
 | φ in optimization hyperparameters | Jaeger 2022 | Known (different phenomenon) |
 | KAM + φ = anti-resonance stability | Classical (1954-1963) | Known (never applied to NNs) |
 | **Exponent α = (1/φ)^p with rational p** | — | **Novel** |
