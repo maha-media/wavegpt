@@ -84,25 +84,51 @@ def main():
     sd = model.state_dict()
     use_safetensors = (param_bytes + buf_bytes) > 5e9  # >5GB → safetensors
     if use_safetensors:
-        st_path = out_path.with_suffix('.safetensors')
-        try:
-            from safetensors.torch import save_file
-            # safetensors requires all tensors to be contiguous + no shared storage
-            clean_sd = {}
-            for k, v in sd.items():
-                clean_sd[k] = v.contiguous().clone()
-            del sd
-            import gc; gc.collect()
-            save_file(clean_sd, str(st_path))
-            size = os.path.getsize(st_path)
-            print(f"  ✓ {size/1e9:.2f} GB (safetensors)")
-            # Also write a marker so finetune_spectral knows the format
-            out_path = st_path
-        except Exception as e:
-            print(f"  safetensors failed ({e}), falling back to torch.save...")
-            torch.save(sd if sd else model.state_dict(), out_path)
-            size = os.path.getsize(out_path)
-            print(f"  ✓ {size/1e9:.2f} GB (torch)")
+        from safetensors.torch import save_file
+        import gc
+        # Shard into ~4GB chunks to avoid write quota / memory issues
+        shard_dir = out_path.parent / "shards"
+        os.makedirs(shard_dir, exist_ok=True)
+
+        shard_max = 4 * 1024**3  # 4GB per shard
+        current_shard = {}
+        current_bytes = 0
+        shard_idx = 0
+        shard_files = []
+
+        for k, v in sd.items():
+            t = v.contiguous().clone()
+            t_bytes = t.nelement() * t.element_size()
+
+            if current_bytes + t_bytes > shard_max and current_shard:
+                shard_name = f"shard_{shard_idx:04d}.safetensors"
+                shard_path = shard_dir / shard_name
+                print(f"  Saving {shard_name} ({current_bytes/1e9:.2f} GB, {len(current_shard)} tensors)...")
+                save_file(current_shard, str(shard_path))
+                shard_files.append(shard_name)
+                shard_idx += 1
+                current_shard = {}
+                current_bytes = 0
+                gc.collect()
+
+            current_shard[k] = t
+            current_bytes += t_bytes
+
+        if current_shard:
+            shard_name = f"shard_{shard_idx:04d}.safetensors"
+            shard_path = shard_dir / shard_name
+            print(f"  Saving {shard_name} ({current_bytes/1e9:.2f} GB, {len(current_shard)} tensors)...")
+            save_file(current_shard, str(shard_path))
+            shard_files.append(shard_name)
+
+        # Write index
+        index = {"shards": shard_files, "total_size": int(param_bytes + buf_bytes)}
+        with open(shard_dir / "index.json", "w") as f:
+            json.dump(index, f, indent=2)
+
+        total_saved = sum(os.path.getsize(shard_dir / s) for s in shard_files)
+        print(f"  ✓ {total_saved/1e9:.2f} GB across {len(shard_files)} shards")
+        del sd; gc.collect()
     else:
         torch.save(sd, out_path)
         size = os.path.getsize(out_path)

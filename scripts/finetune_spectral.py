@@ -374,8 +374,21 @@ def main():
         # Load state dict first to read variable ranks
         print(f"  Loading saved state_dict...")
         decomp_path = Path(args.decomposed)
-        # Support both .pt (torch) and .safetensors formats
-        if decomp_path.suffix == '.safetensors' or not decomp_path.exists():
+        # Support: .pt, .safetensors, or shards/ directory
+        shard_dir = decomp_path.parent / "shards"
+        if shard_dir.exists() and (shard_dir / "index.json").exists():
+            # Sharded safetensors
+            from safetensors.torch import load_file
+            import json as _json
+            with open(shard_dir / "index.json") as f:
+                index = _json.load(f)
+            sd = {}
+            for shard_name in index["shards"]:
+                shard_sd = load_file(str(shard_dir / shard_name), device='cpu')
+                sd.update(shard_sd)
+                print(f"  Loaded shard {shard_name}: {len(shard_sd)} tensors")
+            print(f"  Total: {len(sd)} tensors from {len(index['shards'])} shards")
+        elif decomp_path.suffix == '.safetensors' or not decomp_path.exists():
             st_path = decomp_path.with_suffix('.safetensors') if decomp_path.suffix != '.safetensors' else decomp_path
             if st_path.exists():
                 from safetensors.torch import load_file
