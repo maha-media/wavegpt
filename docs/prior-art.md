@@ -112,7 +112,9 @@ A family of optimization algorithms use φ as a step-size or scaling parameter:
 
 **Golden-rule line search** (Ezeafulukwe et al., [MDPI Mathematics 12(14)](https://www.mdpi.com/2227-7390/12/14/2203), 2024) — Uses φ as a step-size in line-search for variational inequalities in Hilbert spaces.
 
-**Key difference**: All of these use φ as a **search/step-size parameter** in optimization procedures. They answer "how should we search?" Our discovery is about the **structure of converged weights** — what shape trained parameters take after optimization finishes. No overlap in method, claims, or evidence.
+**Kaur, Balyan & Gupta** (Scientific Reports 15:9902, [doi:10.1038/s41598-025-95138-z](https://pmc.ncbi.nlm.nih.gov/articles/PMC11929785/), 2025) — Uses φ ≈ 1.618% as a duty cycle parameter for LoRa IoT networks. Nature-portfolio visibility but purely an IoT networking paper.
+
+**Key difference**: All of these use φ as a **search/step-size/engineering parameter** in optimization procedures or system configuration. They answer "how should we search?" or "what value should we set?" Our discovery is about the **structure of converged weights** — what shape trained parameters take after optimization finishes. No overlap in method, claims, or evidence.
 
 ---
 
