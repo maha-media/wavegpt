@@ -131,6 +131,8 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--hf-model', default='Qwen/Qwen3.5-27B')
+    parser.add_argument('--local-dir', default=None,
+                        help='Local directory with safetensors + config.json (skip download)')
     parser.add_argument('--output', default='runs/free-alpha-analysis.json')
     parser.add_argument('--min-dim', type=int, default=64,
                         help='Skip layers with min(shape) < this')
@@ -140,9 +142,13 @@ def main():
     from transformers import AutoConfig
     from huggingface_hub import snapshot_download
 
-    config = AutoConfig.from_pretrained(args.hf_model, trust_remote_code=True)
-    model_path = snapshot_download(args.hf_model)
-    model_dir = Path(model_path)
+    config = AutoConfig.from_pretrained(
+        args.local_dir or args.hf_model, trust_remote_code=True)
+    if args.local_dir:
+        model_dir = Path(args.local_dir)
+    else:
+        model_path = snapshot_download(args.hf_model)
+        model_dir = Path(model_path)
 
     # Find all safetensor files
     st_files = sorted(model_dir.glob('*.safetensors'))
