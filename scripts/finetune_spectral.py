@@ -662,6 +662,8 @@ def main():
                         model, args.harmonic_lambda,
                         type_aware=args.type_aware_harmonic,
                         attn_o_weight=args.attn_o_weight,
+                        model_name=hf_model_name,
+                        soft_band=args.type_aware_harmonic,
                     )
                     loss = loss + hreg
                     accum_hreg += hreg.item() / args.grad_accum

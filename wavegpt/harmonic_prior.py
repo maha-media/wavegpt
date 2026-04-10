@@ -27,17 +27,50 @@ from .spectral_linear import SpectralLinear
 PHI = (1 + 5**0.5) / 2
 INV_PHI = 1 / PHI  # 0.6180339887...
 
-# F/L spectral exponents by layer type (from the-discovery.md)
+# F/L spectral exponents by layer type
 # α = (1/φ)^p where p = F(a)/L(b)
-FL_EXPONENTS = {
-    'attn_o': INV_PHI ** (1/3),     # 0.8518 — UNIVERSAL, must be pinned
-    'attn_q': INV_PHI ** (5/4),     # 0.5480
-    'attn_k': INV_PHI ** (2/11),    # 0.9162
-    'attn_v': INV_PHI ** (3/7),     # 0.8136
-    'mlp_gate': INV_PHI ** (4/7),   # 0.7596
-    'mlp_up': INV_PHI ** (8/11),    # 0.7047
-    'mlp_down': INV_PHI ** (5/7),   # 0.7091
+# NOTE: Only attn_o = 1/3 is universal. Other fractions are model-specific.
+# These are per-model profiles with (target_alpha, natural_std).
+# The std defines a dead zone — no penalty within ±std of target.
+
+FL_EXPONENTS_QWEN = {
+    'attn_o': (INV_PHI ** (1/3), 0.048),      # 0.8518, tight
+    'attn_q': (INV_PHI ** (5/4), 0.137),       # 0.5480
+    'attn_k': (INV_PHI ** (2/11), 0.094),      # 0.9162
+    'attn_v': (INV_PHI ** (3/7), 0.143),        # 0.8136
+    'mlp_gate': (INV_PHI ** (4/7), 0.098),      # 0.7596
+    'mlp_up': (INV_PHI ** (8/11), 0.062),       # 0.7047
+    'mlp_down': (INV_PHI ** (5/7), 0.061),      # 0.7091
 }
+
+FL_EXPONENTS_GEMMA = {
+    'attn_o': (INV_PHI ** (1/3), 0.125),       # 0.8518, universal
+    'attn_q': (INV_PHI ** (2/7), 0.056),        # 0.8715
+    'attn_k': (INV_PHI ** (4/18), 0.068),       # 0.8986 (L(3)/L(6))
+    'attn_v': (INV_PHI ** (1/18), 0.036),       # 0.9736
+    'mlp_gate': (INV_PHI ** (1/1), 0.239),      # 0.6180
+    'mlp_up': (INV_PHI ** (3/4), 0.128),        # 0.6970
+    'mlp_down': (INV_PHI ** (3/4), 0.170),      # 0.6970
+}
+
+# Legacy flat dict for backwards compatibility
+FL_EXPONENTS = {k: v[0] for k, v in FL_EXPONENTS_QWEN.items()}
+
+# Model profile lookup
+FL_PROFILES = {
+    'qwen': FL_EXPONENTS_QWEN,
+    'gemma': FL_EXPONENTS_GEMMA,
+}
+
+
+def _get_fl_profile(model_name: str | None) -> dict:
+    """Get the F/L exponent profile for a model."""
+    if model_name:
+        name_lower = model_name.lower()
+        for key, profile in FL_PROFILES.items():
+            if key in name_lower:
+                return profile
+    return FL_EXPONENTS_QWEN  # default
 
 
 def _classify_layer_type(name: str) -> str | None:
@@ -65,6 +98,8 @@ def harmonic_regularization(
     lambda_h: float = 1.0,
     type_aware: bool = False,
     attn_o_weight: float = 10.0,
+    model_name: str | None = None,
+    soft_band: bool = True,
 ) -> torch.Tensor:
     """
     Spectral weight decay toward bent power-law prior.
@@ -72,18 +107,26 @@ def harmonic_regularization(
     For each per_mode SpectralLinear, penalizes deviation of the
     learned spectrum from (k + k₀)^{-α} anchored at σ₁.
 
-    Two modes:
+    Three modes:
       type_aware=False (legacy): α = 1/φ for all layers.
-      type_aware=True: α = (1/φ)^(F/L) per layer type, with attn_o
-        weighted `attn_o_weight`× stronger (pinned at 1/3 fraction).
+      type_aware=True, soft_band=False: hard pull to F/L target per type.
+      type_aware=True, soft_band=True: dead zone within ±σ of target.
+        Only penalizes drift BEYOND the natural pre-trained variance.
+        Model-specific profiles via model_name ('qwen', 'gemma', etc).
 
-    L_harmonic = λ · mean_layers[ w_type · mean_k[ (s_k - prior_k)² ] ]
+    L_harmonic = λ · Σ w_type · mean_k[ (s_k - prior_k)² ]
+
+    With soft_band: prior is only enforced when the effective α
+    drifts more than σ_type away from the target. Within the band,
+    the spectrum is free to adapt.
 
     Args:
         module_or_model: a SpectralLinear or any nn.Module containing them
         lambda_h: regularization strength (applied as multiplier)
-        type_aware: use F/L exponents per layer type (default: False)
+        type_aware: use F/L exponents per layer type
         attn_o_weight: extra weight on attn_o layers (default: 10.0)
+        model_name: model identifier for profile lookup ('qwen', 'gemma')
+        soft_band: allow natural variance (dead zone within ±σ)
 
     Returns:
         Scalar loss tensor (differentiable through spectrum params).
@@ -95,6 +138,8 @@ def harmonic_regularization(
             (name, m) for name, m in module_or_model.named_modules()
             if isinstance(m, SpectralLinear)
         ]
+
+    profile = _get_fl_profile(model_name) if type_aware else None
 
     loss = torch.tensor(0.0)
     count = 0
@@ -113,19 +158,39 @@ def harmonic_regularization(
         else:
             k_shifted = k
 
-        # Determine exponent
-        if type_aware:
+        # Determine exponent and band
+        if type_aware and profile:
             ltype = _classify_layer_type(name)
-            alpha = FL_EXPONENTS.get(ltype, INV_PHI)
+            entry = profile.get(ltype)
+            if entry:
+                alpha, nat_std = entry
+            else:
+                alpha, nat_std = INV_PHI, 0.1
             weight = attn_o_weight if ltype == 'attn_o' else 1.0
         else:
             alpha = INV_PHI
+            nat_std = 0.1
             weight = 1.0
 
         # Prior anchored at σ₁ (detached so prior doesn't push σ₁)
         A = s[0].detach() / k_shifted[0].pow(-alpha)
         prior = A * k_shifted.pow(-alpha)
-        loss = loss.to(device) + weight * ((s - prior) ** 2).mean()
+        deviation = (s - prior) ** 2
+
+        if soft_band and type_aware:
+            # Dead zone: scale penalty by how far the MEAN deviation
+            # exceeds the natural variance band. Within band → no penalty.
+            mean_dev = deviation.mean()
+            # Approximate: the natural std in α maps to a std in the spectrum.
+            # A rough proxy: allow the mean squared deviation to be up to
+            # (nat_std * σ₁)² before penalizing.
+            sigma1 = s[0].detach()
+            band_sq = (nat_std * sigma1) ** 2
+            # Soft hinge: only penalize excess beyond band
+            excess = torch.clamp(mean_dev - band_sq, min=0.0)
+            loss = loss.to(device) + weight * excess
+        else:
+            loss = loss.to(device) + weight * deviation.mean()
         count += 1
 
     return lambda_h * loss
