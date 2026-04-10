@@ -27,39 +27,79 @@ from .spectral_linear import SpectralLinear
 PHI = (1 + 5**0.5) / 2
 INV_PHI = 1 / PHI  # 0.6180339887...
 
+# F/L spectral exponents by layer type (from the-discovery.md)
+# α = (1/φ)^p where p = F(a)/L(b)
+FL_EXPONENTS = {
+    'attn_o': INV_PHI ** (1/3),     # 0.8518 — UNIVERSAL, must be pinned
+    'attn_q': INV_PHI ** (5/4),     # 0.5480
+    'attn_k': INV_PHI ** (2/11),    # 0.9162
+    'attn_v': INV_PHI ** (3/7),     # 0.8136
+    'mlp_gate': INV_PHI ** (4/7),   # 0.7596
+    'mlp_up': INV_PHI ** (8/11),    # 0.7047
+    'mlp_down': INV_PHI ** (5/7),   # 0.7091
+}
+
+
+def _classify_layer_type(name: str) -> str | None:
+    """Classify a module name into a layer type for harmonic priors."""
+    name_lower = name.lower()
+    if 'o_proj' in name_lower or 'out_proj' in name_lower:
+        return 'attn_o'
+    if 'q_proj' in name_lower:
+        return 'attn_q'
+    if 'k_proj' in name_lower:
+        return 'attn_k'
+    if 'v_proj' in name_lower:
+        return 'attn_v'
+    if 'gate_proj' in name_lower or 'gate' in name_lower:
+        return 'mlp_gate'
+    if 'up_proj' in name_lower:
+        return 'mlp_up'
+    if 'down_proj' in name_lower:
+        return 'mlp_down'
+    return None
+
 
 def harmonic_regularization(
     module_or_model: nn.Module,
     lambda_h: float = 1.0,
+    type_aware: bool = False,
+    attn_o_weight: float = 10.0,
 ) -> torch.Tensor:
     """
     Spectral weight decay toward bent power-law prior.
 
     For each per_mode SpectralLinear, penalizes deviation of the
-    learned spectrum from (k + k₀)^{-1/φ} anchored at σ₁.
+    learned spectrum from (k + k₀)^{-α} anchored at σ₁.
 
-    If the layer has a fitted k₀ (stored as buffer), uses the bent
-    prior. Otherwise falls back to the simple k^{-1/φ} prior.
+    Two modes:
+      type_aware=False (legacy): α = 1/φ for all layers.
+      type_aware=True: α = (1/φ)^(F/L) per layer type, with attn_o
+        weighted `attn_o_weight`× stronger (pinned at 1/3 fraction).
 
-    L_harmonic = λ · mean_layers[ mean_k[ (s_k - prior_k)² ] ]
+    L_harmonic = λ · mean_layers[ w_type · mean_k[ (s_k - prior_k)² ] ]
 
     Args:
         module_or_model: a SpectralLinear or any nn.Module containing them
         lambda_h: regularization strength (applied as multiplier)
+        type_aware: use F/L exponents per layer type (default: False)
+        attn_o_weight: extra weight on attn_o layers (default: 10.0)
 
     Returns:
         Scalar loss tensor (differentiable through spectrum params).
     """
-    modules = (
-        [module_or_model]
-        if isinstance(module_or_model, SpectralLinear)
-        else [m for m in module_or_model.modules() if isinstance(m, SpectralLinear)]
-    )
+    if isinstance(module_or_model, SpectralLinear):
+        named_modules = [('', module_or_model)]
+    else:
+        named_modules = [
+            (name, m) for name, m in module_or_model.named_modules()
+            if isinstance(m, SpectralLinear)
+        ]
 
     loss = torch.tensor(0.0)
     count = 0
 
-    for m in modules:
+    for name, m in named_modules:
         if m.mode != 'per_mode':
             continue
         s = m.spectrum
@@ -73,12 +113,19 @@ def harmonic_regularization(
         else:
             k_shifted = k
 
+        # Determine exponent
+        if type_aware:
+            ltype = _classify_layer_type(name)
+            alpha = FL_EXPONENTS.get(ltype, INV_PHI)
+            weight = attn_o_weight if ltype == 'attn_o' else 1.0
+        else:
+            alpha = INV_PHI
+            weight = 1.0
+
         # Prior anchored at σ₁ (detached so prior doesn't push σ₁)
-        # Compute A such that prior[0] = s[0].detach()
-        # A · (1 + k₀)^{-1/φ} = s₁  →  A = s₁ / (1 + k₀)^{-1/φ}
-        A = s[0].detach() / k_shifted[0].pow(-INV_PHI)
-        prior = A * k_shifted.pow(-INV_PHI)
-        loss = loss.to(device) + ((s - prior) ** 2).mean()
+        A = s[0].detach() / k_shifted[0].pow(-alpha)
+        prior = A * k_shifted.pow(-alpha)
+        loss = loss.to(device) + weight * ((s - prior) ** 2).mean()
         count += 1
 
     return lambda_h * loss

@@ -37,6 +37,8 @@ def main():
     parser.add_argument("--keep-residual", action="store_true")
     parser.add_argument("--output", required=True)
     parser.add_argument("--trust-remote-code", action="store_true")
+    parser.add_argument("--delete-source", action="store_true",
+                        help="Delete original model files after decomposition to free disk before save")
     args = parser.parse_args()
 
     out_path = Path(args.output)
@@ -78,6 +80,18 @@ def main():
     print(f"  Total:     {(param_bytes+buf_bytes)/1e9:.2f} GB")
     print(f"  SpectralLinear layers: {n_spectral}")
     print(f"  Learnable params:      {learnable:,}")
+
+    # 3b. Optionally delete source model files to free disk before save
+    if args.delete_source:
+        import shutil, glob
+        src = Path(args.hf_model)
+        if src.is_dir():
+            size_before = sum(f.stat().st_size for f in src.rglob('*') if f.is_file())
+            print(f"\n  Deleting source model {src} ({size_before/1e9:.1f} GB) to free disk...")
+            shutil.rmtree(src)
+            print(f"  ✓ Freed {size_before/1e9:.1f} GB")
+        else:
+            print(f"  --delete-source: {src} is not a directory, skipping")
 
     # 4. Save — use safetensors for large models (no zip overhead, crash-safe)
     print(f"\nSaving to {out_path}...")

@@ -134,7 +134,11 @@ def compute_loss(model, model_type, x, y, loss_mask=None):
         _, loss = model(x, targets=y, loss_mask=loss_mask)
         return loss
 
-    outputs = model(input_ids=x)
+    # Gemma 4 (multimodal) requires mm_token_type_ids; zeros = all text tokens
+    kwargs = {}
+    if hasattr(model.config, 'model_type') and 'gemma' in getattr(model.config, 'model_type', ''):
+        kwargs['mm_token_type_ids'] = torch.zeros_like(x)
+    outputs = model(input_ids=x, **kwargs)
     logits = outputs.logits
     shift_logits = logits[..., :-1, :].contiguous()
     shift_labels = y[..., 1:].contiguous()
@@ -297,6 +301,10 @@ def main():
 
     # Harmonic priors
     parser.add_argument("--harmonic-lambda", type=float, default=0.0)
+    parser.add_argument("--type-aware-harmonic", action="store_true",
+                        help="Use F/L exponents per layer type (attn_o pinned at 1/3)")
+    parser.add_argument("--attn-o-weight", type=float, default=10.0,
+                        help="Extra regularization weight on attn_o layers (default 10x)")
     parser.add_argument("--collapse-alpha", type=float, default=0.0)
 
     # Data
@@ -367,10 +375,15 @@ def main():
             print("ERROR: --decomposed requires HF model name in config.json or directory name")
             sys.exit(1)
         print(f"  Architecture from: {hf_model_name}")
-        model = AutoModelForCausalLM.from_pretrained(
-            hf_model_name, torch_dtype=torch.bfloat16, low_cpu_mem_usage=True,
+        # Build model from config (random init — weights come from decomposed shards)
+        hf_config = AutoConfig.from_pretrained(
+            hf_model_name, trust_remote_code=True,
+        )
+        model = AutoModelForCausalLM.from_config(
+            hf_config, torch_dtype=torch.bfloat16,
             trust_remote_code=True,
         )
+        print(f"  ✓ Model skeleton created (random init, will load decomposed weights)")
         # Load state dict first to read variable ranks
         print(f"  Loading saved state_dict...")
         decomp_path = Path(args.decomposed)
@@ -516,7 +529,10 @@ def main():
     print(f"  Learnable params: {learnable:,}")
     print(f"  Frozen params:    {frozen:,}")
     if args.harmonic_lambda > 0:
-        print(f"  Harmonic λ: {args.harmonic_lambda}")
+        mode = "type-aware (F/L per type)" if args.type_aware_harmonic else "uniform (1/φ)"
+        print(f"  Harmonic λ: {args.harmonic_lambda} [{mode}]")
+        if args.type_aware_harmonic:
+            print(f"  attn_o weight: {args.attn_o_weight}× (pinned at (1/φ)^(1/3))")
     if args.collapse_alpha > 0:
         print(f"  Anti-collapse α: {args.collapse_alpha}")
 
@@ -642,7 +658,11 @@ def main():
                 loss = compute_loss(model, model_type, x, y, m)
 
                 if args.harmonic_lambda > 0:
-                    hreg = harmonic_regularization(model, args.harmonic_lambda)
+                    hreg = harmonic_regularization(
+                        model, args.harmonic_lambda,
+                        type_aware=args.type_aware_harmonic,
+                        attn_o_weight=args.attn_o_weight,
+                    )
                     loss = loss + hreg
                     accum_hreg += hreg.item() / args.grad_accum
 

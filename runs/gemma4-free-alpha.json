@@ -1,0 +1,6596 @@
+{
+  "model": "google/gemma-4-31B",
+  "architecture": "Gemma4ForConditionalGeneration",
+  "n_text_layers": 60,
+  "n_full_attention": 10,
+  "n_sliding_attention": 50,
+  "gqa_sliding": "32:16",
+  "gqa_full": "32:4",
+  "activation": "gelu_pytorch_tanh",
+  "k_eq_v": true,
+  "n_analyzed": 411,
+  "mean_alpha": 0.7886133651707636,
+  "std_alpha": 0.18913410442156486,
+  "median_alpha": 0.8413133540458926,
+  "inv_phi": 0.6180339887498948,
+  "mean_r2_free": 0.8886989472800657,
+  "mean_r2_fixed": 0.8652523334012941,
+  "layers": [
+    {
+      "name": "model.language_model.embed_tokens.weight",
+      "shape": [
+        262144,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": -1,
+      "type": "embedding",
+      "free_alpha": 0.21451288004471575,
+      "free_k0": 7.698022909734109e-15,
+      "free_A": 32.77904437355082,
+      "free_r2": 0.6227280718868241,
+      "fixed_r2": 0.40083702099116314,
+      "delta_alpha": -0.40352110870517904
+    },
+    {
+      "name": "model.language_model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 0,
+      "type": "mlp_down",
+      "free_alpha": 0.34917900264169044,
+      "free_k0": 6.76256795599427e-14,
+      "free_A": 11.44369298527586,
+      "free_r2": 0.8657244547986738,
+      "fixed_r2": 0.6712249950871402,
+      "delta_alpha": -0.26885498610820435
+    },
+    {
+      "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 0,
+      "type": "mlp_gate",
+      "free_alpha": 0.40790902791198513,
+      "free_k0": 44.986739295627224,
+      "free_A": 36.284286790519744,
+      "free_r2": 0.9135224941936115,
+      "fixed_r2": 0.8980881783032181,
+      "delta_alpha": -0.21012496083790966
+    },
+    {
+      "name": "model.language_model.layers.0.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 0,
+      "type": "mlp_up",
+      "free_alpha": 0.35519082796331664,
+      "free_k0": 3.7643478926955374,
+      "free_A": 23.762157519494103,
+      "free_r2": 0.9424017864983049,
+      "fixed_r2": 0.8911873782992425,
+      "delta_alpha": -0.26284316078657816
+    },
+    {
+      "name": "model.language_model.layers.0.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 0,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9700488891579764,
+      "free_k0": 358.87286666792215,
+      "free_A": 1036.8581771813163,
+      "free_r2": 0.9062873998469475,
+      "fixed_r2": 0.8946118737505915,
+      "delta_alpha": 0.3520149004080816
+    },
+    {
+      "name": "model.language_model.layers.0.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 0,
+      "type": "attn_o_slide",
+      "free_alpha": 0.5870221619093492,
+      "free_k0": 3.752773782172353,
+      "free_A": 39.348160874097275,
+      "free_r2": 0.9073089924759522,
+      "fixed_r2": 0.9063183898372421,
+      "delta_alpha": -0.031011826840545598
+    },
+    {
+      "name": "model.language_model.layers.0.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 0,
+      "type": "attn_q_slide",
+      "free_alpha": 0.60619395895345,
+      "free_k0": 76.04374963123063,
+      "free_A": 85.86744613416582,
+      "free_r2": 0.9136252179010925,
+      "fixed_r2": 0.9135948790961722,
+      "delta_alpha": -0.011840029796444829
+    },
+    {
+      "name": "model.language_model.layers.0.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 0,
+      "type": "attn_v_slide",
+      "free_alpha": 1.010070079465354,
+      "free_k0": 148.2068050898224,
+      "free_A": 843.7415122985839,
+      "free_r2": 0.9549989700943087,
+      "fixed_r2": 0.8701478545595611,
+      "delta_alpha": 0.3920360907154593
+    },
+    {
+      "name": "model.language_model.layers.1.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 1,
+      "type": "mlp_down",
+      "free_alpha": 0.8325982223890275,
+      "free_k0": 1124.4918842449083,
+      "free_A": 725.6381034849754,
+      "free_r2": 0.9130211229102961,
+      "fixed_r2": 0.906546638450722,
+      "delta_alpha": 0.21456423363913268
+    },
+    {
+      "name": "model.language_model.layers.1.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 1,
+      "type": "mlp_gate",
+      "free_alpha": 0.5389335500866541,
+      "free_k0": 434.588935742068,
+      "free_A": 116.01604570335954,
+      "free_r2": 0.8998488307538981,
+      "fixed_r2": 0.8993690699536794,
+      "delta_alpha": -0.07910043866324068
+    },
+    {
+      "name": "model.language_model.layers.1.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 1,
+      "type": "mlp_up",
+      "free_alpha": 0.7145264808041691,
+      "free_k0": 799.7155965781313,
+      "free_A": 506.70096098414234,
+      "free_r2": 0.9549692016055568,
+      "fixed_r2": 0.9541451748150992,
+      "delta_alpha": 0.09649249205427435
+    },
+    {
+      "name": "model.language_model.layers.1.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 1,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9105590621453945,
+      "free_k0": 495.3094551847761,
+      "free_A": 826.3410568237298,
+      "free_r2": 0.9123744907645933,
+      "fixed_r2": 0.8822253002804378,
+      "delta_alpha": 0.2925250733954997
+    },
+    {
+      "name": "model.language_model.layers.1.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 1,
+      "type": "attn_o_slide",
+      "free_alpha": 0.7687444281097816,
+      "free_k0": 41.61533773094064,
+      "free_A": 153.3315170376785,
+      "free_r2": 0.9356507906384027,
+      "fixed_r2": 0.9258078815832502,
+      "delta_alpha": 0.15071043935988682
+    },
+    {
+      "name": "model.language_model.layers.1.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 1,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8441090342580694,
+      "free_k0": 550.4708830126011,
+      "free_A": 753.266525268535,
+      "free_r2": 0.9324783702591793,
+      "fixed_r2": 0.9127314755895797,
+      "delta_alpha": 0.2260750455081746
+    },
+    {
+      "name": "model.language_model.layers.1.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 1,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0282959724572436,
+      "free_k0": 185.64062391298168,
+      "free_A": 1073.7472534179685,
+      "free_r2": 0.9398261792848074,
+      "fixed_r2": 0.8558012511166356,
+      "delta_alpha": 0.4102619837073488
+    },
+    {
+      "name": "model.language_model.layers.10.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 10,
+      "type": "mlp_down",
+      "free_alpha": 0.8608742750455386,
+      "free_k0": 2346.3981219257234,
+      "free_A": 1293.894195556634,
+      "free_r2": 0.6841044825354248,
+      "fixed_r2": 0.6734294382331774,
+      "delta_alpha": 0.2428402862956438
+    },
+    {
+      "name": "model.language_model.layers.10.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 10,
+      "type": "mlp_gate",
+      "free_alpha": 0.8425041776561555,
+      "free_k0": 1647.0521859576568,
+      "free_A": 1972.0756530761653,
+      "free_r2": 0.8560012724925219,
+      "fixed_r2": 0.8529318277390939,
+      "delta_alpha": 0.2244701889062607
+    },
+    {
+      "name": "model.language_model.layers.10.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 10,
+      "type": "mlp_up",
+      "free_alpha": 0.7071683396844536,
+      "free_k0": 1409.4310050022555,
+      "free_A": 629.0120124816893,
+      "free_r2": 0.9419140153763734,
+      "fixed_r2": 0.9337773145082628,
+      "delta_alpha": 0.08913435093455879
+    },
+    {
+      "name": "model.language_model.layers.10.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 10,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9246690949065623,
+      "free_k0": 394.1845377435978,
+      "free_A": 813.8483047485314,
+      "free_r2": 0.9399780907774976,
+      "fixed_r2": 0.9077455420927498,
+      "delta_alpha": 0.30663510615666756
+    },
+    {
+      "name": "model.language_model.layers.10.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 10,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9834960089613939,
+      "free_k0": 369.28739320887513,
+      "free_A": 1278.9752960205076,
+      "free_r2": 0.8876716145073232,
+      "fixed_r2": 0.852879483113948,
+      "delta_alpha": 0.3654620202114991
+    },
+    {
+      "name": "model.language_model.layers.10.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 10,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8843476676119075,
+      "free_k0": 502.8300879133094,
+      "free_A": 960.7742309570311,
+      "free_r2": 0.9483991229319741,
+      "fixed_r2": 0.9241959706177487,
+      "delta_alpha": 0.26631367886201274
+    },
+    {
+      "name": "model.language_model.layers.10.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 10,
+      "type": "attn_v_slide",
+      "free_alpha": 0.979923968758759,
+      "free_k0": 269.1189721786667,
+      "free_A": 957.0601463247165,
+      "free_r2": 0.9167739157077281,
+      "fixed_r2": 0.8494776398188257,
+      "delta_alpha": 0.3618899800088642
+    },
+    {
+      "name": "model.language_model.layers.11.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 11,
+      "type": "mlp_down",
+      "free_alpha": 0.8713905333117733,
+      "free_k0": 2212.563335407984,
+      "free_A": 1415.9193038940427,
+      "free_r2": 0.6911937537294215,
+      "fixed_r2": 0.6842540850737455,
+      "delta_alpha": 0.2533565445618785
+    },
+    {
+      "name": "model.language_model.layers.11.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 11,
+      "type": "mlp_gate",
+      "free_alpha": 0.797606250696208,
+      "free_k0": 1625.2788791828118,
+      "free_A": 1300.095844268755,
+      "free_r2": 0.8879187065563473,
+      "fixed_r2": 0.8822285102098575,
+      "delta_alpha": 0.17957226194631326
+    },
+    {
+      "name": "model.language_model.layers.11.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 11,
+      "type": "mlp_up",
+      "free_alpha": 0.7376762828983905,
+      "free_k0": 1498.8588184741195,
+      "free_A": 778.432607650755,
+      "free_r2": 0.9149909320161418,
+      "fixed_r2": 0.909224804277216,
+      "delta_alpha": 0.1196422941484957
+    },
+    {
+      "name": "model.language_model.layers.11.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 11,
+      "type": "attn_k_full",
+      "free_alpha": 0.8972959073762452,
+      "free_k0": 277.45574732394834,
+      "free_A": 394.0380811640889,
+      "free_r2": 0.9338372738937484,
+      "fixed_r2": 0.8930266418604345,
+      "delta_alpha": 0.2792619186263504
+    },
+    {
+      "name": "model.language_model.layers.11.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 11,
+      "type": "attn_o_full",
+      "free_alpha": 0.4001035827576963,
+      "free_k0": 0.6168353711609945,
+      "free_A": 15.036887818044372,
+      "free_r2": 0.8938482567135366,
+      "fixed_r2": 0.8545610213520706,
+      "delta_alpha": -0.21793040599219848
+    },
+    {
+      "name": "model.language_model.layers.11.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 11,
+      "type": "attn_q_full",
+      "free_alpha": 0.8344617446171334,
+      "free_k0": 737.0804743474024,
+      "free_A": 1038.6520385742185,
+      "free_r2": 0.95055877438785,
+      "fixed_r2": 0.9385183861220187,
+      "delta_alpha": 0.2164277558672386
+    },
+    {
+      "name": "model.language_model.layers.12.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 12,
+      "type": "mlp_down",
+      "free_alpha": 0.7695600057613047,
+      "free_k0": 1417.499370531498,
+      "free_A": 509.99537900654553,
+      "free_r2": 0.7100461760283336,
+      "fixed_r2": 0.7097263958785365,
+      "delta_alpha": 0.15152601701140989
+    },
+    {
+      "name": "model.language_model.layers.12.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 12,
+      "type": "mlp_gate",
+      "free_alpha": 0.8350631260410584,
+      "free_k0": 1778.690497948208,
+      "free_A": 1895.834922785935,
+      "free_r2": 0.8140514468105965,
+      "fixed_r2": 0.8125837747514677,
+      "delta_alpha": 0.21702913729116358
+    },
+    {
+      "name": "model.language_model.layers.12.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 12,
+      "type": "mlp_up",
+      "free_alpha": 0.7582472464811516,
+      "free_k0": 1709.6758666940625,
+      "free_A": 1007.3859214778548,
+      "free_r2": 0.8946100334546806,
+      "fixed_r2": 0.8873361998802446,
+      "delta_alpha": 0.1402132577312568
+    },
+    {
+      "name": "model.language_model.layers.12.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 12,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9798847765745531,
+      "free_k0": 171.77186869967818,
+      "free_A": 771.025277153388,
+      "free_r2": 0.9522735086893214,
+      "fixed_r2": 0.9295773196608871,
+      "delta_alpha": 0.3618507878246583
+    },
+    {
+      "name": "model.language_model.layers.12.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 12,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8143760020581693,
+      "free_k0": 103.8661631692014,
+      "free_A": 261.599412975799,
+      "free_r2": 0.9228642474566596,
+      "fixed_r2": 0.9160184048067864,
+      "delta_alpha": 0.1963420133082745
+    },
+    {
+      "name": "model.language_model.layers.12.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 12,
+      "type": "attn_q_slide",
+      "free_alpha": 0.7993450156107879,
+      "free_k0": 135.52380793075633,
+      "free_A": 328.38814454385886,
+      "free_r2": 0.955237144792276,
+      "fixed_r2": 0.9463474347801214,
+      "delta_alpha": 0.18131102686089307
+    },
+    {
+      "name": "model.language_model.layers.12.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 12,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0205906942822,
+      "free_k0": 187.4525437374168,
+      "free_A": 1025.8867263793263,
+      "free_r2": 0.9463245144467053,
+      "fixed_r2": 0.8813295864130266,
+      "delta_alpha": 0.40255670553230527
+    },
+    {
+      "name": "model.language_model.layers.13.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 13,
+      "type": "mlp_down",
+      "free_alpha": 0.8869240364461743,
+      "free_k0": 2067.182694958918,
+      "free_A": 1457.6047897280444,
+      "free_r2": 0.673421192198936,
+      "fixed_r2": 0.6693176792976294,
+      "delta_alpha": 0.26889004769627955
+    },
+    {
+      "name": "model.language_model.layers.13.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 13,
+      "type": "mlp_gate",
+      "free_alpha": 0.8301451441327744,
+      "free_k0": 1715.6986212964625,
+      "free_A": 1767.8428649902316,
+      "free_r2": 0.8569717916867529,
+      "fixed_r2": 0.8542828815771129,
+      "delta_alpha": 0.2121111553828796
+    },
+    {
+      "name": "model.language_model.layers.13.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 13,
+      "type": "mlp_up",
+      "free_alpha": 0.75014869077852,
+      "free_k0": 1584.2727593055856,
+      "free_A": 900.5695342996993,
+      "free_r2": 0.9218436753919599,
+      "fixed_r2": 0.9150531725187182,
+      "delta_alpha": 0.13211470202862519
+    },
+    {
+      "name": "model.language_model.layers.13.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 13,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9399169233954938,
+      "free_k0": 441.2462566477108,
+      "free_A": 952.918243408203,
+      "free_r2": 0.9252028064629753,
+      "fixed_r2": 0.8957559434531944,
+      "delta_alpha": 0.32188293464559903
+    },
+    {
+      "name": "model.language_model.layers.13.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 13,
+      "type": "attn_o_slide",
+      "free_alpha": 0.4876013773174018,
+      "free_k0": 2.88640354994342,
+      "free_A": 24.049040486687222,
+      "free_r2": 0.9143618685986539,
+      "fixed_r2": 0.8892908810336079,
+      "delta_alpha": -0.13043261143249302
+    },
+    {
+      "name": "model.language_model.layers.13.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 13,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8717420910779343,
+      "free_k0": 513.6805262712395,
+      "free_A": 887.4457359313238,
+      "free_r2": 0.9479286595954811,
+      "fixed_r2": 0.9253769238035885,
+      "delta_alpha": 0.25370810232803953
+    },
+    {
+      "name": "model.language_model.layers.13.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 13,
+      "type": "attn_v_slide",
+      "free_alpha": 0.980404084196262,
+      "free_k0": 366.86960766885915,
+      "free_A": 1128.3969879149042,
+      "free_r2": 0.9041695459784713,
+      "fixed_r2": 0.8405814366569556,
+      "delta_alpha": 0.3623700954463672
+    },
+    {
+      "name": "model.language_model.layers.14.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 14,
+      "type": "mlp_down",
+      "free_alpha": 0.27371038482071386,
+      "free_k0": 1.2261086526404958e-13,
+      "free_A": 7.266664141579273,
+      "free_r2": 0.7754745391576143,
+      "fixed_r2": 0.6668246701190086,
+      "delta_alpha": -0.34432360392918093
+    },
+    {
+      "name": "model.language_model.layers.14.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 14,
+      "type": "mlp_gate",
+      "free_alpha": 0.8300617114626789,
+      "free_k0": 1686.7888836776094,
+      "free_A": 1737.1046066274134,
+      "free_r2": 0.8511034239949902,
+      "fixed_r2": 0.849097513774736,
+      "delta_alpha": 0.21202772271278414
+    },
+    {
+      "name": "model.language_model.layers.14.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 14,
+      "type": "mlp_up",
+      "free_alpha": 0.7454631163232014,
+      "free_k0": 1495.9751616488848,
+      "free_A": 839.7856712341307,
+      "free_r2": 0.9202897160098097,
+      "fixed_r2": 0.9147199296029606,
+      "delta_alpha": 0.1274291275733066
+    },
+    {
+      "name": "model.language_model.layers.14.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 14,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9391574592531053,
+      "free_k0": 418.00938217862125,
+      "free_A": 858.4457397460519,
+      "free_r2": 0.9265447185442779,
+      "fixed_r2": 0.8991118022694014,
+      "delta_alpha": 0.32112347050321055
+    },
+    {
+      "name": "model.language_model.layers.14.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 14,
+      "type": "attn_o_slide",
+      "free_alpha": 0.5449102297894538,
+      "free_k0": 6.023063518337037,
+      "free_A": 34.084053033771674,
+      "free_r2": 0.9263934286198172,
+      "fixed_r2": 0.9192615991880524,
+      "delta_alpha": -0.07312375896044099
+    },
+    {
+      "name": "model.language_model.layers.14.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 14,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8852931284765679,
+      "free_k0": 498.1879000145286,
+      "free_A": 896.1357116698873,
+      "free_r2": 0.945373838047298,
+      "fixed_r2": 0.9255181416570947,
+      "delta_alpha": 0.26725913972667314
+    },
+    {
+      "name": "model.language_model.layers.14.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 14,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0103360035038744,
+      "free_k0": 334.44895101564276,
+      "free_A": 1213.141536712594,
+      "free_r2": 0.8958104578269067,
+      "fixed_r2": 0.8285383163107176,
+      "delta_alpha": 0.39230201475397963
+    },
+    {
+      "name": "model.language_model.layers.15.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 15,
+      "type": "mlp_down",
+      "free_alpha": 0.7788671275507647,
+      "free_k0": 1428.1668129979923,
+      "free_A": 528.1645029502522,
+      "free_r2": 0.7312127415109266,
+      "fixed_r2": 0.7307168234209822,
+      "delta_alpha": 0.1608331388008699
+    },
+    {
+      "name": "model.language_model.layers.15.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 15,
+      "type": "mlp_gate",
+      "free_alpha": 0.8259823729377128,
+      "free_k0": 1738.243656685284,
+      "free_A": 1794.5133209218395,
+      "free_r2": 0.8468399561939837,
+      "fixed_r2": 0.8426023905223851,
+      "delta_alpha": 0.20794838418781803
+    },
+    {
+      "name": "model.language_model.layers.15.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 15,
+      "type": "mlp_up",
+      "free_alpha": 0.7921234226720995,
+      "free_k0": 1541.906103302546,
+      "free_A": 1294.1328038311526,
+      "free_r2": 0.8667228426307392,
+      "fixed_r2": 0.86413771258354,
+      "delta_alpha": 0.17408943392220466
+    },
+    {
+      "name": "model.language_model.layers.15.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 15,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9736572332681337,
+      "free_k0": 261.476008375655,
+      "free_A": 879.0923118591307,
+      "free_r2": 0.9446378289477912,
+      "fixed_r2": 0.9212514542714365,
+      "delta_alpha": 0.3556232445182389
+    },
+    {
+      "name": "model.language_model.layers.15.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 15,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9845146063433331,
+      "free_k0": 222.21930222479006,
+      "free_A": 956.1493251994302,
+      "free_r2": 0.8998158949641558,
+      "fixed_r2": 0.8900874663072518,
+      "delta_alpha": 0.3664806175934383
+    },
+    {
+      "name": "model.language_model.layers.15.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 15,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9221470451309723,
+      "free_k0": 331.99726165275695,
+      "free_A": 988.0298614482376,
+      "free_r2": 0.9499400342953853,
+      "fixed_r2": 0.9353130533663188,
+      "delta_alpha": 0.30411305638107755
+    },
+    {
+      "name": "model.language_model.layers.15.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 15,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0015050653589763,
+      "free_k0": 211.34825956478943,
+      "free_A": 931.216621398925,
+      "free_r2": 0.9386039048894542,
+      "fixed_r2": 0.8697665059725176,
+      "delta_alpha": 0.38347107660908153
+    },
+    {
+      "name": "model.language_model.layers.16.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 16,
+      "type": "mlp_down",
+      "free_alpha": 0.8776362156427665,
+      "free_k0": 2083.927497173471,
+      "free_A": 1457.9133987255216,
+      "free_r2": 0.6570238390287206,
+      "fixed_r2": 0.6548563500299038,
+      "delta_alpha": 0.2596022268928717
+    },
+    {
+      "name": "model.language_model.layers.16.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 16,
+      "type": "mlp_gate",
+      "free_alpha": 0.5132042116847038,
+      "free_k0": 447.69420640709933,
+      "free_A": 100.0042120892207,
+      "free_r2": 0.872023436830362,
+      "fixed_r2": 0.8713529117748235,
+      "delta_alpha": -0.10482977706519103
+    },
+    {
+      "name": "model.language_model.layers.16.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 16,
+      "type": "mlp_up",
+      "free_alpha": 0.7486509512043013,
+      "free_k0": 1364.6220590750402,
+      "free_A": 837.1295928955077,
+      "free_r2": 0.9312339939523092,
+      "fixed_r2": 0.9272090544671887,
+      "delta_alpha": 0.13061696245440646
+    },
+    {
+      "name": "model.language_model.layers.16.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 16,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9166186705669659,
+      "free_k0": 363.428173466036,
+      "free_A": 727.2342705043958,
+      "free_r2": 0.9205317048297732,
+      "fixed_r2": 0.9132697927071286,
+      "delta_alpha": 0.2985846818170711
+    },
+    {
+      "name": "model.language_model.layers.16.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 16,
+      "type": "attn_o_slide",
+      "free_alpha": 0.908941092751345,
+      "free_k0": 863.0846140576155,
+      "free_A": 1100.768184661865,
+      "free_r2": 0.879941640299361,
+      "fixed_r2": 0.8495870781773984,
+      "delta_alpha": 0.29090710400145026
+    },
+    {
+      "name": "model.language_model.layers.16.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 16,
+      "type": "attn_q_slide",
+      "free_alpha": 0.7530461490868797,
+      "free_k0": 282.79940260738937,
+      "free_A": 304.4553771075073,
+      "free_r2": 0.9277916633442439,
+      "fixed_r2": 0.9252365618654932,
+      "delta_alpha": 0.13501216033698493
+    },
+    {
+      "name": "model.language_model.layers.16.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 16,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9771425507469642,
+      "free_k0": 755.4974045488458,
+      "free_A": 1583.8718414306638,
+      "free_r2": 0.79089914338289,
+      "fixed_r2": 0.7477389577619693,
+      "delta_alpha": 0.3591085619970694
+    },
+    {
+      "name": "model.language_model.layers.17.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 17,
+      "type": "mlp_down",
+      "free_alpha": 0.8691414414518688,
+      "free_k0": 1993.7912811257083,
+      "free_A": 1333.818998564252,
+      "free_r2": 0.7148636666440391,
+      "fixed_r2": 0.7102201931129746,
+      "delta_alpha": 0.251107452701974
+    },
+    {
+      "name": "model.language_model.layers.17.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 17,
+      "type": "mlp_gate",
+      "free_alpha": 0.5445719307698504,
+      "free_k0": 626.112888680944,
+      "free_A": 130.78232678392288,
+      "free_r2": 0.8474543527729382,
+      "fixed_r2": 0.8472427516760025,
+      "delta_alpha": -0.07346205798004435
+    },
+    {
+      "name": "model.language_model.layers.17.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 17,
+      "type": "mlp_up",
+      "free_alpha": 0.7321676688524498,
+      "free_k0": 1631.9700667860507,
+      "free_A": 765.1206493377682,
+      "free_r2": 0.9320056857788929,
+      "fixed_r2": 0.9254085993742481,
+      "delta_alpha": 0.11413368010255498
+    },
+    {
+      "name": "model.language_model.layers.17.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 17,
+      "type": "attn_k_full",
+      "free_alpha": 0.9046668702342385,
+      "free_k0": 370.76547743483223,
+      "free_A": 524.0281581876909,
+      "free_r2": 0.9490732622657735,
+      "fixed_r2": 0.9194935553806545,
+      "delta_alpha": 0.28663288148434374
+    },
+    {
+      "name": "model.language_model.layers.17.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 17,
+      "type": "attn_o_full",
+      "free_alpha": 0.41466165470146904,
+      "free_k0": 0.8520233963246299,
+      "free_A": 17.056355179752472,
+      "free_r2": 0.9082436968787148,
+      "fixed_r2": 0.8523698646472354,
+      "delta_alpha": -0.20337233404842575
+    },
+    {
+      "name": "model.language_model.layers.17.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 17,
+      "type": "attn_q_full",
+      "free_alpha": 0.8527890525442001,
+      "free_k0": 798.9331592354793,
+      "free_A": 1349.6145248008097,
+      "free_r2": 0.9456065272741915,
+      "fixed_r2": 0.9353394529642113,
+      "delta_alpha": 0.23475506379430533
+    },
+    {
+      "name": "model.language_model.layers.18.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 18,
+      "type": "mlp_down",
+      "free_alpha": 0.8668629271950612,
+      "free_k0": 1936.860484164172,
+      "free_A": 1193.523883809778,
+      "free_r2": 0.7241404290601772,
+      "fixed_r2": 0.7201387731237374,
+      "delta_alpha": 0.2488289384451664
+    },
+    {
+      "name": "model.language_model.layers.18.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 18,
+      "type": "mlp_gate",
+      "free_alpha": 0.4592897474403174,
+      "free_k0": 347.1112708422071,
+      "free_A": 65.17744801603872,
+      "free_r2": 0.8495907381862223,
+      "fixed_r2": 0.8481353341791584,
+      "delta_alpha": -0.15874424130957737
+    },
+    {
+      "name": "model.language_model.layers.18.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 18,
+      "type": "mlp_up",
+      "free_alpha": 0.7267407953577029,
+      "free_k0": 1559.0748119443272,
+      "free_A": 751.4956474304198,
+      "free_r2": 0.9403053695534923,
+      "fixed_r2": 0.93417739821542,
+      "delta_alpha": 0.10870680660780807
+    },
+    {
+      "name": "model.language_model.layers.18.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 18,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9236517207847826,
+      "free_k0": 447.28842247148447,
+      "free_A": 834.9725723266585,
+      "free_r2": 0.920968884685412,
+      "fixed_r2": 0.9014755156242704,
+      "delta_alpha": 0.30561773203488785
+    },
+    {
+      "name": "model.language_model.layers.18.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 18,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9210023554429025,
+      "free_k0": 792.1833467835577,
+      "free_A": 1240.8175468444822,
+      "free_r2": 0.8782278229088626,
+      "fixed_r2": 0.8497284236095513,
+      "delta_alpha": 0.30296836669300775
+    },
+    {
+      "name": "model.language_model.layers.18.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 18,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8805727788038109,
+      "free_k0": 563.1586224046039,
+      "free_A": 957.4050903179887,
+      "free_r2": 0.9369958084771637,
+      "fixed_r2": 0.9210843909995708,
+      "delta_alpha": 0.2625387900539161
+    },
+    {
+      "name": "model.language_model.layers.18.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 18,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0021096810692909,
+      "free_k0": 712.9813128830126,
+      "free_A": 1809.39006725048,
+      "free_r2": 0.7745725731102744,
+      "fixed_r2": 0.7336983488819291,
+      "delta_alpha": 0.3840756923193961
+    },
+    {
+      "name": "model.language_model.layers.19.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 19,
+      "type": "mlp_down",
+      "free_alpha": 0.27133556150608695,
+      "free_k0": 1.0223498203504197e-15,
+      "free_A": 6.6251961385174445,
+      "free_r2": 0.7969365852233008,
+      "fixed_r2": 0.7213361616133938,
+      "delta_alpha": -0.34669842724380784
+    },
+    {
+      "name": "model.language_model.layers.19.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 19,
+      "type": "mlp_gate",
+      "free_alpha": 0.2584154740468871,
+      "free_k0": 1.0371857863038289e-14,
+      "free_A": 12.827931569744644,
+      "free_r2": 0.8700448105383948,
+      "fixed_r2": 0.8234857237213999,
+      "delta_alpha": -0.3596185147030077
+    },
+    {
+      "name": "model.language_model.layers.19.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 19,
+      "type": "mlp_up",
+      "free_alpha": 0.7436586612386471,
+      "free_k0": 1533.357449259086,
+      "free_A": 849.1801253410854,
+      "free_r2": 0.9223984082235133,
+      "fixed_r2": 0.9172851025818751,
+      "delta_alpha": 0.1256246724887523
+    },
+    {
+      "name": "model.language_model.layers.19.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 19,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9448097137002458,
+      "free_k0": 356.07960961403325,
+      "free_A": 819.6004867553333,
+      "free_r2": 0.9191001498419608,
+      "fixed_r2": 0.9018285570571541,
+      "delta_alpha": 0.326775724950351
+    },
+    {
+      "name": "model.language_model.layers.19.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 19,
+      "type": "attn_o_slide",
+      "free_alpha": 0.5272425456492674,
+      "free_k0": 2.6769865350684525,
+      "free_A": 30.238603687246158,
+      "free_r2": 0.9060246616391451,
+      "fixed_r2": 0.8942938784703901,
+      "delta_alpha": -0.09079144310062737
+    },
+    {
+      "name": "model.language_model.layers.19.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 19,
+      "type": "attn_q_slide",
+      "free_alpha": 0.899347860402028,
+      "free_k0": 479.8879078247481,
+      "free_A": 966.4470672607316,
+      "free_r2": 0.9260624302448459,
+      "fixed_r2": 0.9144018747733436,
+      "delta_alpha": 0.2813138716521332
+    },
+    {
+      "name": "model.language_model.layers.19.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 19,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0373409556911117,
+      "free_k0": 249.7131831317986,
+      "free_A": 1228.028583526611,
+      "free_r2": 0.9144843887929237,
+      "fixed_r2": 0.8522994208638364,
+      "delta_alpha": 0.41930696694121694
+    },
+    {
+      "name": "model.language_model.layers.2.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 2,
+      "type": "mlp_down",
+      "free_alpha": 0.3113814992425276,
+      "free_k0": 7.01785261009499e-16,
+      "free_A": 9.124916557891224,
+      "free_r2": 0.7407084405111222,
+      "fixed_r2": 0.6025668468489258,
+      "delta_alpha": -0.3066524895073672
+    },
+    {
+      "name": "model.language_model.layers.2.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 2,
+      "type": "mlp_gate",
+      "free_alpha": 0.2663597098290926,
+      "free_k0": 1.4685602058113106e-18,
+      "free_A": 12.757775307565716,
+      "free_r2": 0.8699007063838553,
+      "fixed_r2": 0.8421052559472376,
+      "delta_alpha": -0.3516742789208022
+    },
+    {
+      "name": "model.language_model.layers.2.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 2,
+      "type": "mlp_up",
+      "free_alpha": 0.728018291926729,
+      "free_k0": 1138.6976400820647,
+      "free_A": 629.0904998779296,
+      "free_r2": 0.9337958514396139,
+      "fixed_r2": 0.9293114159558477,
+      "delta_alpha": 0.10998430317683416
+    },
+    {
+      "name": "model.language_model.layers.2.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 2,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9891505073565001,
+      "free_k0": 242.1335773478448,
+      "free_A": 965.6994819639842,
+      "free_r2": 0.952648736075904,
+      "fixed_r2": 0.9133337378384885,
+      "delta_alpha": 0.37111651860660533
+    },
+    {
+      "name": "model.language_model.layers.2.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 2,
+      "type": "attn_o_slide",
+      "free_alpha": 0.822907378250969,
+      "free_k0": 45.150252704391036,
+      "free_A": 203.55020666506198,
+      "free_r2": 0.9408281107997902,
+      "fixed_r2": 0.9224498014064793,
+      "delta_alpha": 0.20487338950107425
+    },
+    {
+      "name": "model.language_model.layers.2.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 2,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9348016747564767,
+      "free_k0": 294.47594062934286,
+      "free_A": 1052.9067993164058,
+      "free_r2": 0.9599478158978623,
+      "fixed_r2": 0.9338844623134157,
+      "delta_alpha": 0.3167676860065819
+    },
+    {
+      "name": "model.language_model.layers.2.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 2,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0422773310726787,
+      "free_k0": 168.30267444172208,
+      "free_A": 1082.991027832031,
+      "free_r2": 0.9319342904950999,
+      "fixed_r2": 0.830738081708001,
+      "delta_alpha": 0.42424334232278393
+    },
+    {
+      "name": "model.language_model.layers.20.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 20,
+      "type": "mlp_down",
+      "free_alpha": 0.27530152420423043,
+      "free_k0": 4.2695385326829694e-16,
+      "free_A": 7.034386734243079,
+      "free_r2": 0.8184291703465366,
+      "fixed_r2": 0.76400172463217,
+      "delta_alpha": -0.34273246454566436
+    },
+    {
+      "name": "model.language_model.layers.20.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 20,
+      "type": "mlp_gate",
+      "free_alpha": 0.4470297122918682,
+      "free_k0": 325.79959548044405,
+      "free_A": 56.39869008483368,
+      "free_r2": 0.8403136535437778,
+      "fixed_r2": 0.8395825648897637,
+      "delta_alpha": -0.17100427645802657
+    },
+    {
+      "name": "model.language_model.layers.20.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 20,
+      "type": "mlp_up",
+      "free_alpha": 0.7642170663996652,
+      "free_k0": 1509.459638934997,
+      "free_A": 953.550148010185,
+      "free_r2": 0.906103481619677,
+      "fixed_r2": 0.902184897850757,
+      "delta_alpha": 0.14618307764977045
+    },
+    {
+      "name": "model.language_model.layers.20.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 20,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9448235898830931,
+      "free_k0": 296.70802182403276,
+      "free_A": 758.1297397611108,
+      "free_r2": 0.9478758709450436,
+      "fixed_r2": 0.9197036924663884,
+      "delta_alpha": 0.3267896011331983
+    },
+    {
+      "name": "model.language_model.layers.20.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 20,
+      "type": "attn_o_slide",
+      "free_alpha": 0.6255165599374821,
+      "free_k0": 10.646966500439444,
+      "free_A": 53.18001622872268,
+      "free_r2": 0.9254716386427893,
+      "fixed_r2": 0.925416721709648,
+      "delta_alpha": 0.007482571187587328
+    },
+    {
+      "name": "model.language_model.layers.20.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 20,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8931115257165736,
+      "free_k0": 372.32111981341063,
+      "free_A": 834.4773292540385,
+      "free_r2": 0.951432062756314,
+      "fixed_r2": 0.9372843873322856,
+      "delta_alpha": 0.2750775369666788
+    },
+    {
+      "name": "model.language_model.layers.20.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 20,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0528235444490996,
+      "free_k0": 212.50632994843136,
+      "free_A": 1244.7298049923702,
+      "free_r2": 0.92827380462932,
+      "fixed_r2": 0.8507563467837371,
+      "delta_alpha": 0.43478955569920485
+    },
+    {
+      "name": "model.language_model.layers.21.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 21,
+      "type": "mlp_down",
+      "free_alpha": 0.27300438502975316,
+      "free_k0": 2.1815880219521826e-17,
+      "free_A": 6.791835672428694,
+      "free_r2": 0.8474216599896579,
+      "fixed_r2": 0.798866555303637,
+      "delta_alpha": -0.34502960372014163
+    },
+    {
+      "name": "model.language_model.layers.21.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 21,
+      "type": "mlp_gate",
+      "free_alpha": 0.26565833255479915,
+      "free_k0": 2.7450407048613277e-15,
+      "free_A": 12.992350814689395,
+      "free_r2": 0.8886637398047899,
+      "fixed_r2": 0.8745430246607724,
+      "delta_alpha": -0.35237565619509564
+    },
+    {
+      "name": "model.language_model.layers.21.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 21,
+      "type": "mlp_up",
+      "free_alpha": 0.2983561435430413,
+      "free_k0": 12.338468585543582,
+      "free_A": 16.609999982314935,
+      "free_r2": 0.904320077777403,
+      "fixed_r2": 0.8861909475630396,
+      "delta_alpha": -0.3196778452068535
+    },
+    {
+      "name": "model.language_model.layers.21.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 21,
+      "type": "attn_k_slide",
+      "free_alpha": 0.857664294855848,
+      "free_k0": 288.12220668470644,
+      "free_A": 420.7577847739703,
+      "free_r2": 0.9326975916930407,
+      "fixed_r2": 0.926165272727869,
+      "delta_alpha": 0.23963030610595326
+    },
+    {
+      "name": "model.language_model.layers.21.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 21,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8983004266065847,
+      "free_k0": 607.2808866767202,
+      "free_A": 888.041591636815,
+      "free_r2": 0.9215033584637733,
+      "fixed_r2": 0.8958671218736233,
+      "delta_alpha": 0.2802664378566899
+    },
+    {
+      "name": "model.language_model.layers.21.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 21,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8366523743621224,
+      "free_k0": 405.7832358708351,
+      "free_A": 585.0919000431388,
+      "free_r2": 0.9424183733329232,
+      "fixed_r2": 0.9368982081631313,
+      "delta_alpha": 0.21861838561222757
+    },
+    {
+      "name": "model.language_model.layers.21.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 21,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9824638597104949,
+      "free_k0": 593.2176671256017,
+      "free_A": 1378.7519454953551,
+      "free_r2": 0.8613437014339418,
+      "fixed_r2": 0.8181958256507963,
+      "delta_alpha": 0.3644298709606001
+    },
+    {
+      "name": "model.language_model.layers.22.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 22,
+      "type": "mlp_down",
+      "free_alpha": 0.27891755131748086,
+      "free_k0": 2.093522889441457e-18,
+      "free_A": 7.014345596369926,
+      "free_r2": 0.835720563190967,
+      "fixed_r2": 0.7773490020296363,
+      "delta_alpha": -0.33911643743241393
+    },
+    {
+      "name": "model.language_model.layers.22.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 22,
+      "type": "mlp_gate",
+      "free_alpha": 0.2664987231775795,
+      "free_k0": 2.8790539116558737e-19,
+      "free_A": 13.562722034337266,
+      "free_r2": 0.8925670221979689,
+      "fixed_r2": 0.8532256032358937,
+      "delta_alpha": -0.3515352655723153
+    },
+    {
+      "name": "model.language_model.layers.22.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 22,
+      "type": "mlp_up",
+      "free_alpha": 0.5458657705709548,
+      "free_k0": 610.3849563319103,
+      "free_A": 137.19482866673994,
+      "free_r2": 0.8986241147741959,
+      "fixed_r2": 0.8983974956143475,
+      "delta_alpha": -0.07216821817894004
+    },
+    {
+      "name": "model.language_model.layers.22.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 22,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9330105376423822,
+      "free_k0": 354.5870338183903,
+      "free_A": 812.7617835998508,
+      "free_r2": 0.9410628534664844,
+      "fixed_r2": 0.9295502442059923,
+      "delta_alpha": 0.3149765488924874
+    },
+    {
+      "name": "model.language_model.layers.22.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 22,
+      "type": "attn_o_slide",
+      "free_alpha": 0.908043056155799,
+      "free_k0": 505.088687497683,
+      "free_A": 876.934242248535,
+      "free_r2": 0.9125312835819678,
+      "fixed_r2": 0.900937580011908,
+      "delta_alpha": 0.29000906740590426
+    },
+    {
+      "name": "model.language_model.layers.22.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 22,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8804509013044337,
+      "free_k0": 463.47108173463425,
+      "free_A": 894.3585395718736,
+      "free_r2": 0.9434369711038963,
+      "fixed_r2": 0.9342297885967581,
+      "delta_alpha": 0.2624169125545389
+    },
+    {
+      "name": "model.language_model.layers.22.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 22,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9749211554653364,
+      "free_k0": 546.5363159865498,
+      "free_A": 1332.3349952697752,
+      "free_r2": 0.8743066413032129,
+      "fixed_r2": 0.8282001625195083,
+      "delta_alpha": 0.35688716671544163
+    },
+    {
+      "name": "model.language_model.layers.23.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 23,
+      "type": "mlp_down",
+      "free_alpha": 0.6039363338725667,
+      "free_k0": 562.6844045474003,
+      "free_A": 106.19942876667005,
+      "free_r2": 0.9064900312621921,
+      "fixed_r2": 0.906470494658637,
+      "delta_alpha": -0.014097654877328059
+    },
+    {
+      "name": "model.language_model.layers.23.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 23,
+      "type": "mlp_gate",
+      "free_alpha": 0.25782575432830257,
+      "free_k0": 1.6046920860523944e-13,
+      "free_A": 12.645375926167885,
+      "free_r2": 0.8958448841818761,
+      "fixed_r2": 0.8711004045612067,
+      "delta_alpha": -0.3602082344215922
+    },
+    {
+      "name": "model.language_model.layers.23.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 23,
+      "type": "mlp_up",
+      "free_alpha": 0.7301092439140456,
+      "free_k0": 1411.699345024339,
+      "free_A": 727.8734683928976,
+      "free_r2": 0.9209597475709104,
+      "fixed_r2": 0.9202909470494072,
+      "delta_alpha": 0.11207525516415084
+    },
+    {
+      "name": "model.language_model.layers.23.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 23,
+      "type": "attn_k_full",
+      "free_alpha": 0.8485997998698835,
+      "free_k0": 409.38384376320363,
+      "free_A": 361.27951145172113,
+      "free_r2": 0.9329654114587913,
+      "fixed_r2": 0.9009216619797827,
+      "delta_alpha": 0.23056581111998875
+    },
+    {
+      "name": "model.language_model.layers.23.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 23,
+      "type": "attn_o_full",
+      "free_alpha": 0.6540724906509832,
+      "free_k0": 234.27041392804392,
+      "free_A": 111.78043686883463,
+      "free_r2": 0.8301517884061507,
+      "fixed_r2": 0.8300486906830922,
+      "delta_alpha": 0.03603850190108837
+    },
+    {
+      "name": "model.language_model.layers.23.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 23,
+      "type": "attn_q_full",
+      "free_alpha": 0.8107502306663464,
+      "free_k0": 760.6599818950291,
+      "free_A": 925.7138252258296,
+      "free_r2": 0.9575439421074579,
+      "fixed_r2": 0.9501148125111186,
+      "delta_alpha": 0.19271624191645165
+    },
+    {
+      "name": "model.language_model.layers.24.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 24,
+      "type": "mlp_down",
+      "free_alpha": 0.5377251229277688,
+      "free_k0": 430.20633527848827,
+      "free_A": 59.98842742856733,
+      "free_r2": 0.9007975445950194,
+      "fixed_r2": 0.9001126657498822,
+      "delta_alpha": -0.08030886582212604
+    },
+    {
+      "name": "model.language_model.layers.24.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 24,
+      "type": "mlp_gate",
+      "free_alpha": 0.3543211296652082,
+      "free_k0": 67.38755642339156,
+      "free_A": 26.178598914514144,
+      "free_r2": 0.9001391579230621,
+      "fixed_r2": 0.8899028179147527,
+      "delta_alpha": -0.2637128590846866
+    },
+    {
+      "name": "model.language_model.layers.24.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 24,
+      "type": "mlp_up",
+      "free_alpha": 0.32985503377286857,
+      "free_k0": 29.59190976737231,
+      "free_A": 21.460241293216512,
+      "free_r2": 0.9345464082816313,
+      "fixed_r2": 0.9042604440369385,
+      "delta_alpha": -0.2881789549770262
+    },
+    {
+      "name": "model.language_model.layers.24.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 24,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9152826952013767,
+      "free_k0": 425.39638346921794,
+      "free_A": 784.3176841735802,
+      "free_r2": 0.9363528415691953,
+      "fixed_r2": 0.9061465276326055,
+      "delta_alpha": 0.29724870645148194
+    },
+    {
+      "name": "model.language_model.layers.24.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 24,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8836011136284495,
+      "free_k0": 630.6588990231629,
+      "free_A": 818.1498527523685,
+      "free_r2": 0.9052715345217756,
+      "fixed_r2": 0.8886971375463824,
+      "delta_alpha": 0.2655671248785547
+    },
+    {
+      "name": "model.language_model.layers.24.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 24,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8655591013962817,
+      "free_k0": 505.2218420547112,
+      "free_A": 835.8750343317465,
+      "free_r2": 0.9507240749238441,
+      "fixed_r2": 0.9332255928879452,
+      "delta_alpha": 0.24752511264638688
+    },
+    {
+      "name": "model.language_model.layers.24.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 24,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9344844156592308,
+      "free_k0": 505.18665562415134,
+      "free_A": 972.3789214645676,
+      "free_r2": 0.9184084416567306,
+      "fixed_r2": 0.8893960361608231,
+      "delta_alpha": 0.316450426909336
+    },
+    {
+      "name": "model.language_model.layers.25.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 25,
+      "type": "mlp_down",
+      "free_alpha": 0.596806743453003,
+      "free_k0": 584.1899611980801,
+      "free_A": 100.82738072040407,
+      "free_r2": 0.9049511084433689,
+      "fixed_r2": 0.904914327520344,
+      "delta_alpha": -0.021227245296891795
+    },
+    {
+      "name": "model.language_model.layers.25.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 25,
+      "type": "mlp_gate",
+      "free_alpha": 0.41237856348436,
+      "free_k0": 171.06252430843264,
+      "free_A": 41.95050561633368,
+      "free_r2": 0.9013296344645892,
+      "fixed_r2": 0.8963465754067759,
+      "delta_alpha": -0.20565542526553482
+    },
+    {
+      "name": "model.language_model.layers.25.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 25,
+      "type": "mlp_up",
+      "free_alpha": 0.38447996830732084,
+      "free_k0": 127.87050934809803,
+      "free_A": 33.698866239222546,
+      "free_r2": 0.9337372752629661,
+      "fixed_r2": 0.9236502096709114,
+      "delta_alpha": -0.23355402044257395
+    },
+    {
+      "name": "model.language_model.layers.25.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 25,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9154613249710498,
+      "free_k0": 359.76670856365484,
+      "free_A": 744.2026615142821,
+      "free_r2": 0.9507029575194188,
+      "fixed_r2": 0.9312715682906517,
+      "delta_alpha": 0.297427336221155
+    },
+    {
+      "name": "model.language_model.layers.25.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 25,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8560838656491012,
+      "free_k0": 679.7605749134808,
+      "free_A": 725.7273197174057,
+      "free_r2": 0.9082809629426088,
+      "fixed_r2": 0.8873067939084779,
+      "delta_alpha": 0.23804987689920643
+    },
+    {
+      "name": "model.language_model.layers.25.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 25,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8670710184294315,
+      "free_k0": 471.50973620033926,
+      "free_A": 839.5895957946776,
+      "free_r2": 0.9556657525921279,
+      "fixed_r2": 0.9420927545286703,
+      "delta_alpha": 0.24903702967953667
+    },
+    {
+      "name": "model.language_model.layers.25.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 25,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9489593001158687,
+      "free_k0": 535.5151275924444,
+      "free_A": 1132.9524993589555,
+      "free_r2": 0.9141739681660931,
+      "fixed_r2": 0.879204318038397,
+      "delta_alpha": 0.3309253113659739
+    },
+    {
+      "name": "model.language_model.layers.26.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 26,
+      "type": "mlp_down",
+      "free_alpha": 0.5485443348598681,
+      "free_k0": 447.213754199728,
+      "free_A": 65.62293623198867,
+      "free_r2": 0.8771276071025084,
+      "fixed_r2": 0.8767482773366797,
+      "delta_alpha": -0.0694896538900267
+    },
+    {
+      "name": "model.language_model.layers.26.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 26,
+      "type": "mlp_gate",
+      "free_alpha": 0.3648630134103424,
+      "free_k0": 74.16754839546228,
+      "free_A": 27.10660315561942,
+      "free_r2": 0.8966375987275352,
+      "fixed_r2": 0.8894213807415983,
+      "delta_alpha": -0.2531709753395524
+    },
+    {
+      "name": "model.language_model.layers.26.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 26,
+      "type": "mlp_up",
+      "free_alpha": 0.3538038536959246,
+      "free_k0": 53.75580130508957,
+      "free_A": 24.785027688270553,
+      "free_r2": 0.9366957434924404,
+      "fixed_r2": 0.9153060595243224,
+      "delta_alpha": -0.2642301350539702
+    },
+    {
+      "name": "model.language_model.layers.26.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 26,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8950361468264031,
+      "free_k0": 413.7708453623975,
+      "free_A": 635.402965545442,
+      "free_r2": 0.9395415206012718,
+      "fixed_r2": 0.9095692198787149,
+      "delta_alpha": 0.2770021580765083
+    },
+    {
+      "name": "model.language_model.layers.26.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 26,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8519014733211219,
+      "free_k0": 735.7553408152387,
+      "free_A": 668.6677932552707,
+      "free_r2": 0.903643949927903,
+      "fixed_r2": 0.8820964561301131,
+      "delta_alpha": 0.23386748457122708
+    },
+    {
+      "name": "model.language_model.layers.26.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 26,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8739814698344804,
+      "free_k0": 459.58749069215895,
+      "free_A": 803.8620948791499,
+      "free_r2": 0.9592995118629876,
+      "fixed_r2": 0.9466500364159331,
+      "delta_alpha": 0.25594748108458565
+    },
+    {
+      "name": "model.language_model.layers.26.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 26,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9550990927542155,
+      "free_k0": 657.4479914011744,
+      "free_A": 1206.4204216003413,
+      "free_r2": 0.8670560070377019,
+      "fixed_r2": 0.8323442457758786,
+      "delta_alpha": 0.33706510400432066
+    },
+    {
+      "name": "model.language_model.layers.27.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 27,
+      "type": "mlp_down",
+      "free_alpha": 0.6139044633721352,
+      "free_k0": 550.3170054000651,
+      "free_A": 114.58891523615645,
+      "free_r2": 0.9164955230979338,
+      "fixed_r2": 0.9164941363744582,
+      "delta_alpha": -0.004129525377759569
+    },
+    {
+      "name": "model.language_model.layers.27.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 27,
+      "type": "mlp_gate",
+      "free_alpha": 0.400552781738665,
+      "free_k0": 153.76900894688885,
+      "free_A": 39.221441736491506,
+      "free_r2": 0.8988316392727496,
+      "fixed_r2": 0.894248622869446,
+      "delta_alpha": -0.2174812070112298
+    },
+    {
+      "name": "model.language_model.layers.27.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 27,
+      "type": "mlp_up",
+      "free_alpha": 0.5656430633190502,
+      "free_k0": 680.906370336614,
+      "free_A": 165.1629466930206,
+      "free_r2": 0.9291776266679491,
+      "fixed_r2": 0.9290040864201404,
+      "delta_alpha": -0.05239092543084456
+    },
+    {
+      "name": "model.language_model.layers.27.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 27,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9070559619761089,
+      "free_k0": 370.9922127520327,
+      "free_A": 686.3132476801552,
+      "free_r2": 0.9441723136840585,
+      "fixed_r2": 0.9233734279963577,
+      "delta_alpha": 0.28902197322621415
+    },
+    {
+      "name": "model.language_model.layers.27.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 27,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8736171379710458,
+      "free_k0": 656.5777169696213,
+      "free_A": 797.2188472747802,
+      "free_r2": 0.9111512269046941,
+      "fixed_r2": 0.8917801129680109,
+      "delta_alpha": 0.255583149221151
+    },
+    {
+      "name": "model.language_model.layers.27.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 27,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8723491953326108,
+      "free_k0": 466.69733495256656,
+      "free_A": 835.3939056396483,
+      "free_r2": 0.9521972815408954,
+      "fixed_r2": 0.9415137778615312,
+      "delta_alpha": 0.254315206582716
+    },
+    {
+      "name": "model.language_model.layers.27.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 27,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9729035216826013,
+      "free_k0": 603.9022475623565,
+      "free_A": 1367.7636146506711,
+      "free_r2": 0.8701735267517969,
+      "fixed_r2": 0.8384161421960159,
+      "delta_alpha": 0.3548695329327065
+    },
+    {
+      "name": "model.language_model.layers.28.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 28,
+      "type": "mlp_down",
+      "free_alpha": 0.7998273394880095,
+      "free_k0": 1447.02592339441,
+      "free_A": 669.7054386138915,
+      "free_r2": 0.9035745999654501,
+      "fixed_r2": 0.8998215802241445,
+      "delta_alpha": 0.18179335073811476
+    },
+    {
+      "name": "model.language_model.layers.28.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 28,
+      "type": "mlp_gate",
+      "free_alpha": 0.2903122205784855,
+      "free_k0": 3.844783430407859,
+      "free_A": 16.01791640856865,
+      "free_r2": 0.9027851036955533,
+      "fixed_r2": 0.8839092526160814,
+      "delta_alpha": -0.3277217681714093
+    },
+    {
+      "name": "model.language_model.layers.28.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 28,
+      "type": "mlp_up",
+      "free_alpha": 0.7019379513298818,
+      "free_k0": 1196.8087775975296,
+      "free_A": 552.1269971172135,
+      "free_r2": 0.9193926100748281,
+      "fixed_r2": 0.9191179500169698,
+      "delta_alpha": 0.083903962579987
+    },
+    {
+      "name": "model.language_model.layers.28.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 28,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9183572944531905,
+      "free_k0": 332.78593806976124,
+      "free_A": 667.6074981689451,
+      "free_r2": 0.9452805323930245,
+      "fixed_r2": 0.9247241250121045,
+      "delta_alpha": 0.3003233057032957
+    },
+    {
+      "name": "model.language_model.layers.28.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 28,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8641065361030487,
+      "free_k0": 808.8838379146326,
+      "free_A": 768.5152530490827,
+      "free_r2": 0.913182519436919,
+      "fixed_r2": 0.8819148156696774,
+      "delta_alpha": 0.24607254735315387
+    },
+    {
+      "name": "model.language_model.layers.28.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 28,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8830052331581373,
+      "free_k0": 406.9021994713872,
+      "free_A": 804.27283245753,
+      "free_r2": 0.9540471129709718,
+      "fixed_r2": 0.9441806913268165,
+      "delta_alpha": 0.2649712444082425
+    },
+    {
+      "name": "model.language_model.layers.28.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 28,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9578655723862323,
+      "free_k0": 805.9843699387438,
+      "free_A": 1352.7373312562295,
+      "free_r2": 0.802112230244733,
+      "fixed_r2": 0.7740094533617081,
+      "delta_alpha": 0.3398315836363375
+    },
+    {
+      "name": "model.language_model.layers.29.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 29,
+      "type": "mlp_down",
+      "free_alpha": 0.7702222276899977,
+      "free_k0": 1441.2995983257183,
+      "free_A": 519.5104156186849,
+      "free_r2": 0.8968632663799736,
+      "fixed_r2": 0.8961798643435024,
+      "delta_alpha": 0.15218823894010292
+    },
+    {
+      "name": "model.language_model.layers.29.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 29,
+      "type": "mlp_gate",
+      "free_alpha": 0.4466209145699864,
+      "free_k0": 232.21948500565395,
+      "free_A": 53.80567750645616,
+      "free_r2": 0.8955292416363091,
+      "fixed_r2": 0.8930869152224221,
+      "delta_alpha": -0.17141307417990836
+    },
+    {
+      "name": "model.language_model.layers.29.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 29,
+      "type": "mlp_up",
+      "free_alpha": 0.7322257536107235,
+      "free_k0": 1473.7916107513654,
+      "free_A": 730.7080268853699,
+      "free_r2": 0.931152753601348,
+      "fixed_r2": 0.9274684451279203,
+      "delta_alpha": 0.11419176486082872
+    },
+    {
+      "name": "model.language_model.layers.29.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 29,
+      "type": "attn_k_full",
+      "free_alpha": 0.8390959493880399,
+      "free_k0": 606.6845952460519,
+      "free_A": 415.8758163450861,
+      "free_r2": 0.8790207209702579,
+      "fixed_r2": 0.8568553699862796,
+      "delta_alpha": 0.2210619606381451
+    },
+    {
+      "name": "model.language_model.layers.29.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 29,
+      "type": "attn_o_full",
+      "free_alpha": 0.8640071217044708,
+      "free_k0": 901.7429593681779,
+      "free_A": 884.3387603736497,
+      "free_r2": 0.9292418125442221,
+      "fixed_r2": 0.9143844786655592,
+      "delta_alpha": 0.245973132954576
+    },
+    {
+      "name": "model.language_model.layers.29.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 29,
+      "type": "attn_q_full",
+      "free_alpha": 0.8717984949282477,
+      "free_k0": 793.1307087116979,
+      "free_A": 1511.0087051194953,
+      "free_r2": 0.9344709310556694,
+      "fixed_r2": 0.9294874067070662,
+      "delta_alpha": 0.2537645061783529
+    },
+    {
+      "name": "model.language_model.layers.3.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 3,
+      "type": "mlp_down",
+      "free_alpha": 0.30886362225894415,
+      "free_k0": 1.888918777107378e-14,
+      "free_A": 9.038896232758196,
+      "free_r2": 0.8428675469151674,
+      "fixed_r2": 0.7296417346004356,
+      "delta_alpha": -0.30917036649095064
+    },
+    {
+      "name": "model.language_model.layers.3.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 3,
+      "type": "mlp_gate",
+      "free_alpha": 0.8516204189397842,
+      "free_k0": 1261.4072115532333,
+      "free_A": 1842.5571423085576,
+      "free_r2": 0.8968492119771,
+      "fixed_r2": 0.8927751937154853,
+      "delta_alpha": 0.23358643018988945
+    },
+    {
+      "name": "model.language_model.layers.3.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 3,
+      "type": "mlp_up",
+      "free_alpha": 0.7958996811476314,
+      "free_k0": 1047.9900370700943,
+      "free_A": 1102.4032592725607,
+      "free_r2": 0.9250526774908182,
+      "fixed_r2": 0.9217712331047333,
+      "delta_alpha": 0.17786569239773664
+    },
+    {
+      "name": "model.language_model.layers.3.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 3,
+      "type": "attn_k_slide",
+      "free_alpha": 1.005812975755374,
+      "free_k0": 260.1873666478368,
+      "free_A": 1125.3544807347728,
+      "free_r2": 0.9467552719474878,
+      "fixed_r2": 0.9099320170017264,
+      "delta_alpha": 0.3877789870054792
+    },
+    {
+      "name": "model.language_model.layers.3.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 3,
+      "type": "attn_o_slide",
+      "free_alpha": 1.0983937975969025,
+      "free_k0": 169.2758854820368,
+      "free_A": 1686.9321820051239,
+      "free_r2": 0.9134463168730058,
+      "fixed_r2": 0.8887984683157419,
+      "delta_alpha": 0.4803598088470077
+    },
+    {
+      "name": "model.language_model.layers.3.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 3,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9646956487470271,
+      "free_k0": 307.9542804535359,
+      "free_A": 1322.380447387695,
+      "free_r2": 0.9544026539941197,
+      "fixed_r2": 0.9299986111773951,
+      "delta_alpha": 0.3466616599971323
+    },
+    {
+      "name": "model.language_model.layers.3.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 3,
+      "type": "attn_v_slide",
+      "free_alpha": 1.000966146340752,
+      "free_k0": 121.53619187855698,
+      "free_A": 723.5085487363973,
+      "free_r2": 0.9407006069251554,
+      "fixed_r2": 0.8397878843640684,
+      "delta_alpha": 0.3829321575908572
+    },
+    {
+      "name": "model.language_model.layers.30.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 30,
+      "type": "mlp_down",
+      "free_alpha": 0.7824962184882099,
+      "free_k0": 1944.3204384796618,
+      "free_A": 672.5427627562826,
+      "free_r2": 0.8797598035090753,
+      "fixed_r2": 0.8751220365460903,
+      "delta_alpha": 0.16446222973831515
+    },
+    {
+      "name": "model.language_model.layers.30.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 30,
+      "type": "mlp_gate",
+      "free_alpha": 0.5542375835177077,
+      "free_k0": 445.66574883043523,
+      "free_A": 141.88309966926906,
+      "free_r2": 0.8961207594768265,
+      "fixed_r2": 0.8957885019176784,
+      "delta_alpha": -0.0637964052321871
+    },
+    {
+      "name": "model.language_model.layers.30.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 30,
+      "type": "mlp_up",
+      "free_alpha": 0.7244716012801022,
+      "free_k0": 1268.2606692827053,
+      "free_A": 705.1479338743083,
+      "free_r2": 0.9359261100671924,
+      "fixed_r2": 0.9314269351495533,
+      "delta_alpha": 0.10643761253020745
+    },
+    {
+      "name": "model.language_model.layers.30.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 30,
+      "type": "attn_k_slide",
+      "free_alpha": 0.933057556286491,
+      "free_k0": 376.5604998556644,
+      "free_A": 837.1703147888055,
+      "free_r2": 0.9251570361085965,
+      "fixed_r2": 0.9051995935232342,
+      "delta_alpha": 0.3150235675365962
+    },
+    {
+      "name": "model.language_model.layers.30.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 30,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8568425184637731,
+      "free_k0": 849.013282734208,
+      "free_A": 753.5695552798549,
+      "free_r2": 0.8935702001589885,
+      "fixed_r2": 0.8709920353391434,
+      "delta_alpha": 0.23880852971387834
+    },
+    {
+      "name": "model.language_model.layers.30.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 30,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9141735413584627,
+      "free_k0": 490.9001554262131,
+      "free_A": 1168.310737609716,
+      "free_r2": 0.9451319921081055,
+      "fixed_r2": 0.9306536584494719,
+      "delta_alpha": 0.29613955260856795
+    },
+    {
+      "name": "model.language_model.layers.30.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 30,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9295547160592611,
+      "free_k0": 723.6384430756458,
+      "free_A": 1126.1388778686521,
+      "free_r2": 0.8601586690499287,
+      "fixed_r2": 0.8286093512867507,
+      "delta_alpha": 0.3115207273093663
+    },
+    {
+      "name": "model.language_model.layers.31.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 31,
+      "type": "mlp_down",
+      "free_alpha": 0.7784890990927524,
+      "free_k0": 2001.2429360580911,
+      "free_A": 644.3040370941156,
+      "free_r2": 0.8914271225183337,
+      "fixed_r2": 0.8841474878875082,
+      "delta_alpha": 0.16045511034285764
+    },
+    {
+      "name": "model.language_model.layers.31.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 31,
+      "type": "mlp_gate",
+      "free_alpha": 0.847436826275794,
+      "free_k0": 1344.9126322053867,
+      "free_A": 1871.0536956786116,
+      "free_r2": 0.8805787248282,
+      "fixed_r2": 0.8769324455312736,
+      "delta_alpha": 0.22940283752589918
+    },
+    {
+      "name": "model.language_model.layers.31.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 31,
+      "type": "mlp_up",
+      "free_alpha": 0.7230296252291234,
+      "free_k0": 1316.2379039580503,
+      "free_A": 699.2637634276338,
+      "free_r2": 0.9361490338505751,
+      "fixed_r2": 0.928713103197315,
+      "delta_alpha": 0.1049956364792286
+    },
+    {
+      "name": "model.language_model.layers.31.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 31,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8967175387246159,
+      "free_k0": 354.06528707603826,
+      "free_A": 602.0001411437987,
+      "free_r2": 0.9486571233623965,
+      "fixed_r2": 0.9210298336694178,
+      "delta_alpha": 0.2786835499747211
+    },
+    {
+      "name": "model.language_model.layers.31.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 31,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8602686508925022,
+      "free_k0": 822.1436196682591,
+      "free_A": 796.8367099678331,
+      "free_r2": 0.9167884670441054,
+      "fixed_r2": 0.8879738425801218,
+      "delta_alpha": 0.24223466214260736
+    },
+    {
+      "name": "model.language_model.layers.31.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 31,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8871763325453886,
+      "free_k0": 500.848777540215,
+      "free_A": 919.019603729101,
+      "free_r2": 0.9507580000499436,
+      "fixed_r2": 0.936473452445109,
+      "delta_alpha": 0.26914234379549384
+    },
+    {
+      "name": "model.language_model.layers.31.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 31,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9629352112360688,
+      "free_k0": 631.7274841568028,
+      "free_A": 1256.1309814453116,
+      "free_r2": 0.8734736491124918,
+      "fixed_r2": 0.8429005971430753,
+      "delta_alpha": 0.34490122248617405
+    },
+    {
+      "name": "model.language_model.layers.32.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 32,
+      "type": "mlp_down",
+      "free_alpha": 0.7983319519667772,
+      "free_k0": 1742.2601930787534,
+      "free_A": 722.8221416473195,
+      "free_r2": 0.8956729112306905,
+      "fixed_r2": 0.8890047981602429,
+      "delta_alpha": 0.1802979632168824
+    },
+    {
+      "name": "model.language_model.layers.32.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 32,
+      "type": "mlp_gate",
+      "free_alpha": 0.7871003025431921,
+      "free_k0": 1367.6016084066387,
+      "free_A": 1189.659404754635,
+      "free_r2": 0.9234653940793108,
+      "fixed_r2": 0.9172202767783962,
+      "delta_alpha": 0.16906631379329728
+    },
+    {
+      "name": "model.language_model.layers.32.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 32,
+      "type": "mlp_up",
+      "free_alpha": 0.7136500602428844,
+      "free_k0": 1369.6237228601858,
+      "free_A": 666.5043830871318,
+      "free_r2": 0.9353770295073737,
+      "fixed_r2": 0.9287467955011396,
+      "delta_alpha": 0.09561607149298956
+    },
+    {
+      "name": "model.language_model.layers.32.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 32,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8822099785081805,
+      "free_k0": 355.6380996145362,
+      "free_A": 561.1541271209715,
+      "free_r2": 0.9420106753449462,
+      "fixed_r2": 0.9178748146724418,
+      "delta_alpha": 0.2641759897582857
+    },
+    {
+      "name": "model.language_model.layers.32.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 32,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8774319878888682,
+      "free_k0": 834.21526712122,
+      "free_A": 893.2802200317375,
+      "free_r2": 0.906371255253405,
+      "fixed_r2": 0.8781645628796861,
+      "delta_alpha": 0.25939799913897343
+    },
+    {
+      "name": "model.language_model.layers.32.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 32,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8837532587163289,
+      "free_k0": 528.9059985899426,
+      "free_A": 943.4235572814473,
+      "free_r2": 0.9472794853789527,
+      "fixed_r2": 0.930999305591438,
+      "delta_alpha": 0.26571926996643414
+    },
+    {
+      "name": "model.language_model.layers.32.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 32,
+      "type": "attn_v_slide",
+      "free_alpha": 0.955446275234518,
+      "free_k0": 616.2796363802032,
+      "free_A": 1208.2591055853493,
+      "free_r2": 0.8809002764635797,
+      "fixed_r2": 0.851646688349696,
+      "delta_alpha": 0.3374122864846232
+    },
+    {
+      "name": "model.language_model.layers.33.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 33,
+      "type": "mlp_down",
+      "free_alpha": 0.7733693126492301,
+      "free_k0": 1645.0148337168914,
+      "free_A": 560.0343703340484,
+      "free_r2": 0.9167480733994352,
+      "fixed_r2": 0.9096894837229855,
+      "delta_alpha": 0.15533532389933535
+    },
+    {
+      "name": "model.language_model.layers.33.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 33,
+      "type": "mlp_gate",
+      "free_alpha": 0.816095164776479,
+      "free_k0": 1496.2922241707033,
+      "free_A": 1426.9417762754679,
+      "free_r2": 0.8907198620786265,
+      "fixed_r2": 0.8861420197354665,
+      "delta_alpha": 0.19806117602658424
+    },
+    {
+      "name": "model.language_model.layers.33.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 33,
+      "type": "mlp_up",
+      "free_alpha": 0.6982752556879095,
+      "free_k0": 1514.0718806061332,
+      "free_A": 562.3240470884325,
+      "free_r2": 0.933188078797347,
+      "fixed_r2": 0.9266996618109142,
+      "delta_alpha": 0.0802412669380147
+    },
+    {
+      "name": "model.language_model.layers.33.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 33,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9027029185041889,
+      "free_k0": 358.28667024862574,
+      "free_A": 622.5306034088134,
+      "free_r2": 0.9391818389591334,
+      "fixed_r2": 0.9215006831829409,
+      "delta_alpha": 0.28466892975429414
+    },
+    {
+      "name": "model.language_model.layers.33.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 33,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8756826713561043,
+      "free_k0": 775.4930012387464,
+      "free_A": 856.3681602478026,
+      "free_r2": 0.9202741161262998,
+      "fixed_r2": 0.8966302774905589,
+      "delta_alpha": 0.25764868260620954
+    },
+    {
+      "name": "model.language_model.layers.33.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 33,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8899900468340435,
+      "free_k0": 542.1428722769589,
+      "free_A": 960.6124877929686,
+      "free_r2": 0.9469126618931694,
+      "fixed_r2": 0.9322410015763106,
+      "delta_alpha": 0.2719560580841487
+    },
+    {
+      "name": "model.language_model.layers.33.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 33,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9366196701534332,
+      "free_k0": 711.7623298085257,
+      "free_A": 1095.1900482177732,
+      "free_r2": 0.8644935367768146,
+      "fixed_r2": 0.8348736863997943,
+      "delta_alpha": 0.3185856814035384
+    },
+    {
+      "name": "model.language_model.layers.34.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 34,
+      "type": "mlp_down",
+      "free_alpha": 0.7792554897573961,
+      "free_k0": 1406.3294756427329,
+      "free_A": 521.8326090125865,
+      "free_r2": 0.9207761541882883,
+      "fixed_r2": 0.9142391931630409,
+      "delta_alpha": 0.16122150100750132
+    },
+    {
+      "name": "model.language_model.layers.34.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 34,
+      "type": "mlp_gate",
+      "free_alpha": 0.8351592235009287,
+      "free_k0": 1525.177755404389,
+      "free_A": 1717.0635222614071,
+      "free_r2": 0.8707702846951859,
+      "fixed_r2": 0.8638819719665093,
+      "delta_alpha": 0.21712523475103396
+    },
+    {
+      "name": "model.language_model.layers.34.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 34,
+      "type": "mlp_up",
+      "free_alpha": 0.7251957204455509,
+      "free_k0": 1624.6590251252505,
+      "free_A": 736.6847991942986,
+      "free_r2": 0.9294299724901421,
+      "fixed_r2": 0.9200960423140983,
+      "delta_alpha": 0.10716173169565613
+    },
+    {
+      "name": "model.language_model.layers.34.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 34,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8803128418408739,
+      "free_k0": 355.85709776618523,
+      "free_A": 568.812799453724,
+      "free_r2": 0.9476341933196071,
+      "fixed_r2": 0.9227887511332534,
+      "delta_alpha": 0.2622788530909791
+    },
+    {
+      "name": "model.language_model.layers.34.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 34,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8726299744396426,
+      "free_k0": 845.3805410042663,
+      "free_A": 901.201152800621,
+      "free_r2": 0.914016987709386,
+      "fixed_r2": 0.886383457977143,
+      "delta_alpha": 0.25459598568974784
+    },
+    {
+      "name": "model.language_model.layers.34.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 34,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8885021709029762,
+      "free_k0": 524.0543132526693,
+      "free_A": 996.805572509745,
+      "free_r2": 0.9493382774244546,
+      "fixed_r2": 0.9346487574856861,
+      "delta_alpha": 0.27046818215308144
+    },
+    {
+      "name": "model.language_model.layers.34.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 34,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9396738809544126,
+      "free_k0": 759.3783408253365,
+      "free_A": 1230.842781066889,
+      "free_r2": 0.8489058756213181,
+      "fixed_r2": 0.8146260782100238,
+      "delta_alpha": 0.32163989220451783
+    },
+    {
+      "name": "model.language_model.layers.35.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 35,
+      "type": "mlp_down",
+      "free_alpha": 0.8012783330850589,
+      "free_k0": 1534.3735809650266,
+      "free_A": 659.988689422535,
+      "free_r2": 0.9026244098780096,
+      "fixed_r2": 0.8983732109567031,
+      "delta_alpha": 0.18324434433516412
+    },
+    {
+      "name": "model.language_model.layers.35.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 35,
+      "type": "mlp_gate",
+      "free_alpha": 0.812453079180404,
+      "free_k0": 1560.3691503799128,
+      "free_A": 1462.7501459778584,
+      "free_r2": 0.8916533654252002,
+      "fixed_r2": 0.8865247785996941,
+      "delta_alpha": 0.1944190904305092
+    },
+    {
+      "name": "model.language_model.layers.35.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 35,
+      "type": "mlp_up",
+      "free_alpha": 0.733860007410348,
+      "free_k0": 1655.8763096159792,
+      "free_A": 802.1944044934024,
+      "free_r2": 0.9276604255295625,
+      "fixed_r2": 0.919440897879534,
+      "delta_alpha": 0.11582601866045317
+    },
+    {
+      "name": "model.language_model.layers.35.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 35,
+      "type": "attn_k_full",
+      "free_alpha": 0.8389998416110013,
+      "free_k0": 487.8727900746718,
+      "free_A": 379.055643081665,
+      "free_r2": 0.9140697328822213,
+      "fixed_r2": 0.8903043042785207,
+      "delta_alpha": 0.22096585286110648
+    },
+    {
+      "name": "model.language_model.layers.35.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 35,
+      "type": "attn_o_full",
+      "free_alpha": 0.8759452197946874,
+      "free_k0": 1107.653853595031,
+      "free_A": 994.3969726562452,
+      "free_r2": 0.9027627530028387,
+      "fixed_r2": 0.8877878214028088,
+      "delta_alpha": 0.25791123104479263
+    },
+    {
+      "name": "model.language_model.layers.35.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 35,
+      "type": "attn_q_full",
+      "free_alpha": 0.8435484872908234,
+      "free_k0": 870.1879137683054,
+      "free_A": 1292.6084518432615,
+      "free_r2": 0.946161786933063,
+      "fixed_r2": 0.9386648692650955,
+      "delta_alpha": 0.22551449854092864
+    },
+    {
+      "name": "model.language_model.layers.36.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 36,
+      "type": "mlp_down",
+      "free_alpha": 0.7773536607928814,
+      "free_k0": 1599.1723525438058,
+      "free_A": 586.5537643432598,
+      "free_r2": 0.9116000687081456,
+      "fixed_r2": 0.9074902836372531,
+      "delta_alpha": 0.15931967204298658
+    },
+    {
+      "name": "model.language_model.layers.36.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 36,
+      "type": "mlp_gate",
+      "free_alpha": 0.7961104137144019,
+      "free_k0": 1448.9202571472783,
+      "free_A": 1210.8969688415525,
+      "free_r2": 0.9044795157316723,
+      "fixed_r2": 0.9020470367798755,
+      "delta_alpha": 0.17807642496450715
+    },
+    {
+      "name": "model.language_model.layers.36.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 36,
+      "type": "mlp_up",
+      "free_alpha": 0.7083028319210528,
+      "free_k0": 1520.7025780908352,
+      "free_A": 615.3870104904834,
+      "free_r2": 0.9326562033898157,
+      "fixed_r2": 0.927188304267657,
+      "delta_alpha": 0.09026884317115802
+    },
+    {
+      "name": "model.language_model.layers.36.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 36,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8878637173166686,
+      "free_k0": 435.5699820998775,
+      "free_A": 614.4916057586668,
+      "free_r2": 0.9315376374198735,
+      "fixed_r2": 0.9019072629465436,
+      "delta_alpha": 0.2698297285667738
+    },
+    {
+      "name": "model.language_model.layers.36.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 36,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8558672123259211,
+      "free_k0": 760.2861264734778,
+      "free_A": 741.1794185638427,
+      "free_r2": 0.9232037598100727,
+      "fixed_r2": 0.8914959163576612,
+      "delta_alpha": 0.23783322357602632
+    },
+    {
+      "name": "model.language_model.layers.36.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 36,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8981392593302365,
+      "free_k0": 617.0552868119291,
+      "free_A": 1079.229450225816,
+      "free_r2": 0.9339243234984377,
+      "fixed_r2": 0.9136006159979904,
+      "delta_alpha": 0.28010527058034174
+    },
+    {
+      "name": "model.language_model.layers.36.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 36,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9435931972470065,
+      "free_k0": 703.6147214580292,
+      "free_A": 1143.3945655822674,
+      "free_r2": 0.8559821741016735,
+      "fixed_r2": 0.8267956603455316,
+      "delta_alpha": 0.32555920849711173
+    },
+    {
+      "name": "model.language_model.layers.37.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 37,
+      "type": "mlp_down",
+      "free_alpha": 0.776600984568658,
+      "free_k0": 1393.2599431938645,
+      "free_A": 522.0086574554438,
+      "free_r2": 0.9238616691976219,
+      "fixed_r2": 0.9169149012930271,
+      "delta_alpha": 0.1585669958187632
+    },
+    {
+      "name": "model.language_model.layers.37.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 37,
+      "type": "mlp_gate",
+      "free_alpha": 0.8030371296314103,
+      "free_k0": 1392.6408865050885,
+      "free_A": 1272.1423149089885,
+      "free_r2": 0.9102786306638806,
+      "fixed_r2": 0.9063560274459439,
+      "delta_alpha": 0.18500314088151548
+    },
+    {
+      "name": "model.language_model.layers.37.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 37,
+      "type": "mlp_up",
+      "free_alpha": 0.718302883941221,
+      "free_k0": 1414.8297959527063,
+      "free_A": 655.7758331286255,
+      "free_r2": 0.935752813019628,
+      "fixed_r2": 0.9298566030361166,
+      "delta_alpha": 0.1002688951913262
+    },
+    {
+      "name": "model.language_model.layers.37.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 37,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8789409255855972,
+      "free_k0": 434.6403976534082,
+      "free_A": 609.956121444024,
+      "free_r2": 0.9310703747572743,
+      "fixed_r2": 0.9006363657602853,
+      "delta_alpha": 0.26090693683570243
+    },
+    {
+      "name": "model.language_model.layers.37.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 37,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8562764459953829,
+      "free_k0": 873.4246065926317,
+      "free_A": 814.3903732299755,
+      "free_r2": 0.9043831084077106,
+      "fixed_r2": 0.8735028881599267,
+      "delta_alpha": 0.2382424572454881
+    },
+    {
+      "name": "model.language_model.layers.37.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 37,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8986076134259683,
+      "free_k0": 582.8766035446446,
+      "free_A": 1114.8840904235838,
+      "free_r2": 0.9380527374571658,
+      "fixed_r2": 0.9173755147936191,
+      "delta_alpha": 0.2805736246760735
+    },
+    {
+      "name": "model.language_model.layers.37.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 37,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9631119522251251,
+      "free_k0": 694.6511794161687,
+      "free_A": 1374.030303955078,
+      "free_r2": 0.8273046394990837,
+      "fixed_r2": 0.7986720470237153,
+      "delta_alpha": 0.34507796347523034
+    },
+    {
+      "name": "model.language_model.layers.38.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 38,
+      "type": "mlp_down",
+      "free_alpha": 0.77161139441031,
+      "free_k0": 1383.5867530485818,
+      "free_A": 522.4419116973613,
+      "free_r2": 0.9134224306234551,
+      "fixed_r2": 0.9040519762779968,
+      "delta_alpha": 0.15357740566041522
+    },
+    {
+      "name": "model.language_model.layers.38.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 38,
+      "type": "mlp_gate",
+      "free_alpha": 0.8055142224133597,
+      "free_k0": 1447.3746227070762,
+      "free_A": 1286.703300476074,
+      "free_r2": 0.9022970528060643,
+      "fixed_r2": 0.8983257212369198,
+      "delta_alpha": 0.1874802336634649
+    },
+    {
+      "name": "model.language_model.layers.38.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 38,
+      "type": "mlp_up",
+      "free_alpha": 0.7225364621709612,
+      "free_k0": 1471.5780981035805,
+      "free_A": 671.6716766352185,
+      "free_r2": 0.9329191961655753,
+      "fixed_r2": 0.9274664486839674,
+      "delta_alpha": 0.10450247342106644
+    },
+    {
+      "name": "model.language_model.layers.38.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 38,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8934853071069758,
+      "free_k0": 449.22238471688945,
+      "free_A": 685.8754158020014,
+      "free_r2": 0.9284520110975196,
+      "fixed_r2": 0.8975333457985641,
+      "delta_alpha": 0.27545131835708103
+    },
+    {
+      "name": "model.language_model.layers.38.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 38,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8568273727662744,
+      "free_k0": 750.4630331249803,
+      "free_A": 766.6458129882811,
+      "free_r2": 0.9154101835896487,
+      "fixed_r2": 0.8869342739900338,
+      "delta_alpha": 0.23879338401637962
+    },
+    {
+      "name": "model.language_model.layers.38.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 38,
+      "type": "attn_q_slide",
+      "free_alpha": 0.903392244237886,
+      "free_k0": 586.1075401660106,
+      "free_A": 1159.1286658946383,
+      "free_r2": 0.9369176806434383,
+      "fixed_r2": 0.9177931801318012,
+      "delta_alpha": 0.2853582554879912
+    },
+    {
+      "name": "model.language_model.layers.38.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 38,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9466998297422771,
+      "free_k0": 744.2468533650684,
+      "free_A": 1273.0113029479874,
+      "free_r2": 0.8374905986681951,
+      "fixed_r2": 0.808577416101065,
+      "delta_alpha": 0.3286658409923823
+    },
+    {
+      "name": "model.language_model.layers.39.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 39,
+      "type": "mlp_down",
+      "free_alpha": 0.7646442515083977,
+      "free_k0": 1523.6721286190823,
+      "free_A": 497.87154197568964,
+      "free_r2": 0.9096706160881948,
+      "fixed_r2": 0.8981479039309659,
+      "delta_alpha": 0.14661026275850286
+    },
+    {
+      "name": "model.language_model.layers.39.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 39,
+      "type": "mlp_gate",
+      "free_alpha": 0.8288567771903309,
+      "free_k0": 1521.0931005751129,
+      "free_A": 1629.4229506483027,
+      "free_r2": 0.8855799195096591,
+      "fixed_r2": 0.8787166299542587,
+      "delta_alpha": 0.21082278844043612
+    },
+    {
+      "name": "model.language_model.layers.39.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 39,
+      "type": "mlp_up",
+      "free_alpha": 0.7473693670296989,
+      "free_k0": 1569.024134478013,
+      "free_A": 865.502643585205,
+      "free_r2": 0.9297241976657014,
+      "fixed_r2": 0.9220635304228495,
+      "delta_alpha": 0.12933537827980413
+    },
+    {
+      "name": "model.language_model.layers.39.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 39,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9190342412100592,
+      "free_k0": 314.4923665604367,
+      "free_A": 672.5780487060532,
+      "free_r2": 0.9548141128277391,
+      "fixed_r2": 0.927913201578144,
+      "delta_alpha": 0.3010002524601644
+    },
+    {
+      "name": "model.language_model.layers.39.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 39,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8655335064056403,
+      "free_k0": 793.6365359684171,
+      "free_A": 776.9811153411863,
+      "free_r2": 0.9116304868414765,
+      "fixed_r2": 0.8771538088579679,
+      "delta_alpha": 0.24749951765574552
+    },
+    {
+      "name": "model.language_model.layers.39.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 39,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9314251566048136,
+      "free_k0": 482.39454409983944,
+      "free_A": 1250.9208679199216,
+      "free_r2": 0.9483779797855385,
+      "fixed_r2": 0.9281192631466906,
+      "delta_alpha": 0.31339116785491883
+    },
+    {
+      "name": "model.language_model.layers.39.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 39,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9347497534313166,
+      "free_k0": 669.3051519089664,
+      "free_A": 1073.6177444405866,
+      "free_r2": 0.8696339749666478,
+      "fixed_r2": 0.8312454825079086,
+      "delta_alpha": 0.3167157646814218
+    },
+    {
+      "name": "model.language_model.layers.4.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 4,
+      "type": "mlp_down",
+      "free_alpha": 0.9158107909158701,
+      "free_k0": 1684.7075781118087,
+      "free_A": 1744.0435409464958,
+      "free_r2": 0.6759223712435369,
+      "fixed_r2": 0.6721069041727372,
+      "delta_alpha": 0.29777680216597535
+    },
+    {
+      "name": "model.language_model.layers.4.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 4,
+      "type": "mlp_gate",
+      "free_alpha": 0.8275457905711875,
+      "free_k0": 1086.39240933932,
+      "free_A": 1388.964936558751,
+      "free_r2": 0.938632409932801,
+      "fixed_r2": 0.933625613480384,
+      "delta_alpha": 0.2095118018212927
+    },
+    {
+      "name": "model.language_model.layers.4.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 4,
+      "type": "mlp_up",
+      "free_alpha": 0.7554503852577861,
+      "free_k0": 982.9668487124596,
+      "free_A": 765.9754753112787,
+      "free_r2": 0.956290675087859,
+      "fixed_r2": 0.9497728717884724,
+      "delta_alpha": 0.13741639650789128
+    },
+    {
+      "name": "model.language_model.layers.4.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 4,
+      "type": "attn_k_slide",
+      "free_alpha": 0.6875481335323859,
+      "free_k0": 108.21568356558026,
+      "free_A": 105.59079752551203,
+      "free_r2": 0.9108745425849771,
+      "fixed_r2": 0.9100968808476939,
+      "delta_alpha": 0.06951414478249107
+    },
+    {
+      "name": "model.language_model.layers.4.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 4,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9397477821274371,
+      "free_k0": 632.4433738224941,
+      "free_A": 1206.3427925095273,
+      "free_r2": 0.8768362439060329,
+      "fixed_r2": 0.8472260499795795,
+      "delta_alpha": 0.32171379337754236
+    },
+    {
+      "name": "model.language_model.layers.4.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 4,
+      "type": "attn_q_slide",
+      "free_alpha": 0.7597712625302973,
+      "free_k0": 201.97606573395146,
+      "free_A": 277.8566668767401,
+      "free_r2": 0.9376501925025639,
+      "fixed_r2": 0.9340604777156752,
+      "delta_alpha": 0.14173727378040246
+    },
+    {
+      "name": "model.language_model.layers.4.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 4,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9276178414464954,
+      "free_k0": 639.0697937453486,
+      "free_A": 995.445919036854,
+      "free_r2": 0.8686363599598563,
+      "fixed_r2": 0.8180101436723985,
+      "delta_alpha": 0.3095838526966006
+    },
+    {
+      "name": "model.language_model.layers.40.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 40,
+      "type": "mlp_down",
+      "free_alpha": 0.7733576981712298,
+      "free_k0": 1657.3032245951802,
+      "free_A": 542.3521518423443,
+      "free_r2": 0.8963591869628088,
+      "fixed_r2": 0.881028453769983,
+      "delta_alpha": 0.155323709421335
+    },
+    {
+      "name": "model.language_model.layers.40.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 40,
+      "type": "mlp_gate",
+      "free_alpha": 0.8839530778838616,
+      "free_k0": 1693.7904555556813,
+      "free_A": 2739.6547308531585,
+      "free_r2": 0.7652299706651314,
+      "fixed_r2": 0.7594220019391482,
+      "delta_alpha": 0.2659190891339668
+    },
+    {
+      "name": "model.language_model.layers.40.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 40,
+      "type": "mlp_up",
+      "free_alpha": 0.8020992513669384,
+      "free_k0": 1791.1741208252895,
+      "free_A": 1474.9621391190783,
+      "free_r2": 0.8794204466099057,
+      "fixed_r2": 0.8697901523138063,
+      "delta_alpha": 0.1840652626170436
+    },
+    {
+      "name": "model.language_model.layers.40.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 40,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9071927607294449,
+      "free_k0": 415.5260827981796,
+      "free_A": 753.7175655364712,
+      "free_r2": 0.9352669161137855,
+      "fixed_r2": 0.9081346806864202,
+      "delta_alpha": 0.2891587719795501
+    },
+    {
+      "name": "model.language_model.layers.40.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 40,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8339370359948428,
+      "free_k0": 786.2817688566506,
+      "free_A": 642.3058032989486,
+      "free_r2": 0.9175072571597456,
+      "fixed_r2": 0.886572563256045,
+      "delta_alpha": 0.21590304724494802
+    },
+    {
+      "name": "model.language_model.layers.40.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 40,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9141054180182827,
+      "free_k0": 587.1775884321348,
+      "free_A": 1296.3228225708006,
+      "free_r2": 0.9324739423717372,
+      "fixed_r2": 0.9117528304120157,
+      "delta_alpha": 0.2960714292683879
+    },
+    {
+      "name": "model.language_model.layers.40.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 40,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9147123479519434,
+      "free_k0": 856.8103823415881,
+      "free_A": 1126.2331962585447,
+      "free_r2": 0.8426071082283414,
+      "fixed_r2": 0.81008962477178,
+      "delta_alpha": 0.29667835920204866
+    },
+    {
+      "name": "model.language_model.layers.41.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 41,
+      "type": "mlp_down",
+      "free_alpha": 0.7685776305912252,
+      "free_k0": 2178.071773233097,
+      "free_A": 594.6900367553751,
+      "free_r2": 0.8906977362532683,
+      "fixed_r2": 0.8795102799025346,
+      "delta_alpha": 0.1505436418413304
+    },
+    {
+      "name": "model.language_model.layers.41.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 41,
+      "type": "mlp_gate",
+      "free_alpha": 0.8446042301564437,
+      "free_k0": 1577.014364263621,
+      "free_A": 1869.0670013427712,
+      "free_r2": 0.8610538612731886,
+      "fixed_r2": 0.8540812251223321,
+      "delta_alpha": 0.2265702414065489
+    },
+    {
+      "name": "model.language_model.layers.41.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 41,
+      "type": "mlp_up",
+      "free_alpha": 0.7582113904439982,
+      "free_k0": 1664.297178373276,
+      "free_A": 964.2821311950682,
+      "free_r2": 0.9220305745209652,
+      "fixed_r2": 0.9117806128867625,
+      "delta_alpha": 0.14017740169410342
+    },
+    {
+      "name": "model.language_model.layers.41.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 41,
+      "type": "attn_k_full",
+      "free_alpha": 0.8928364753203741,
+      "free_k0": 252.41846697996866,
+      "free_A": 400.63376426696755,
+      "free_r2": 0.9332685254752826,
+      "fixed_r2": 0.885875155749067,
+      "delta_alpha": 0.27480248657047934
+    },
+    {
+      "name": "model.language_model.layers.41.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 41,
+      "type": "attn_o_full",
+      "free_alpha": 0.8702179747073203,
+      "free_k0": 879.4202949695866,
+      "free_A": 899.2513656616053,
+      "free_r2": 0.9279577979753589,
+      "fixed_r2": 0.9193852150039248,
+      "delta_alpha": 0.2521839859574255
+    },
+    {
+      "name": "model.language_model.layers.41.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 41,
+      "type": "attn_q_full",
+      "free_alpha": 0.877929960928743,
+      "free_k0": 654.6350059014692,
+      "free_A": 1486.0569000244138,
+      "free_r2": 0.9551877497340072,
+      "fixed_r2": 0.9394054422166525,
+      "delta_alpha": 0.2598959721788482
+    },
+    {
+      "name": "model.language_model.layers.42.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 42,
+      "type": "mlp_down",
+      "free_alpha": 0.7540356106557986,
+      "free_k0": 2185.650520168141,
+      "free_A": 547.2806453704827,
+      "free_r2": 0.8931370393672918,
+      "fixed_r2": 0.8816612673531672,
+      "delta_alpha": 0.1360016219059038
+    },
+    {
+      "name": "model.language_model.layers.42.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 42,
+      "type": "mlp_gate",
+      "free_alpha": 0.8170959478762226,
+      "free_k0": 1580.1590464276387,
+      "free_A": 1581.4008712768552,
+      "free_r2": 0.8798146932633204,
+      "fixed_r2": 0.8759553882248449,
+      "delta_alpha": 0.19906195912632785
+    },
+    {
+      "name": "model.language_model.layers.42.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 42,
+      "type": "mlp_up",
+      "free_alpha": 0.7355972458012946,
+      "free_k0": 1590.4931661728124,
+      "free_A": 828.9208412170397,
+      "free_r2": 0.9286596420615512,
+      "fixed_r2": 0.9203276153159715,
+      "delta_alpha": 0.1175632570513998
+    },
+    {
+      "name": "model.language_model.layers.42.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 42,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8790998460339858,
+      "free_k0": 496.49276862760877,
+      "free_A": 659.0529918670635,
+      "free_r2": 0.9174527859375263,
+      "fixed_r2": 0.8954995791590299,
+      "delta_alpha": 0.26106585728409104
+    },
+    {
+      "name": "model.language_model.layers.42.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 42,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8481591346524425,
+      "free_k0": 1068.7408019696702,
+      "free_A": 816.0975455831687,
+      "free_r2": 0.883029375021553,
+      "fixed_r2": 0.8498213341395119,
+      "delta_alpha": 0.23012514590254773
+    },
+    {
+      "name": "model.language_model.layers.42.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 42,
+      "type": "attn_q_slide",
+      "free_alpha": 0.874395384605353,
+      "free_k0": 710.0090344815095,
+      "free_A": 1040.4788017272947,
+      "free_r2": 0.9234095753707157,
+      "fixed_r2": 0.9066654019945789,
+      "delta_alpha": 0.25636139585545825
+    },
+    {
+      "name": "model.language_model.layers.42.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 42,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9743356760311763,
+      "free_k0": 894.8136711033201,
+      "free_A": 1728.4095764160145,
+      "free_r2": 0.7485073122907555,
+      "fixed_r2": 0.7167719529201286,
+      "delta_alpha": 0.35630168728128153
+    },
+    {
+      "name": "model.language_model.layers.43.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 43,
+      "type": "mlp_down",
+      "free_alpha": 0.7611514311751519,
+      "free_k0": 2196.041501012829,
+      "free_A": 568.996429443333,
+      "free_r2": 0.8984729567493369,
+      "fixed_r2": 0.8863639233605997,
+      "delta_alpha": 0.14311744242525715
+    },
+    {
+      "name": "model.language_model.layers.43.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 43,
+      "type": "mlp_gate",
+      "free_alpha": 0.8203591768803636,
+      "free_k0": 1727.8660317287965,
+      "free_A": 1715.435218811035,
+      "free_r2": 0.8738047581674725,
+      "fixed_r2": 0.8682104220782305,
+      "delta_alpha": 0.20232518813046885
+    },
+    {
+      "name": "model.language_model.layers.43.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 43,
+      "type": "mlp_up",
+      "free_alpha": 0.7142949772566164,
+      "free_k0": 1667.1261617820182,
+      "free_A": 721.1153030066789,
+      "free_r2": 0.9326818127906799,
+      "fixed_r2": 0.9245381992586189,
+      "delta_alpha": 0.0962609885067216
+    },
+    {
+      "name": "model.language_model.layers.43.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 43,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8641595440040412,
+      "free_k0": 630.6222317363464,
+      "free_A": 660.9866619109076,
+      "free_r2": 0.9000142719360985,
+      "fixed_r2": 0.8709400520222845,
+      "delta_alpha": 0.24612555525414637
+    },
+    {
+      "name": "model.language_model.layers.43.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 43,
+      "type": "attn_o_slide",
+      "free_alpha": 0.903588780341384,
+      "free_k0": 1240.7500088237834,
+      "free_A": 1343.5442924494378,
+      "free_r2": 0.8274515167766155,
+      "fixed_r2": 0.7944778281227579,
+      "delta_alpha": 0.2855547915914892
+    },
+    {
+      "name": "model.language_model.layers.43.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 43,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8401574781990911,
+      "free_k0": 918.7616069242563,
+      "free_A": 905.9291839599605,
+      "free_r2": 0.9085099415387403,
+      "fixed_r2": 0.8849350056767049,
+      "delta_alpha": 0.22212348944919635
+    },
+    {
+      "name": "model.language_model.layers.43.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 43,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0024917191873643,
+      "free_k0": 931.444481379132,
+      "free_A": 2148.0531691503816,
+      "free_r2": 0.6711891574623334,
+      "fixed_r2": 0.643334324496744,
+      "delta_alpha": 0.38445773043746956
+    },
+    {
+      "name": "model.language_model.layers.44.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 44,
+      "type": "mlp_down",
+      "free_alpha": 0.774149972781033,
+      "free_k0": 2138.4843815949125,
+      "free_A": 601.3426780700647,
+      "free_r2": 0.8866486113123438,
+      "fixed_r2": 0.8737761790832455,
+      "delta_alpha": 0.15611598403113824
+    },
+    {
+      "name": "model.language_model.layers.44.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 44,
+      "type": "mlp_gate",
+      "free_alpha": 0.8258410090704816,
+      "free_k0": 1876.6760949352556,
+      "free_A": 1714.704704278337,
+      "free_r2": 0.8590504469515085,
+      "fixed_r2": 0.8519735962010859,
+      "delta_alpha": 0.20780702032058684
+    },
+    {
+      "name": "model.language_model.layers.44.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 44,
+      "type": "mlp_up",
+      "free_alpha": 0.7012985848357907,
+      "free_k0": 1736.3566784619584,
+      "free_A": 606.4915657036719,
+      "free_r2": 0.934372600702343,
+      "fixed_r2": 0.926774241014933,
+      "delta_alpha": 0.08326459608589587
+    },
+    {
+      "name": "model.language_model.layers.44.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 44,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8537211528059652,
+      "free_k0": 676.5280777616518,
+      "free_A": 629.5835494995077,
+      "free_r2": 0.894774729727277,
+      "fixed_r2": 0.8654410910560549,
+      "delta_alpha": 0.23568716405607038
+    },
+    {
+      "name": "model.language_model.layers.44.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 44,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9038341320961999,
+      "free_k0": 1256.9573004154192,
+      "free_A": 1385.760974883963,
+      "free_r2": 0.8293581649653882,
+      "fixed_r2": 0.798598521582535,
+      "delta_alpha": 0.2858001433463051
+    },
+    {
+      "name": "model.language_model.layers.44.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 44,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8413133540458926,
+      "free_k0": 960.8973050835008,
+      "free_A": 927.2966384885756,
+      "free_r2": 0.9018816792210058,
+      "fixed_r2": 0.8790867233685764,
+      "delta_alpha": 0.2232793652959978
+    },
+    {
+      "name": "model.language_model.layers.44.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 44,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9982838101737245,
+      "free_k0": 998.1507254722119,
+      "free_A": 2156.343269348143,
+      "free_r2": 0.6539277083269153,
+      "fixed_r2": 0.6265022412253376,
+      "delta_alpha": 0.3802498214238297
+    },
+    {
+      "name": "model.language_model.layers.45.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 45,
+      "type": "mlp_down",
+      "free_alpha": 0.7733478996301438,
+      "free_k0": 2069.2039449722974,
+      "free_A": 586.3092422485317,
+      "free_r2": 0.8906180964088881,
+      "fixed_r2": 0.879856112906142,
+      "delta_alpha": 0.15531391088024904
+    },
+    {
+      "name": "model.language_model.layers.45.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 45,
+      "type": "mlp_gate",
+      "free_alpha": 0.7992407520119434,
+      "free_k0": 1707.9207700253478,
+      "free_A": 1441.623497009004,
+      "free_r2": 0.8807206155343688,
+      "fixed_r2": 0.8764476190225132,
+      "delta_alpha": 0.18120676326204865
+    },
+    {
+      "name": "model.language_model.layers.45.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 45,
+      "type": "mlp_up",
+      "free_alpha": 0.705530845658664,
+      "free_k0": 1780.8377518798404,
+      "free_A": 690.7801151275634,
+      "free_r2": 0.9313364396385927,
+      "fixed_r2": 0.923521070481506,
+      "delta_alpha": 0.08749685690876918
+    },
+    {
+      "name": "model.language_model.layers.45.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 45,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8513626441737306,
+      "free_k0": 635.6832338705566,
+      "free_A": 591.7586326580771,
+      "free_r2": 0.8993949149134329,
+      "fixed_r2": 0.8705216813989897,
+      "delta_alpha": 0.23332865542383585
+    },
+    {
+      "name": "model.language_model.layers.45.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 45,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9071343775874224,
+      "free_k0": 1217.288623178127,
+      "free_A": 1411.2394330002842,
+      "free_r2": 0.8331485317759045,
+      "fixed_r2": 0.8023364450711346,
+      "delta_alpha": 0.28910038883752764
+    },
+    {
+      "name": "model.language_model.layers.45.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 45,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8293747947571737,
+      "free_k0": 906.4219257073743,
+      "free_A": 811.9317054745203,
+      "free_r2": 0.909148270610757,
+      "fixed_r2": 0.8864165928715642,
+      "delta_alpha": 0.2113408060072789
+    },
+    {
+      "name": "model.language_model.layers.45.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 45,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0081885535596946,
+      "free_k0": 955.5717262271435,
+      "free_A": 2214.341354370112,
+      "free_r2": 0.6440983707072067,
+      "fixed_r2": 0.6190276678786257,
+      "delta_alpha": 0.3901545648097998
+    },
+    {
+      "name": "model.language_model.layers.46.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 46,
+      "type": "mlp_down",
+      "free_alpha": 0.774087145139843,
+      "free_k0": 2005.3182350288484,
+      "free_A": 597.6960182189937,
+      "free_r2": 0.8902825202122024,
+      "fixed_r2": 0.8792757561328228,
+      "delta_alpha": 0.1560531563899482
+    },
+    {
+      "name": "model.language_model.layers.46.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 46,
+      "type": "mlp_gate",
+      "free_alpha": 0.8056051620142091,
+      "free_k0": 1744.387473653875,
+      "free_A": 1451.9991874692614,
+      "free_r2": 0.8755788084259873,
+      "fixed_r2": 0.8711257194759607,
+      "delta_alpha": 0.18757117326431427
+    },
+    {
+      "name": "model.language_model.layers.46.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 46,
+      "type": "mlp_up",
+      "free_alpha": 0.7000008844334527,
+      "free_k0": 1796.6931240802467,
+      "free_A": 628.1004905682598,
+      "free_r2": 0.9302616934858443,
+      "fixed_r2": 0.9225232772317818,
+      "delta_alpha": 0.08196689568355786
+    },
+    {
+      "name": "model.language_model.layers.46.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 46,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8442346599615091,
+      "free_k0": 608.2329622176508,
+      "free_A": 528.5682678222652,
+      "free_r2": 0.9032787027882414,
+      "fixed_r2": 0.8717817530403601,
+      "delta_alpha": 0.22620067121161436
+    },
+    {
+      "name": "model.language_model.layers.46.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 46,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8861893661336874,
+      "free_k0": 1082.934953397915,
+      "free_A": 1039.7436141967771,
+      "free_r2": 0.8687458992931794,
+      "fixed_r2": 0.8350850403850872,
+      "delta_alpha": 0.2681553773837926
+    },
+    {
+      "name": "model.language_model.layers.46.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 46,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8406977121141147,
+      "free_k0": 872.3369715290302,
+      "free_A": 833.6970329283513,
+      "free_r2": 0.9100007000791688,
+      "fixed_r2": 0.8863404721937778,
+      "delta_alpha": 0.2226637233642199
+    },
+    {
+      "name": "model.language_model.layers.46.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 46,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9938817109982608,
+      "free_k0": 974.000988328495,
+      "free_A": 1947.0302581785636,
+      "free_r2": 0.6741355256287147,
+      "fixed_r2": 0.6468210034699982,
+      "delta_alpha": 0.37584772224836605
+    },
+    {
+      "name": "model.language_model.layers.47.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 47,
+      "type": "mlp_down",
+      "free_alpha": 0.7708574510247397,
+      "free_k0": 2018.8716711104971,
+      "free_A": 577.6641368854612,
+      "free_r2": 0.8897772910444484,
+      "fixed_r2": 0.8789930256320745,
+      "delta_alpha": 0.1528234622748449
+    },
+    {
+      "name": "model.language_model.layers.47.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 47,
+      "type": "mlp_gate",
+      "free_alpha": 0.8089703985047293,
+      "free_k0": 1715.792477924107,
+      "free_A": 1462.3364448527245,
+      "free_r2": 0.8696317340974427,
+      "fixed_r2": 0.865590817028238,
+      "delta_alpha": 0.1909364097548345
+    },
+    {
+      "name": "model.language_model.layers.47.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 47,
+      "type": "mlp_up",
+      "free_alpha": 0.7024878318157263,
+      "free_k0": 1778.9254858393897,
+      "free_A": 630.8784007784399,
+      "free_r2": 0.9282936443871277,
+      "fixed_r2": 0.9203021263196864,
+      "delta_alpha": 0.08445384306583148
+    },
+    {
+      "name": "model.language_model.layers.47.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 47,
+      "type": "attn_k_full",
+      "free_alpha": 0.9243235613046358,
+      "free_k0": 264.5638783797783,
+      "free_A": 477.9830455780029,
+      "free_r2": 0.9632434244334618,
+      "fixed_r2": 0.9301410468249637,
+      "delta_alpha": 0.306289572554741
+    },
+    {
+      "name": "model.language_model.layers.47.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 47,
+      "type": "attn_o_full",
+      "free_alpha": 0.8873658565194645,
+      "free_k0": 1119.2017540325953,
+      "free_A": 1111.2417995659234,
+      "free_r2": 0.8816282269480931,
+      "fixed_r2": 0.8733310843506216,
+      "delta_alpha": 0.26933186776956974
+    },
+    {
+      "name": "model.language_model.layers.47.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 47,
+      "type": "attn_q_full",
+      "free_alpha": 0.8320482576901935,
+      "free_k0": 851.9614654567449,
+      "free_A": 1127.8635978666987,
+      "free_r2": 0.9364986474704511,
+      "fixed_r2": 0.930138924793465,
+      "delta_alpha": 0.21401426894029874
+    },
+    {
+      "name": "model.language_model.layers.48.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 48,
+      "type": "mlp_down",
+      "free_alpha": 0.7719178843639993,
+      "free_k0": 1869.41584080702,
+      "free_A": 555.2970886230087,
+      "free_r2": 0.8856406985581945,
+      "fixed_r2": 0.8755090607412145,
+      "delta_alpha": 0.15388389561410454
+    },
+    {
+      "name": "model.language_model.layers.48.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 48,
+      "type": "mlp_gate",
+      "free_alpha": 0.8189511650418565,
+      "free_k0": 1797.2808779485376,
+      "free_A": 1585.3762626647947,
+      "free_r2": 0.8500387883397108,
+      "fixed_r2": 0.8462335421794773,
+      "delta_alpha": 0.2009171762919617
+    },
+    {
+      "name": "model.language_model.layers.48.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 48,
+      "type": "mlp_up",
+      "free_alpha": 0.6985150749561571,
+      "free_k0": 1816.1186139992183,
+      "free_A": 603.2503128050897,
+      "free_r2": 0.9284725603358381,
+      "fixed_r2": 0.920830618940699,
+      "delta_alpha": 0.08048108620626226
+    },
+    {
+      "name": "model.language_model.layers.48.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 48,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8529223307004652,
+      "free_k0": 625.9025135386498,
+      "free_A": 569.1359519958495,
+      "free_r2": 0.8905135024978426,
+      "fixed_r2": 0.8664445324034191,
+      "delta_alpha": 0.2348883419505704
+    },
+    {
+      "name": "model.language_model.layers.48.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 48,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9239483764405951,
+      "free_k0": 1350.5117359132375,
+      "free_A": 1627.7166366577135,
+      "free_r2": 0.7747462602993902,
+      "fixed_r2": 0.7434867387871041,
+      "delta_alpha": 0.30591438769070034
+    },
+    {
+      "name": "model.language_model.layers.48.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 48,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8156919936329883,
+      "free_k0": 973.6546021479079,
+      "free_A": 723.6978530883679,
+      "free_r2": 0.9046000703302501,
+      "fixed_r2": 0.8811195208008402,
+      "delta_alpha": 0.19765800488309349
+    },
+    {
+      "name": "model.language_model.layers.48.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 48,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0064953206403104,
+      "free_k0": 999.0546670889129,
+      "free_A": 2148.25172424238,
+      "free_r2": 0.6284207823041729,
+      "fixed_r2": 0.602079132057964,
+      "delta_alpha": 0.38846133189041565
+    },
+    {
+      "name": "model.language_model.layers.49.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 49,
+      "type": "mlp_down",
+      "free_alpha": 0.7739313496452296,
+      "free_k0": 1730.2837988145593,
+      "free_A": 538.968467711889,
+      "free_r2": 0.8643939430941825,
+      "fixed_r2": 0.8544229474713453,
+      "delta_alpha": 0.1558973608953348
+    },
+    {
+      "name": "model.language_model.layers.49.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 49,
+      "type": "mlp_gate",
+      "free_alpha": 0.8051201012162653,
+      "free_k0": 1618.524932352219,
+      "free_A": 1412.7535819992627,
+      "free_r2": 0.8534046258162311,
+      "fixed_r2": 0.8497291255579887,
+      "delta_alpha": 0.18708611246637052
+    },
+    {
+      "name": "model.language_model.layers.49.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 49,
+      "type": "mlp_up",
+      "free_alpha": 0.701361030087893,
+      "free_k0": 1711.306910940839,
+      "free_A": 630.9131622312997,
+      "free_r2": 0.9148564085937811,
+      "fixed_r2": 0.9069699224743746,
+      "delta_alpha": 0.08332704133799818
+    },
+    {
+      "name": "model.language_model.layers.49.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 49,
+      "type": "attn_k_slide",
+      "free_alpha": 0.840999071066203,
+      "free_k0": 676.1182215182263,
+      "free_A": 573.367691040039,
+      "free_r2": 0.8869837935888024,
+      "fixed_r2": 0.8546409703250458,
+      "delta_alpha": 0.22296508231630818
+    },
+    {
+      "name": "model.language_model.layers.49.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 49,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8498003854833591,
+      "free_k0": 803.7151608815909,
+      "free_A": 746.5626239774552,
+      "free_r2": 0.9152758945794842,
+      "fixed_r2": 0.8900281155000322,
+      "delta_alpha": 0.23176639673346433
+    },
+    {
+      "name": "model.language_model.layers.49.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 49,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8248529731665937,
+      "free_k0": 963.9824056939835,
+      "free_A": 819.4443702697753,
+      "free_r2": 0.9007450268015766,
+      "fixed_r2": 0.8735847128265619,
+      "delta_alpha": 0.20681898441669888
+    },
+    {
+      "name": "model.language_model.layers.49.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 49,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9910290454396443,
+      "free_k0": 757.8457762567512,
+      "free_A": 1769.6552276573364,
+      "free_r2": 0.7652365179872653,
+      "fixed_r2": 0.7395754178549787,
+      "delta_alpha": 0.3729950566897495
+    },
+    {
+      "name": "model.language_model.layers.5.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 5,
+      "type": "mlp_down",
+      "free_alpha": 0.5694210229622704,
+      "free_k0": 552.999108032416,
+      "free_A": 76.11605926651653,
+      "free_r2": 0.7653015733538095,
+      "fixed_r2": 0.7652388258934477,
+      "delta_alpha": -0.04861296578762442
+    },
+    {
+      "name": "model.language_model.layers.5.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 5,
+      "type": "mlp_gate",
+      "free_alpha": 0.8442645402523765,
+      "free_k0": 1168.1794929983728,
+      "free_A": 1680.606871943903,
+      "free_r2": 0.8881305459128929,
+      "fixed_r2": 0.8860510674185846,
+      "delta_alpha": 0.22623055150248172
+    },
+    {
+      "name": "model.language_model.layers.5.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 5,
+      "type": "mlp_up",
+      "free_alpha": 0.7346951842034393,
+      "free_k0": 807.797390965794,
+      "free_A": 625.1010207990533,
+      "free_r2": 0.9158404186306714,
+      "fixed_r2": 0.9151174456190057,
+      "delta_alpha": 0.11666119545354448
+    },
+    {
+      "name": "model.language_model.layers.5.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 5,
+      "type": "attn_k_full",
+      "free_alpha": 0.9065577952884862,
+      "free_k0": 214.8637582257276,
+      "free_A": 382.7310562133681,
+      "free_r2": 0.9166082716324468,
+      "fixed_r2": 0.8616724257292825,
+      "delta_alpha": 0.28852380653859144
+    },
+    {
+      "name": "model.language_model.layers.5.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 5,
+      "type": "attn_o_full",
+      "free_alpha": 0.9948276029356227,
+      "free_k0": 492.73440666890343,
+      "free_A": 1562.5066747218355,
+      "free_r2": 0.8592170018587204,
+      "fixed_r2": 0.8475198769748812,
+      "delta_alpha": 0.3767936141857279
+    },
+    {
+      "name": "model.language_model.layers.5.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 5,
+      "type": "attn_q_full",
+      "free_alpha": 0.8775212908834829,
+      "free_k0": 537.0569195872172,
+      "free_A": 1288.221168517101,
+      "free_r2": 0.954162552661893,
+      "fixed_r2": 0.9398483404376665,
+      "delta_alpha": 0.25948730213358806
+    },
+    {
+      "name": "model.language_model.layers.50.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 50,
+      "type": "mlp_down",
+      "free_alpha": 0.782523356687453,
+      "free_k0": 1582.2149015811328,
+      "free_A": 604.5547008514309,
+      "free_r2": 0.8675538281277244,
+      "fixed_r2": 0.860387715025813,
+      "delta_alpha": 0.1644893679375582
+    },
+    {
+      "name": "model.language_model.layers.50.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 50,
+      "type": "mlp_gate",
+      "free_alpha": 0.8170777416703271,
+      "free_k0": 1691.491063987848,
+      "free_A": 1550.2962112426471,
+      "free_r2": 0.8278469771999837,
+      "fixed_r2": 0.8255005829583218,
+      "delta_alpha": 0.1990437529204323
+    },
+    {
+      "name": "model.language_model.layers.50.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 50,
+      "type": "mlp_up",
+      "free_alpha": 0.7241788260941616,
+      "free_k0": 1858.6874241401977,
+      "free_A": 768.0435180664061,
+      "free_r2": 0.9098434405426259,
+      "fixed_r2": 0.9006691511634299,
+      "delta_alpha": 0.10614483734426683
+    },
+    {
+      "name": "model.language_model.layers.50.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 50,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8852692066239949,
+      "free_k0": 764.735799901875,
+      "free_A": 823.0026244838871,
+      "free_r2": 0.8553877587615697,
+      "fixed_r2": 0.8279536915231749,
+      "delta_alpha": 0.2672352178741001
+    },
+    {
+      "name": "model.language_model.layers.50.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 50,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9009816718631296,
+      "free_k0": 1212.9495820962095,
+      "free_A": 1289.0576362528304,
+      "free_r2": 0.8218309113826189,
+      "fixed_r2": 0.7925674455119923,
+      "delta_alpha": 0.2829476831132348
+    },
+    {
+      "name": "model.language_model.layers.50.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 50,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8179690786265694,
+      "free_k0": 1008.7176927259642,
+      "free_A": 780.1593780514738,
+      "free_r2": 0.8936669228887733,
+      "fixed_r2": 0.8716080651571935,
+      "delta_alpha": 0.19993508987667463
+    },
+    {
+      "name": "model.language_model.layers.50.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 50,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9803074061486217,
+      "free_k0": 981.2294731748358,
+      "free_A": 1845.6514357969968,
+      "free_r2": 0.6731059757825129,
+      "fixed_r2": 0.6472385197399633,
+      "delta_alpha": 0.36227341739872687
+    },
+    {
+      "name": "model.language_model.layers.51.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 51,
+      "type": "mlp_down",
+      "free_alpha": 0.7788672028933158,
+      "free_k0": 1610.1640063315228,
+      "free_A": 568.164300918579,
+      "free_r2": 0.855496433558813,
+      "fixed_r2": 0.8488374174547367,
+      "delta_alpha": 0.160833214143421
+    },
+    {
+      "name": "model.language_model.layers.51.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 51,
+      "type": "mlp_gate",
+      "free_alpha": 0.812564098543287,
+      "free_k0": 1754.731243894484,
+      "free_A": 1483.4176058611088,
+      "free_r2": 0.8143796812328503,
+      "fixed_r2": 0.811557908364918,
+      "delta_alpha": 0.19453010979339225
+    },
+    {
+      "name": "model.language_model.layers.51.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 51,
+      "type": "mlp_up",
+      "free_alpha": 0.7284709607664812,
+      "free_k0": 1883.9011154291227,
+      "free_A": 780.313634872436,
+      "free_r2": 0.9085093232489799,
+      "fixed_r2": 0.8995679993782719,
+      "delta_alpha": 0.11043697201658642
+    },
+    {
+      "name": "model.language_model.layers.51.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 51,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8783166147810978,
+      "free_k0": 620.3295537741684,
+      "free_A": 723.9173889160155,
+      "free_r2": 0.8868998108345363,
+      "fixed_r2": 0.8653370952460687,
+      "delta_alpha": 0.260282626031203
+    },
+    {
+      "name": "model.language_model.layers.51.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 51,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8847160725382291,
+      "free_k0": 1111.4826480741613,
+      "free_A": 1048.9836692555018,
+      "free_r2": 0.8637575415991886,
+      "fixed_r2": 0.8317875627703941,
+      "delta_alpha": 0.26668208378833436
+    },
+    {
+      "name": "model.language_model.layers.51.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 51,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8345752988990595,
+      "free_k0": 911.7324121713028,
+      "free_A": 863.4952545166014,
+      "free_r2": 0.9022860137184376,
+      "fixed_r2": 0.881431689926464,
+      "delta_alpha": 0.21654131014916467
+    },
+    {
+      "name": "model.language_model.layers.51.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 51,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9868114077080739,
+      "free_k0": 986.2175684980737,
+      "free_A": 1985.1535797119102,
+      "free_r2": 0.6832675341168173,
+      "fixed_r2": 0.6559171313279291,
+      "delta_alpha": 0.36877741895817906
+    },
+    {
+      "name": "model.language_model.layers.52.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 52,
+      "type": "mlp_down",
+      "free_alpha": 0.7514357478321477,
+      "free_k0": 1421.0225293931237,
+      "free_A": 438.3188247680571,
+      "free_r2": 0.8981272355033653,
+      "fixed_r2": 0.8883195120745269,
+      "delta_alpha": 0.13340175908225294
+    },
+    {
+      "name": "model.language_model.layers.52.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 52,
+      "type": "mlp_gate",
+      "free_alpha": 0.8378291506168775,
+      "free_k0": 1749.518617862692,
+      "free_A": 1847.0056533803488,
+      "free_r2": 0.7942912404600793,
+      "fixed_r2": 0.789781287941866,
+      "delta_alpha": 0.21979516186698267
+    },
+    {
+      "name": "model.language_model.layers.52.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 52,
+      "type": "mlp_up",
+      "free_alpha": 0.7616565748344742,
+      "free_k0": 1898.7214314017192,
+      "free_A": 1044.6906089780996,
+      "free_r2": 0.8886624866241585,
+      "fixed_r2": 0.8775304975214165,
+      "delta_alpha": 0.14362258608457945
+    },
+    {
+      "name": "model.language_model.layers.52.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 52,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8868171092761745,
+      "free_k0": 754.082933697242,
+      "free_A": 797.8327750962936,
+      "free_r2": 0.8661516935207985,
+      "fixed_r2": 0.8379305125944053,
+      "delta_alpha": 0.26878312052627973
+    },
+    {
+      "name": "model.language_model.layers.52.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 52,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8961661201167178,
+      "free_k0": 1194.0575170804802,
+      "free_A": 1191.2251472473124,
+      "free_r2": 0.8288365235567668,
+      "fixed_r2": 0.7984715274372982,
+      "delta_alpha": 0.278132131366823
+    },
+    {
+      "name": "model.language_model.layers.52.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 52,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8163519677082105,
+      "free_k0": 1027.949832973937,
+      "free_A": 748.7185954603589,
+      "free_r2": 0.8930818450651099,
+      "fixed_r2": 0.8689199973426783,
+      "delta_alpha": 0.1983179789583157
+    },
+    {
+      "name": "model.language_model.layers.52.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 52,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0057619417951036,
+      "free_k0": 1054.5820277895793,
+      "free_A": 2211.1289977993833,
+      "free_r2": 0.5985223966839012,
+      "fixed_r2": 0.5737441415944569,
+      "delta_alpha": 0.3877279530452088
+    },
+    {
+      "name": "model.language_model.layers.53.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 53,
+      "type": "mlp_down",
+      "free_alpha": 0.7631517976130591,
+      "free_k0": 1578.7223185835683,
+      "free_A": 484.3676566917386,
+      "free_r2": 0.90621100665469,
+      "fixed_r2": 0.8963192229519513,
+      "delta_alpha": 0.14511780886316428
+    },
+    {
+      "name": "model.language_model.layers.53.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 53,
+      "type": "mlp_gate",
+      "free_alpha": 0.26168049628312645,
+      "free_k0": 3.683444074194306e-14,
+      "free_A": 13.453716993859008,
+      "free_r2": 0.853642459979888,
+      "fixed_r2": 0.8092344883557354,
+      "delta_alpha": -0.35635349246676834
+    },
+    {
+      "name": "model.language_model.layers.53.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 53,
+      "type": "mlp_up",
+      "free_alpha": 0.7411123914948271,
+      "free_k0": 1794.385800697327,
+      "free_A": 913.7228012084795,
+      "free_r2": 0.9033544817601379,
+      "fixed_r2": 0.8934915659671826,
+      "delta_alpha": 0.12307840274493231
+    },
+    {
+      "name": "model.language_model.layers.53.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 53,
+      "type": "attn_k_full",
+      "free_alpha": 0.6244210764539178,
+      "free_k0": 7.198027549528855,
+      "free_A": 32.37826445261554,
+      "free_r2": 0.9479490166397823,
+      "fixed_r2": 0.9479024028930877,
+      "delta_alpha": 0.0063870877040229646
+    },
+    {
+      "name": "model.language_model.layers.53.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 53,
+      "type": "attn_o_full",
+      "free_alpha": 0.8298719258346119,
+      "free_k0": 1447.089248290776,
+      "free_A": 817.0509337694883,
+      "free_r2": 0.8633327712251156,
+      "fixed_r2": 0.8450797863617816,
+      "delta_alpha": 0.2118379370847171
+    },
+    {
+      "name": "model.language_model.layers.53.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 53,
+      "type": "attn_q_full",
+      "free_alpha": 0.39072371135479284,
+      "free_k0": 1.6780580701884822,
+      "free_A": 25.087771633524078,
+      "free_r2": 0.9406126967033344,
+      "fixed_r2": 0.878200417521299,
+      "delta_alpha": -0.22731027739510196
+    },
+    {
+      "name": "model.language_model.layers.54.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 54,
+      "type": "mlp_down",
+      "free_alpha": 0.7651739858221863,
+      "free_k0": 1552.4163646025281,
+      "free_A": 527.5279521941495,
+      "free_r2": 0.9195846678046609,
+      "fixed_r2": 0.9092798598550854,
+      "delta_alpha": 0.14713999707229153
+    },
+    {
+      "name": "model.language_model.layers.54.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 54,
+      "type": "mlp_gate",
+      "free_alpha": 0.2643949606138496,
+      "free_k0": 2.7575704562771992e-15,
+      "free_A": 13.630241609994941,
+      "free_r2": 0.8520830977903715,
+      "fixed_r2": 0.7771109276667167,
+      "delta_alpha": -0.3536390281360452
+    },
+    {
+      "name": "model.language_model.layers.54.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 54,
+      "type": "mlp_up",
+      "free_alpha": 0.7532530469946093,
+      "free_k0": 1899.1938815090577,
+      "free_A": 1028.8070678709557,
+      "free_r2": 0.895887624399041,
+      "fixed_r2": 0.8859313103173847,
+      "delta_alpha": 0.13521905824471447
+    },
+    {
+      "name": "model.language_model.layers.54.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 54,
+      "type": "attn_k_slide",
+      "free_alpha": 0.8945340552398297,
+      "free_k0": 515.9636889152179,
+      "free_A": 723.1728553672209,
+      "free_r2": 0.8760522439740402,
+      "fixed_r2": 0.8570322146225762,
+      "delta_alpha": 0.27650006648993486
+    },
+    {
+      "name": "model.language_model.layers.54.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 54,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8893035272306963,
+      "free_k0": 1110.000424720835,
+      "free_A": 1105.576038340366,
+      "free_r2": 0.8500447819801622,
+      "fixed_r2": 0.8154462443753687,
+      "delta_alpha": 0.2712695384808015
+    },
+    {
+      "name": "model.language_model.layers.54.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 54,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8702576162059964,
+      "free_k0": 856.9204101218716,
+      "free_A": 1069.085121154785,
+      "free_r2": 0.8997543312700997,
+      "fixed_r2": 0.8747907158757178,
+      "delta_alpha": 0.2522236274561016
+    },
+    {
+      "name": "model.language_model.layers.54.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 54,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9825223432641368,
+      "free_k0": 858.9538155820674,
+      "free_A": 1742.999839771955,
+      "free_r2": 0.7428492165906437,
+      "fixed_r2": 0.7117819400067953,
+      "delta_alpha": 0.364488354514242
+    },
+    {
+      "name": "model.language_model.layers.55.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 55,
+      "type": "mlp_down",
+      "free_alpha": 0.7712451071675698,
+      "free_k0": 1577.4008361600734,
+      "free_A": 508.652067184447,
+      "free_r2": 0.9084490021452671,
+      "fixed_r2": 0.8992123834118615,
+      "delta_alpha": 0.15321111841767499
+    },
+    {
+      "name": "model.language_model.layers.55.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 55,
+      "type": "mlp_gate",
+      "free_alpha": 0.2676370579205529,
+      "free_k0": 1.2249009227646747e-14,
+      "free_A": 13.242875881191194,
+      "free_r2": 0.8744990092451094,
+      "fixed_r2": 0.7970917714203838,
+      "delta_alpha": -0.35039693082934187
+    },
+    {
+      "name": "model.language_model.layers.55.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 55,
+      "type": "mlp_up",
+      "free_alpha": 0.7563624232786011,
+      "free_k0": 1908.6925202161378,
+      "free_A": 1004.7797203062246,
+      "free_r2": 0.904161373935281,
+      "fixed_r2": 0.8944891839196855,
+      "delta_alpha": 0.13832843452870636
+    },
+    {
+      "name": "model.language_model.layers.55.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 55,
+      "type": "attn_k_slide",
+      "free_alpha": 0.915972853347421,
+      "free_k0": 546.3457366708676,
+      "free_A": 838.9369010924594,
+      "free_r2": 0.8835930044832939,
+      "fixed_r2": 0.8628616434235793,
+      "delta_alpha": 0.29793886459752617
+    },
+    {
+      "name": "model.language_model.layers.55.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 55,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8957872339424175,
+      "free_k0": 995.6938880323963,
+      "free_A": 1084.5541954040507,
+      "free_r2": 0.8641571492505821,
+      "fixed_r2": 0.8328272375189456,
+      "delta_alpha": 0.27775324519252276
+    },
+    {
+      "name": "model.language_model.layers.55.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 55,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8851562664726687,
+      "free_k0": 842.4489005834358,
+      "free_A": 1147.5500106811514,
+      "free_r2": 0.8921957186873983,
+      "fixed_r2": 0.872491254694481,
+      "delta_alpha": 0.26712227772277386
+    },
+    {
+      "name": "model.language_model.layers.55.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 55,
+      "type": "attn_v_slide",
+      "free_alpha": 0.959728224278395,
+      "free_k0": 944.8442303417856,
+      "free_A": 1512.4995227137465,
+      "free_r2": 0.7487473626799261,
+      "fixed_r2": 0.7189026327334247,
+      "delta_alpha": 0.3416942355285002
+    },
+    {
+      "name": "model.language_model.layers.56.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 56,
+      "type": "mlp_down",
+      "free_alpha": 0.7739169799695357,
+      "free_k0": 1735.0285164202555,
+      "free_A": 573.3911514281106,
+      "free_r2": 0.8943926179937801,
+      "fixed_r2": 0.882428926319191,
+      "delta_alpha": 0.1558829912196409
+    },
+    {
+      "name": "model.language_model.layers.56.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 56,
+      "type": "mlp_gate",
+      "free_alpha": 0.2840328872344815,
+      "free_k0": 4.1156945562930144e-15,
+      "free_A": 14.41830910161313,
+      "free_r2": 0.8720671640076546,
+      "fixed_r2": 0.7324022873641705,
+      "delta_alpha": -0.3340011015154133
+    },
+    {
+      "name": "model.language_model.layers.56.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 56,
+      "type": "mlp_up",
+      "free_alpha": 0.7929248786613778,
+      "free_k0": 1912.0115193997362,
+      "free_A": 1324.5932578869936,
+      "free_r2": 0.8772954965659611,
+      "fixed_r2": 0.868637424796574,
+      "delta_alpha": 0.17489088991148305
+    },
+    {
+      "name": "model.language_model.layers.56.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 56,
+      "type": "attn_k_slide",
+      "free_alpha": 0.917322732561549,
+      "free_k0": 507.55936372540543,
+      "free_A": 839.2968177538121,
+      "free_r2": 0.8779489262974921,
+      "fixed_r2": 0.8618828980586675,
+      "delta_alpha": 0.29928874381165416
+    },
+    {
+      "name": "model.language_model.layers.56.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 56,
+      "type": "attn_o_slide",
+      "free_alpha": 0.894063563102128,
+      "free_k0": 1045.4683454061687,
+      "free_A": 1104.214572906274,
+      "free_r2": 0.854154343483819,
+      "fixed_r2": 0.8216732589192931,
+      "delta_alpha": 0.2760295743522332
+    },
+    {
+      "name": "model.language_model.layers.56.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 56,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8851126101318642,
+      "free_k0": 866.7776861588801,
+      "free_A": 1195.010662078854,
+      "free_r2": 0.8824086667185667,
+      "fixed_r2": 0.8617133939283417,
+      "delta_alpha": 0.26707862138196936
+    },
+    {
+      "name": "model.language_model.layers.56.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 56,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9723804811176066,
+      "free_k0": 854.563991139949,
+      "free_A": 1615.3535842895506,
+      "free_r2": 0.7648452294222645,
+      "fixed_r2": 0.7347479543982501,
+      "delta_alpha": 0.35434649236771176
+    },
+    {
+      "name": "model.language_model.layers.57.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 57,
+      "type": "mlp_down",
+      "free_alpha": 0.772549064542494,
+      "free_k0": 1752.689128298784,
+      "free_A": 541.7708873748778,
+      "free_r2": 0.8897705671156516,
+      "fixed_r2": 0.8755976918281945,
+      "delta_alpha": 0.15451507579259915
+    },
+    {
+      "name": "model.language_model.layers.57.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 57,
+      "type": "mlp_gate",
+      "free_alpha": 0.29158790010311203,
+      "free_k0": 6.4086371635412475e-18,
+      "free_A": 15.889623348947483,
+      "free_r2": 0.888737420960239,
+      "fixed_r2": 0.7425647460094371,
+      "delta_alpha": -0.32644608864678276
+    },
+    {
+      "name": "model.language_model.layers.57.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 57,
+      "type": "mlp_up",
+      "free_alpha": 0.7854943919932564,
+      "free_k0": 1775.6788096560945,
+      "free_A": 1264.0716552734298,
+      "free_r2": 0.8884583628280919,
+      "fixed_r2": 0.8812555557781524,
+      "delta_alpha": 0.16746040324336164
+    },
+    {
+      "name": "model.language_model.layers.57.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 57,
+      "type": "attn_k_slide",
+      "free_alpha": 0.5777262731929109,
+      "free_k0": 54.58020142135656,
+      "free_A": 47.15904270668925,
+      "free_r2": 0.8990146528771601,
+      "fixed_r2": 0.8986138441309685,
+      "delta_alpha": -0.04030771555698387
+    },
+    {
+      "name": "model.language_model.layers.57.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 57,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8999413805067181,
+      "free_k0": 1075.3910401410944,
+      "free_A": 1166.36962884343,
+      "free_r2": 0.8264579669923445,
+      "fixed_r2": 0.7898279285863565,
+      "delta_alpha": 0.28190739175682333
+    },
+    {
+      "name": "model.language_model.layers.57.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 57,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9327489331681614,
+      "free_k0": 634.2405162010369,
+      "free_A": 1425.80957349233,
+      "free_r2": 0.8984805749888485,
+      "fixed_r2": 0.8881146799185984,
+      "delta_alpha": 0.31471494441826664
+    },
+    {
+      "name": "model.language_model.layers.57.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 57,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9308818320192696,
+      "free_k0": 1070.8630249213425,
+      "free_A": 1320.3350067132753,
+      "free_r2": 0.7530053334241171,
+      "fixed_r2": 0.7217169286328233,
+      "delta_alpha": 0.31284784326937476
+    },
+    {
+      "name": "model.language_model.layers.58.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 58,
+      "type": "mlp_down",
+      "free_alpha": 0.7540937213476734,
+      "free_k0": 1655.6770431963396,
+      "free_A": 451.7447471618648,
+      "free_r2": 0.884540016374432,
+      "fixed_r2": 0.8718012362752761,
+      "delta_alpha": 0.1360597325977786
+    },
+    {
+      "name": "model.language_model.layers.58.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 58,
+      "type": "mlp_gate",
+      "free_alpha": 0.3236278762905971,
+      "free_k0": 6.1567401054413976e-18,
+      "free_A": 19.315993785839087,
+      "free_r2": 0.9164447840573952,
+      "fixed_r2": 0.7045643844398846,
+      "delta_alpha": -0.2944061124592977
+    },
+    {
+      "name": "model.language_model.layers.58.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 58,
+      "type": "mlp_up",
+      "free_alpha": 0.8327925415316911,
+      "free_k0": 1582.697484888689,
+      "free_A": 1727.5424580817769,
+      "free_r2": 0.8141794400281845,
+      "fixed_r2": 0.8126686073981828,
+      "delta_alpha": 0.21475855278179634
+    },
+    {
+      "name": "model.language_model.layers.58.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 58,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9704517299391489,
+      "free_k0": 404.0705012608605,
+      "free_A": 1081.586734331497,
+      "free_r2": 0.882605352075043,
+      "fixed_r2": 0.8744570016592644,
+      "delta_alpha": 0.35241774118925406
+    },
+    {
+      "name": "model.language_model.layers.58.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 58,
+      "type": "attn_o_slide",
+      "free_alpha": 0.8921214422598712,
+      "free_k0": 768.7446180436065,
+      "free_A": 974.5773315348899,
+      "free_r2": 0.8940486009989448,
+      "fixed_r2": 0.8582471375879261,
+      "delta_alpha": 0.27408745350997643
+    },
+    {
+      "name": "model.language_model.layers.58.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 58,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9128288430955942,
+      "free_k0": 546.4109295415147,
+      "free_A": 1178.4657010902265,
+      "free_r2": 0.8940950251960939,
+      "fixed_r2": 0.8887862133130218,
+      "delta_alpha": 0.2947948543456994
+    },
+    {
+      "name": "model.language_model.layers.58.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 58,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9467913527947281,
+      "free_k0": 749.2366647521404,
+      "free_A": 1260.3108406066892,
+      "free_r2": 0.819765781485097,
+      "fixed_r2": 0.7849125596706461,
+      "delta_alpha": 0.32875736404483336
+    },
+    {
+      "name": "model.language_model.layers.59.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 59,
+      "type": "mlp_down",
+      "free_alpha": 0.832082644270233,
+      "free_k0": 1638.682784985368,
+      "free_A": 908.829116821289,
+      "free_r2": 0.8637983759315351,
+      "fixed_r2": 0.8572987019764398,
+      "delta_alpha": 0.21404865552033825
+    },
+    {
+      "name": "model.language_model.layers.59.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 59,
+      "type": "mlp_gate",
+      "free_alpha": 0.34993443001408786,
+      "free_k0": 8.972214581096934e-17,
+      "free_A": 23.45376608227673,
+      "free_r2": 0.9188658149340371,
+      "fixed_r2": 0.6426894870898721,
+      "delta_alpha": -0.26809955873580693
+    },
+    {
+      "name": "model.language_model.layers.59.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 59,
+      "type": "mlp_up",
+      "free_alpha": 0.27421678292378937,
+      "free_k0": 1.5763496871193298e-17,
+      "free_A": 14.64607462850676,
+      "free_r2": 0.8717604388985246,
+      "fixed_r2": 0.7990306693925072,
+      "delta_alpha": -0.3438172058261054
+    },
+    {
+      "name": "model.language_model.layers.59.self_attn.k_proj.weight",
+      "shape": [
+        2048,
+        5376
+      ],
+      "min_dim": 2048,
+      "depth": 59,
+      "type": "attn_k_full",
+      "free_alpha": 0.6085443094487513,
+      "free_k0": 17.60219190516496,
+      "free_A": 35.76069638956568,
+      "free_r2": 0.9413419915421858,
+      "fixed_r2": 0.9412766498794461,
+      "delta_alpha": -0.009489679301143528
+    },
+    {
+      "name": "model.language_model.layers.59.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        16384
+      ],
+      "min_dim": 5376,
+      "depth": 59,
+      "type": "attn_o_full",
+      "free_alpha": 0.882897390851419,
+      "free_k0": 982.9059868878046,
+      "free_A": 983.9487075805655,
+      "free_r2": 0.89573169602188,
+      "fixed_r2": 0.8797634304587495,
+      "delta_alpha": 0.26486340210152426
+    },
+    {
+      "name": "model.language_model.layers.59.self_attn.q_proj.weight",
+      "shape": [
+        16384,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 59,
+      "type": "attn_q_full",
+      "free_alpha": 0.3933153542497412,
+      "free_k0": 5.3144098996893114e-20,
+      "free_A": 25.43807501198903,
+      "free_r2": 0.9472683454145447,
+      "fixed_r2": 0.8173105805563569,
+      "delta_alpha": -0.2247186345001536
+    },
+    {
+      "name": "model.language_model.layers.6.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 6,
+      "type": "mlp_down",
+      "free_alpha": 0.8772285614640773,
+      "free_k0": 1618.3536825630795,
+      "free_A": 1225.634184775738,
+      "free_r2": 0.7835534752531257,
+      "fixed_r2": 0.7821198376744174,
+      "delta_alpha": 0.25919457271418256
+    },
+    {
+      "name": "model.language_model.layers.6.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 6,
+      "type": "mlp_gate",
+      "free_alpha": 0.27997578463888534,
+      "free_k0": 1.6989327049485295e-14,
+      "free_A": 15.284724536620782,
+      "free_r2": 0.8804766813490222,
+      "fixed_r2": 0.8456887503459678,
+      "delta_alpha": -0.33805820411100945
+    },
+    {
+      "name": "model.language_model.layers.6.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 6,
+      "type": "mlp_up",
+      "free_alpha": 0.7503378391251331,
+      "free_k0": 1322.5056687947813,
+      "free_A": 871.2177276611327,
+      "free_r2": 0.9236463951055457,
+      "fixed_r2": 0.9120895682552667,
+      "delta_alpha": 0.13230385037523829
+    },
+    {
+      "name": "model.language_model.layers.6.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 6,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9584001389807862,
+      "free_k0": 364.6218502776951,
+      "free_A": 955.4222106933593,
+      "free_r2": 0.9327357764792329,
+      "fixed_r2": 0.9068331381653543,
+      "delta_alpha": 0.34036615023089145
+    },
+    {
+      "name": "model.language_model.layers.6.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 6,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9887444330797038,
+      "free_k0": 337.59069324149715,
+      "free_A": 1250.7500648496623,
+      "free_r2": 0.8858316507444092,
+      "fixed_r2": 0.8438119138919434,
+      "delta_alpha": 0.37071044432980904
+    },
+    {
+      "name": "model.language_model.layers.6.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 6,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9268545700824136,
+      "free_k0": 474.36394287416994,
+      "free_A": 1224.92561340332,
+      "free_r2": 0.9386604431272404,
+      "fixed_r2": 0.9187820995976983,
+      "delta_alpha": 0.3088205813325188
+    },
+    {
+      "name": "model.language_model.layers.6.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 6,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9487094044387876,
+      "free_k0": 240.29072202179515,
+      "free_A": 717.2689437855832,
+      "free_r2": 0.9092738160660747,
+      "fixed_r2": 0.8319135086588638,
+      "delta_alpha": 0.3306754156888928
+    },
+    {
+      "name": "model.language_model.layers.7.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 7,
+      "type": "mlp_down",
+      "free_alpha": 0.2812323880103829,
+      "free_k0": 2.005484725086652e-16,
+      "free_A": 7.411987602452962,
+      "free_r2": 0.85789097129443,
+      "fixed_r2": 0.7950462950770321,
+      "delta_alpha": -0.3368016007395119
+    },
+    {
+      "name": "model.language_model.layers.7.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 7,
+      "type": "mlp_gate",
+      "free_alpha": 0.8252602606448775,
+      "free_k0": 1322.3273171092517,
+      "free_A": 1514.0796374796762,
+      "free_r2": 0.8770486395834622,
+      "fixed_r2": 0.8757023329695839,
+      "delta_alpha": 0.20722627189498266
+    },
+    {
+      "name": "model.language_model.layers.7.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 7,
+      "type": "mlp_up",
+      "free_alpha": 0.6919101176586026,
+      "free_k0": 802.8998850053083,
+      "free_A": 444.17637760036916,
+      "free_r2": 0.8885985862249662,
+      "fixed_r2": 0.8884068329524729,
+      "delta_alpha": 0.07387612890870776
+    },
+    {
+      "name": "model.language_model.layers.7.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 7,
+      "type": "attn_k_slide",
+      "free_alpha": 0.947439309656083,
+      "free_k0": 267.5749288922794,
+      "free_A": 744.0642293990613,
+      "free_r2": 0.9139313307336219,
+      "fixed_r2": 0.9035109431256463,
+      "delta_alpha": 0.32940532090618824
+    },
+    {
+      "name": "model.language_model.layers.7.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 7,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9901208878114873,
+      "free_k0": 229.7279144628015,
+      "free_A": 1055.3517341613651,
+      "free_r2": 0.92529286736873,
+      "fixed_r2": 0.8902447133105618,
+      "delta_alpha": 0.37208689906159254
+    },
+    {
+      "name": "model.language_model.layers.7.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 7,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8325010403497269,
+      "free_k0": 281.63455128566727,
+      "free_A": 502.1540620995382,
+      "free_r2": 0.923792903462294,
+      "fixed_r2": 0.9181963030894378,
+      "delta_alpha": 0.21446705159983215
+    },
+    {
+      "name": "model.language_model.layers.7.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 7,
+      "type": "attn_v_slide",
+      "free_alpha": 1.0027508103725316,
+      "free_k0": 185.13703383524856,
+      "free_A": 868.9462661743163,
+      "free_r2": 0.9327088563369821,
+      "fixed_r2": 0.8535128877062582,
+      "delta_alpha": 0.38471682162263676
+    },
+    {
+      "name": "model.language_model.layers.8.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 8,
+      "type": "mlp_down",
+      "free_alpha": 0.8760701743791847,
+      "free_k0": 2046.578040619261,
+      "free_A": 1447.713565814054,
+      "free_r2": 0.7177421825368173,
+      "fixed_r2": 0.7141341189555355,
+      "delta_alpha": 0.25803618562928987
+    },
+    {
+      "name": "model.language_model.layers.8.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 8,
+      "type": "mlp_gate",
+      "free_alpha": 0.8348333096200068,
+      "free_k0": 1387.4883655340873,
+      "free_A": 1618.2714462280271,
+      "free_r2": 0.888387957706122,
+      "fixed_r2": 0.8849586122805054,
+      "delta_alpha": 0.216799320870112
+    },
+    {
+      "name": "model.language_model.layers.8.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 8,
+      "type": "mlp_up",
+      "free_alpha": 0.768658907618079,
+      "free_k0": 1245.1139249182527,
+      "free_A": 918.3660507202147,
+      "free_r2": 0.915060307694467,
+      "fixed_r2": 0.9094294008799325,
+      "delta_alpha": 0.1506249188681842
+    },
+    {
+      "name": "model.language_model.layers.8.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 8,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9244309831804447,
+      "free_k0": 339.40607936178276,
+      "free_A": 757.3909282684325,
+      "free_r2": 0.9477633287686196,
+      "fixed_r2": 0.9152136050578338,
+      "delta_alpha": 0.3063969944305499
+    },
+    {
+      "name": "model.language_model.layers.8.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 8,
+      "type": "attn_o_slide",
+      "free_alpha": 0.9748183565468755,
+      "free_k0": 333.0644437085688,
+      "free_A": 1128.5047531127927,
+      "free_r2": 0.9036583968840852,
+      "fixed_r2": 0.8662144585876809,
+      "delta_alpha": 0.35678436779698075
+    },
+    {
+      "name": "model.language_model.layers.8.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 8,
+      "type": "attn_q_slide",
+      "free_alpha": 0.8667167749234607,
+      "free_k0": 400.267759796821,
+      "free_A": 769.7378158569323,
+      "free_r2": 0.9562024746149814,
+      "fixed_r2": 0.9316511244283884,
+      "delta_alpha": 0.24868278617356587
+    },
+    {
+      "name": "model.language_model.layers.8.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 8,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9549624205550635,
+      "free_k0": 259.1858048992183,
+      "free_A": 799.3345737457274,
+      "free_r2": 0.9180708912318257,
+      "fixed_r2": 0.8404360056250892,
+      "delta_alpha": 0.33692843180516874
+    },
+    {
+      "name": "model.language_model.layers.9.mlp.down_proj.weight",
+      "shape": [
+        5376,
+        21504
+      ],
+      "min_dim": 5376,
+      "depth": 9,
+      "type": "mlp_down",
+      "free_alpha": 0.8806327883930095,
+      "free_k0": 2422.023216005257,
+      "free_A": 1649.5473859945005,
+      "free_r2": 0.6247792002810221,
+      "fixed_r2": 0.6177440572124577,
+      "delta_alpha": 0.2625987996431147
+    },
+    {
+      "name": "model.language_model.layers.9.mlp.gate_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 9,
+      "type": "mlp_gate",
+      "free_alpha": 0.39871300153329975,
+      "free_k0": 139.6424422871825,
+      "free_A": 37.38874446159065,
+      "free_r2": 0.8648793044211286,
+      "fixed_r2": 0.8621759693764494,
+      "delta_alpha": -0.21932098721659504
+    },
+    {
+      "name": "model.language_model.layers.9.mlp.up_proj.weight",
+      "shape": [
+        21504,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 9,
+      "type": "mlp_up",
+      "free_alpha": 0.7541034166832804,
+      "free_k0": 1189.4751497074365,
+      "free_A": 819.5407867426065,
+      "free_r2": 0.929525488681737,
+      "fixed_r2": 0.9258594282116296,
+      "delta_alpha": 0.1360694279333856
+    },
+    {
+      "name": "model.language_model.layers.9.self_attn.k_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 9,
+      "type": "attn_k_slide",
+      "free_alpha": 0.9660557692531903,
+      "free_k0": 285.46463944615505,
+      "free_A": 928.2230377197264,
+      "free_r2": 0.9525932864758749,
+      "fixed_r2": 0.9154335048184548,
+      "delta_alpha": 0.34802178050329546
+    },
+    {
+      "name": "model.language_model.layers.9.self_attn.o_proj.weight",
+      "shape": [
+        5376,
+        8192
+      ],
+      "min_dim": 5376,
+      "depth": 9,
+      "type": "attn_o_slide",
+      "free_alpha": 0.5313193445872859,
+      "free_k0": 3.1480870928578404,
+      "free_A": 31.18174810856583,
+      "free_r2": 0.8719212540251426,
+      "fixed_r2": 0.8625993658261503,
+      "delta_alpha": -0.08671464416260888
+    },
+    {
+      "name": "model.language_model.layers.9.self_attn.q_proj.weight",
+      "shape": [
+        8192,
+        5376
+      ],
+      "min_dim": 5376,
+      "depth": 9,
+      "type": "attn_q_slide",
+      "free_alpha": 0.9003862397911966,
+      "free_k0": 339.52561529442585,
+      "free_A": 914.8610115051262,
+      "free_r2": 0.9588213986647164,
+      "fixed_r2": 0.9357042221457217,
+      "delta_alpha": 0.2823522510413018
+    },
+    {
+      "name": "model.language_model.layers.9.self_attn.v_proj.weight",
+      "shape": [
+        4096,
+        5376
+      ],
+      "min_dim": 4096,
+      "depth": 9,
+      "type": "attn_v_slide",
+      "free_alpha": 0.9526233380366204,
+      "free_k0": 172.4457365753673,
+      "free_A": 655.0727844238204,
+      "free_r2": 0.9285016942658809,
+      "fixed_r2": 0.8433443840395576,
+      "delta_alpha": 0.33458934928672557
+    }
+  ]
+}

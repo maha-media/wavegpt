@@ -1,0 +1,119 @@
+{
+  "organism": "C. elegans",
+  "analysis": "phi_FL_fraction_matching",
+  "observed_alphas": {
+    "full:chemical": 1.465454407647011,
+    "full:gap_junction": 0.9200453208871305,
+    "full:combined": 1.4645614691908901,
+    "type:sensory": 0.8090533481860939,
+    "type:interneuron": 1.4823008068465449,
+    "type:command_interneuron": 1.1774286374790703,
+    "type:motor": 1.7104314371347074,
+    "type:sensory_receiving": 1.5434152410262885,
+    "type:interneuron_receiving": 1.6495594597595074,
+    "type:command_interneuron_receiving": 0.6841111857993499,
+    "type:motor_receiving": 0.6999068560537192
+  },
+  "matches": [
+    {
+      "matrix": "type:command_interneuron_receiving",
+      "alpha": 0.6841111857993499,
+      "fraction_label": "F(4)/L(3) = 3/4",
+      "fraction_value": 0.75,
+      "predicted_alpha": 0.6970425178973271,
+      "error_pct": 1.8902383656930744,
+      "formula": "(1/\u03c6)^p"
+    },
+    {
+      "matrix": "type:motor_receiving",
+      "alpha": 0.6999068560537192,
+      "fraction_label": "F(4)/L(3) = 3/4",
+      "fraction_value": 0.75,
+      "predicted_alpha": 0.6970425178973271,
+      "error_pct": 0.40924562055900826,
+      "formula": "(1/\u03c6)^p"
+    },
+    {
+      "matrix": "type:sensory",
+      "alpha": 0.8090533481860939,
+      "fraction_label": "F(6)/L(6) = 8/18",
+      "fraction_value": 0.4444444444444444,
+      "predicted_alpha": 0.8074517950104586,
+      "error_pct": 0.19795396425043676,
+      "formula": "(1/\u03c6)^p"
+    },
+    {
+      "matrix": "full:gap_junction",
+      "alpha": 0.9200453208871305,
+      "fraction_label": "F(5)/L(7) = 5/29",
+      "fraction_value": 0.1724137931034483,
+      "predicted_alpha": 0.9203810075359417,
+      "error_pct": 0.03648588185715028,
+      "formula": "(1/\u03c6)^p"
+    },
+    {
+      "matrix": "type:command_interneuron",
+      "alpha": 1.1774286374790703,
+      "fraction_label": "F(1)/L(2) = 1/3",
+      "fraction_value": 0.3333333333333333,
+      "predicted_alpha": 1.1739849967053284,
+      "error_pct": 0.2924712941512044,
+      "formula": "\u03c6^p"
+    },
+    {
+      "matrix": "full:combined",
+      "alpha": 1.4645614691908901,
+      "fraction_label": "F(4)/L(3) = 3/4",
+      "fraction_value": 0.75,
+      "predicted_alpha": 1.4346327151126494,
+      "error_pct": 2.0435300742122555,
+      "formula": "\u03c6^p"
+    },
+    {
+      "matrix": "full:chemical",
+      "alpha": 1.465454407647011,
+      "fraction_label": "F(4)/L(3) = 3/4",
+      "fraction_value": 0.75,
+      "predicted_alpha": 1.4346327151126494,
+      "error_pct": 2.1032174302747566,
+      "formula": "\u03c6^p"
+    },
+    {
+      "matrix": "type:interneuron",
+      "alpha": 1.4823008068465449,
+      "fraction_label": "F(4)/L(3) = 3/4",
+      "fraction_value": 0.75,
+      "predicted_alpha": 1.4346327151126494,
+      "error_pct": 3.2158177013547458,
+      "formula": "\u03c6^p"
+    },
+    {
+      "matrix": "type:sensory_receiving",
+      "alpha": 1.5434152410262885,
+      "fraction_label": "F(1)/L(1) = 1/1",
+      "fraction_value": 1.0,
+      "predicted_alpha": 1.618033988749895,
+      "error_pct": 4.834651475515362,
+      "formula": "\u03c6^p"
+    },
+    {
+      "matrix": "type:interneuron_receiving",
+      "alpha": 1.6495594597595074,
+      "fraction_label": "F(1)/L(1) = 1/1",
+      "fraction_value": 1.0,
+      "predicted_alpha": 1.618033988749895,
+      "error_pct": 1.9111448710196002,
+      "formula": "\u03c6^p"
+    },
+    {
+      "matrix": "type:motor",
+      "alpha": 1.7104314371347074,
+      "fraction_label": "F(6)/L(4) = 8/7",
+      "fraction_value": 1.1428571428571428,
+      "predicted_alpha": 1.7331774002819207,
+      "error_pct": 1.3298377621798787,
+      "formula": "\u03c6^p"
+    }
+  ],
+  "mean_error_pct": 1.6604176764606793
+}
