@@ -17,14 +17,17 @@ Testing whether financial markets show the same φ-based spectral structure foun
 
 Markets walk the φ-ladder over time — short-term is dispersed, long-term converges to the fundamental:
 
-| Horizon | α | F/L match | Mode 1 energy |
-|---------|---|-----------|---------------|
-| 1 year | 1.155 | F/L=2/7 | 40% |
-| 2 years | 1.095 | F/L=2/11 | 66% |
-| 5 years | 1.059 | F/L=2/18 | 68% |
-| 10 years | 1.620 | **φ itself** | 88% |
+| Horizon | α | F/L match | Predicted | Error | Mode 1 energy |
+|---------|---|-----------|-----------|-------|---------------|
+| 1 year | 1.178 | F/L=1/3 | 1.174 | 0.3% | 40% |
+| 2 years | 1.095 | F/L=2/11 | 1.091 | 0.3% | 66% |
+| 5 years | 1.058 | F/L=2/18 | 1.055 | 0.3% | 68% |
+| 10 years | 1.620 | **F/L=1/1 = φ** | 1.618 | 0.1% | 88% |
+| 20 years | 1.600 | **F/L=1/1 = φ** | 1.618 | 1.1% | 88% |
 
-Over 10 years, α = φ at 0.1% error. The market converges to a single dominant mode.
+**φ is the attractor, not a waypoint.** At 10 years the market locks onto the fundamental harmonic and stays there — 20 years shows the same exponent (1.1% error vs 0.1%, slight drift but same F/L fraction). The market doesn't cycle through harmonics on a longer timescale; φ is the ceiling.
+
+The 1-year exponent (φ^(1/3) = 1.174) is the same harmonic as attn_o in transformers and command interneurons in C. elegans — the consensus operator across all three systems lands on the same F/L fraction at the "one cycle" timescale.
 
 ## Crisis = Spectral Collapse
 
@@ -59,29 +62,54 @@ Five systems now show the same structure:
 | Transformers | (1/φ)^p | attn_o (output projection) |
 | C. elegans structure | φ^p | Command interneurons |
 | C. elegans functional | φ ≈ 1.62 | Whole-brain states |
-| Markets (short-term) | φ^p | Sector correlations |
-| Markets (long-term) | φ ≈ 1.62 | "The market" itself |
+| Markets (1yr) | φ^(1/3) = 1.174 | "The market" at 1 business cycle |
+| Markets (10yr+) | φ^(1/1) = φ | "The market" at full convergence |
 
-The pattern: systems with long optimization history (evolution, decades of trading) converge to α ≈ φ. Systems mid-optimization (trained models, short-term markets) sit at intermediate F/L harmonics. The fundamental is where everything ends up given enough time.
+The pattern: constrained systems converge to φ-harmonic spectral structure. The specific harmonic depends on how long the optimization has run relative to the system's natural timescale:
+
+- **LLM training run** → checkpoints at intermediate F/L harmonics, attn_o universally at 1/3
+- **1 business cycle (1yr)** → φ^(1/3), the same attn_o harmonic — consensus over one cycle
+- **Full market cycle (10yr)** → φ itself, the fundamental — and stays there at 20yr
+- **Evolution (300M years)** → φ^(1/3) in biological regime, fully converged within its constraint envelope
+
+The market is NOT an open system without φ-structure. It is a live φ-system that you sample at different phases. The measurement window determines which harmonic you observe. But φ is the attractor — once reached, the system stays there.
+
+**Why spectral α fails as a trading signal**: you're measuring a 10-year standing wave with a 50-day rolling window. The wavelength is 50× longer than the instrument. It's not noise — it's undersampling.
 
 ## Scripts
 
+### Spectral Analysis
 - `market_spectral_analysis.py` — Initial analysis: S&P 500 correlation SVD, sector clustering
-- `market_deep_analysis.py` — Deep analysis: time horizons, crisis detection, cross-asset, sector submatrices
+- `market_deep_analysis.py` — Deep analysis: time horizons (1yr–20yr), crisis detection, cross-asset, sector submatrices
 
-## Data
+### Trading System ("The Equation")
+- `THE_EQUATION.md` — Full specification: Position = Regime × Conviction × Momentum
+- `acquire_data.py` — Data pipeline: Yahoo Finance daily/hourly + macro + astro + weather
+- `build_features.py` — 87-feature construction (spectral, price, macro, astro, weather)
+- `find_all_signals.py` — Signal discovery: SPY/TLT, HYG, ARKK, VIX lead tech by 2-5 days
+- `find_leaders.py` — Leading indicator identification and correlation analysis
+- `regime_rotation.py` — 6-regime classifier: NORMAL/RISK_ON/FEAR/CRISIS/INFLATION/RECESSION
+- `unified_trader.py` — Complete strategy: regime × leading indicators × momentum × dip buying
+- `simulate_3yr.py` — Full 4-year backtest ($100K → $355K, Sharpe 1.46, MaxDD 19%)
+- `live_trader.py` — Daily execution: pull prices → compute allocation → place GTC LIMIT orders
+- `stream_trader.py` — Websocket streaming: real-time regime detection + rebalancing
+- `fill_monitor.py` — Post-open monitor: chase/wait/skip unfilled orders based on fresh signals
+- `multi_runner.py` — A/B testing: 10 strategy variants on Raspberry Pi
 
+### Data
 All data from Yahoo Finance (free). No API key needed.
 
-- `market-spectral.json` — Initial run results
-- `market-deep-spectral.json` — Deep analysis results
+- `data/` — Parquet files (daily/hourly), feature tensors, leader/tech closes
+- `training_results/` — Model outputs, sweep results, signal discovery, simulation logs
+- `trade_logs/` — Order execution logs and fill monitor reports
 
 ## Next Steps
 
-- [ ] Full S&P 500 analysis (batch download to avoid API limits)
+- [x] Full harmonic ladder (1yr–20yr) — φ is the attractor at 10yr+
+- [x] Trading system backtest — $100K → $355K over 4 years
+- [x] Live trading on TastyTrade sandbox
+- [x] Fill monitor for missed limit orders
 - [ ] Historical crisis comparison (2008, 2020 COVID, 2022)
 - [ ] Intraday tick data (does φ-structure appear at minute scale?)
 - [ ] Options implied volatility surfaces
-- [ ] Crypto market correlation matrices
-- [ ] Bond yield curve decomposition
 - [ ] Can α predict regime changes? (if α spikes → crisis incoming)

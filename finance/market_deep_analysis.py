@@ -270,7 +270,7 @@ def main():
                     'JNJ','PFE','UNH','PG','KO','HD','CAT','BA','NEE','DUK',
                     'V','MA','COST','WMT','MCD','INTC','CSCO','T','VZ','DIS']
 
-    for days, label in [(252, '1 year'), (504, '2 years'), (1260, '5 years'), (2520, '10 years')]:
+    for days, label in [(252, '1 year'), (504, '2 years'), (1260, '5 years'), (2520, '10 years'), (5040, '20 years')]:
         ret = download(core_tickers, days=days)
         if ret.shape[1] >= 10:
             analyze_matrix(ret.values, f"{label} ({ret.shape[1]} stocks, {len(ret)} days)")
