@@ -1,0 +1,231 @@
+{
+  "per_day": [
+    {
+      "date": "2026-04-06",
+      "spy_change": 0.32509456831846556,
+      "best_params": {
+        "alpha_long": 1.38,
+        "alpha_short": 1.8,
+        "mom_window": 5,
+        "mom_thresh": 0.0,
+        "min_hold": 10,
+        "mode1_min": 70,
+        "use_momentum": true,
+        "pnl": 0.8170248661329146,
+        "n_trades": 20,
+        "win_rate": 60.0
+      }
+    },
+    {
+      "date": "2026-04-07",
+      "spy_change": 0.3990002221521994,
+      "best_params": {
+        "alpha_long": 1.0,
+        "alpha_short": 1.3,
+        "mom_window": 5,
+        "mom_thresh": 0.0,
+        "min_hold": 3,
+        "mode1_min": 0,
+        "use_momentum": true,
+        "pnl": 2.5146400293262334,
+        "n_trades": 50,
+        "win_rate": 57.99999999999999
+      }
+    },
+    {
+      "date": "2026-04-08",
+      "spy_change": -0.056931788172592486,
+      "best_params": {
+        "alpha_long": 1.0,
+        "alpha_short": 1.3,
+        "mom_window": 15,
+        "mom_thresh": 0.02,
+        "min_hold": 10,
+        "mode1_min": 85,
+        "use_momentum": true,
+        "pnl": 0.9723202233176956,
+        "n_trades": 20,
+        "win_rate": 55.00000000000001
+      }
+    },
+    {
+      "date": "2026-04-09",
+      "spy_change": 0.7782158901305658,
+      "best_params": {
+        "alpha_long": 1.25,
+        "alpha_short": 1.5,
+        "mom_window": 30,
+        "mom_thresh": 0.0,
+        "min_hold": 5,
+        "mode1_min": 0,
+        "use_momentum": true,
+        "pnl": 1.2337858007687066,
+        "n_trades": 18,
+        "win_rate": 72.22222222222221
+      }
+    },
+    {
+      "date": "2026-04-10",
+      "spy_change": -0.3242551503311463,
+      "best_params": {
+        "alpha_long": 1.38,
+        "alpha_short": 1.62,
+        "mom_window": 5,
+        "mom_thresh": 0.0,
+        "min_hold": 10,
+        "mode1_min": 70,
+        "use_momentum": true,
+        "pnl": 0.6071885009185649,
+        "n_trades": 23,
+        "win_rate": 73.91304347826086
+      }
+    }
+  ],
+  "best_total": {
+    "alpha_long": 1.25,
+    "alpha_short": 1.3,
+    "mom_window": 10,
+    "mom_thresh": 0.0,
+    "min_hold": 3,
+    "mode1_min": 70,
+    "use_momentum": true,
+    "total_pnl": 3.291307510472085,
+    "sharpe": 14.654250942474077,
+    "total_trades": 188
+  },
+  "best_sharpe": {
+    "alpha_long": 1.38,
+    "alpha_short": 2.0,
+    "mom_window": 10,
+    "mom_thresh": 0.0,
+    "min_hold": 10,
+    "mode1_min": 50,
+    "use_momentum": true,
+    "total_pnl": 0.7632873166787637,
+    "sharpe": 37.24662528837597,
+    "total_trades": 89
+  },
+  "top_10": [
+    {
+      "alpha_long": 1.25,
+      "alpha_short": 1.3,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.291307510472085,
+      "sharpe": 14.654250942474077,
+      "total_trades": 188
+    },
+    {
+      "alpha_long": 1.17,
+      "alpha_short": 1.3,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.263338780787162,
+      "sharpe": 14.58702572310924,
+      "total_trades": 185
+    },
+    {
+      "alpha_long": 1.0,
+      "alpha_short": 1.3,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.2500555663689843,
+      "sharpe": 14.490915915430103,
+      "total_trades": 180
+    },
+    {
+      "alpha_long": 1.1,
+      "alpha_short": 1.3,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.2500555663689843,
+      "sharpe": 14.490915915430103,
+      "total_trades": 180
+    },
+    {
+      "alpha_long": 1.38,
+      "alpha_short": 1.8,
+      "mom_window": 5,
+      "mom_thresh": 0.0,
+      "min_hold": 10,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.1653939908343927,
+      "sharpe": 16.471868853407823,
+      "total_trades": 112
+    },
+    {
+      "alpha_long": 1.3,
+      "alpha_short": 1.38,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.069090001172607,
+      "sharpe": 13.11903220403746,
+      "total_trades": 189
+    },
+    {
+      "alpha_long": 1.25,
+      "alpha_short": 1.38,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.033054742537769,
+      "sharpe": 13.03560072348404,
+      "total_trades": 186
+    },
+    {
+      "alpha_long": 1.17,
+      "alpha_short": 1.38,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.0204939315066492,
+      "sharpe": 13.129168175835153,
+      "total_trades": 180
+    },
+    {
+      "alpha_long": 1.0,
+      "alpha_short": 1.38,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.0072107170884714,
+      "sharpe": 13.033774413100055,
+      "total_trades": 175
+    },
+    {
+      "alpha_long": 1.1,
+      "alpha_short": 1.38,
+      "mom_window": 10,
+      "mom_thresh": 0.0,
+      "min_hold": 3,
+      "mode1_min": 70,
+      "use_momentum": true,
+      "total_pnl": 3.0072107170884714,
+      "sharpe": 13.033774413100055,
+      "total_trades": 175
+    }
+  ],
+  "buy_and_hold": 1.121123742097492
+}

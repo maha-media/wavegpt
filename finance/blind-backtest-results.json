@@ -1,0 +1,42 @@
+[
+  {
+    "date": "2026-04-06",
+    "spy_change": 0.32509456831846556,
+    "alpha_pnl": -0.16654904326856268,
+    "n_trades": 4,
+    "mean_alpha": 1.8618592620773853,
+    "regime_changes": 34
+  },
+  {
+    "date": "2026-04-07",
+    "spy_change": 0.3990002221521994,
+    "alpha_pnl": -0.8171209321552241,
+    "n_trades": 2,
+    "mean_alpha": 2.203753341683366,
+    "regime_changes": 12
+  },
+  {
+    "date": "2026-04-08",
+    "spy_change": -0.056931788172592486,
+    "alpha_pnl": -0.3137056966045184,
+    "n_trades": 4,
+    "mean_alpha": 1.7672551551261653,
+    "regime_changes": 36
+  },
+  {
+    "date": "2026-04-09",
+    "spy_change": 0.7782158901305658,
+    "alpha_pnl": -0.5997754706937065,
+    "n_trades": 3,
+    "mean_alpha": 1.9358532725780004,
+    "regime_changes": 25
+  },
+  {
+    "date": "2026-04-10",
+    "spy_change": -0.3242551503311463,
+    "alpha_pnl": 0.25108218181274544,
+    "n_trades": 10,
+    "mean_alpha": 1.69464816830148,
+    "regime_changes": 65
+  }
+]
