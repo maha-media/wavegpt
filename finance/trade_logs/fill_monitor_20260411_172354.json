@@ -1,0 +1,119 @@
+{
+  "timestamp": "2026-04-11T17:23:54.242509",
+  "mode": "dry_run",
+  "environment": "sandbox",
+  "regime": "NORMAL",
+  "leader_score": -0.045963223568420086,
+  "proposals": [
+    {
+      "symbol": "AAPL",
+      "order_id": -1,
+      "limit_price": 260.4800109863281,
+      "current_price": 263.0848110961914,
+      "gap_pct": 0.009999999999999983,
+      "mom_score": 0.07780133387344684,
+      "shares": 279,
+      "action": "WAIT",
+      "reason": "small gap (1.0%) but weak signal (mom=0.08), keep GTC \u2014 may fill on pullback"
+    },
+    {
+      "symbol": "MSFT",
+      "order_id": -1,
+      "limit_price": 370.8699951171875,
+      "current_price": 374.57869506835937,
+      "gap_pct": 0.009999999999999976,
+      "mom_score": -3.479495809123108,
+      "shares": 83,
+      "action": "WAIT",
+      "reason": "small gap (1.0%) but weak signal (mom=-3.48), keep GTC \u2014 may fill on pullback"
+    },
+    {
+      "symbol": "NVDA",
+      "order_id": -1,
+      "limit_price": 188.6300048828125,
+      "current_price": 190.51630493164063,
+      "gap_pct": 0.010000000000000042,
+      "mom_score": 0.4003633634152682,
+      "shares": 533,
+      "action": "CHASE",
+      "reason": "small gap (1.0%) + strong signal (mom=0.40, leader=-0.046)"
+    },
+    {
+      "symbol": "GOOGL",
+      "order_id": -1,
+      "limit_price": 317.239990234375,
+      "current_price": 320.4123901367187,
+      "gap_pct": 0.009999999999999929,
+      "mom_score": 1.1091790469252905,
+      "shares": 644,
+      "action": "CHASE",
+      "reason": "small gap (1.0%) + strong signal (mom=1.11, leader=-0.046)"
+    },
+    {
+      "symbol": "AMZN",
+      "order_id": -1,
+      "limit_price": 238.3800048828125,
+      "current_price": 240.76380493164064,
+      "gap_pct": 0.010000000000000044,
+      "mom_score": 0.8621209189554514,
+      "shares": 669,
+      "action": "CHASE",
+      "reason": "small gap (1.0%) + strong signal (mom=0.86, leader=-0.046)"
+    },
+    {
+      "symbol": "META",
+      "order_id": -1,
+      "limit_price": 629.8599853515625,
+      "current_price": 636.1585852050781,
+      "gap_pct": 0.009999999999999978,
+      "mom_score": 0.04785759570020745,
+      "shares": 112,
+      "action": "WAIT",
+      "reason": "small gap (1.0%) but weak signal (mom=0.05), keep GTC \u2014 may fill on pullback"
+    },
+    {
+      "symbol": "TSLA",
+      "order_id": -1,
+      "limit_price": 348.95001220703125,
+      "current_price": 352.43951232910155,
+      "gap_pct": 0.009999999999999955,
+      "mom_score": -1.9597970856296762,
+      "shares": 88,
+      "action": "WAIT",
+      "reason": "small gap (1.0%) but weak signal (mom=-1.96), keep GTC \u2014 may fill on pullback"
+    },
+    {
+      "symbol": "XLK",
+      "order_id": -1,
+      "limit_price": 142.6199951171875,
+      "current_price": 144.04619506835937,
+      "gap_pct": 0.009999999999999945,
+      "mom_score": 0.39911001810664803,
+      "shares": 770,
+      "action": "CHASE",
+      "reason": "small gap (1.0%) + strong signal (mom=0.40, leader=-0.046)"
+    },
+    {
+      "symbol": "XLP",
+      "order_id": -1,
+      "limit_price": 82.37000274658203,
+      "current_price": 83.19370277404785,
+      "gap_pct": 0.00999999999999998,
+      "mom_score": 0.812718432244768,
+      "shares": 1334,
+      "action": "CHASE",
+      "reason": "small gap (1.0%) + strong signal (mom=0.81, leader=-0.046)"
+    },
+    {
+      "symbol": "HYG",
+      "order_id": -1,
+      "limit_price": 79.95999908447266,
+      "current_price": 80.75959907531738,
+      "gap_pct": 0.009999999999999993,
+      "mom_score": 2.253024590624948,
+      "shares": 1374,
+      "action": "CHASE",
+      "reason": "small gap (1.0%) + strong signal (mom=2.25, leader=-0.046)"
+    }
+  ]
+}
