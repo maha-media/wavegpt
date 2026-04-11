@@ -1,0 +1,75 @@
+{
+  "results": {
+    "train": {
+      "total_pnl": 23.158349581646068,
+      "sharpe": 1.0972069869164636,
+      "max_drawdown": 9.870917839072007,
+      "win_rate": 57.6068376068376,
+      "mean_position": 0.35807167396669376,
+      "long_pct": 71.84873949579831,
+      "short_pct": 10.224089635854341,
+      "flat_pct": 17.927170868347346,
+      "total_costs": 3.9215312879532576,
+      "n_bars": 714
+    },
+    "val": {
+      "total_pnl": 2.9485468196592883,
+      "sharpe": 0.5543372602233236,
+      "max_drawdown": 6.048111146307264,
+      "win_rate": 53.90070921985816,
+      "mean_position": 0.39075812427144424,
+      "long_pct": 73.20261437908496,
+      "short_pct": 19.607843137254903,
+      "flat_pct": 7.189542483660134,
+      "total_costs": 0.9493813570588826,
+      "n_bars": 153
+    },
+    "test": {
+      "total_pnl": 5.676181343902011,
+      "sharpe": 1.407782178229182,
+      "max_drawdown": 4.192449323598785,
+      "win_rate": 56.33802816901409,
+      "mean_position": 0.46758107412484734,
+      "long_pct": 90.84967320261438,
+      "short_pct": 1.9607843137254901,
+      "flat_pct": 7.1895424836601265,
+      "total_costs": 0.736024585366249,
+      "n_bars": 153
+    }
+  },
+  "influence_weights": {
+    "spectral": 1.0,
+    "price": 0.8,
+    "macro": 0.7,
+    "calendar": 0.5,
+    "seasonality": 0.2,
+    "weather": 0.02,
+    "astro": 0.02
+  },
+  "regime_stats": {
+    "overextended": {
+      "count": 73,
+      "mean_return": -0.002437184820125479,
+      "std_return": 0.017242564212774713,
+      "win_rate": 0.4246575342465753
+    },
+    "crowded": {
+      "count": 128,
+      "mean_return": -0.000121398807721107,
+      "std_return": 0.011708542264004326,
+      "win_rate": 0.4609375
+    },
+    "mild_long": {
+      "count": 111,
+      "mean_return": 0.0013070242728661487,
+      "std_return": 0.009473719262225084,
+      "win_rate": 0.6576576576576577
+    },
+    "contrarian_long": {
+      "count": 362,
+      "mean_return": 0.0009360472013112942,
+      "std_return": 0.010837340939501802,
+      "win_rate": 0.56353591160221
+    }
+  }
+}

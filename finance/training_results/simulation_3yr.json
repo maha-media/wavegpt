@@ -1,0 +1,19 @@
+{
+  "config": {
+    "starting_capital": 100000.0,
+    "cost_bps": 3.0,
+    "calibration_days": 252,
+    "recal_days": 63
+  },
+  "results": {
+    "period": "2022-05-05 to 2026-04-10",
+    "n_years": 3.0,
+    "final_capital": 109987.17,
+    "total_return": 9.99,
+    "annual_return": 3.17,
+    "sharpe": 0.63,
+    "max_drawdown": 7.19,
+    "win_rate": 53.0,
+    "n_trades": 248,
+    "total_costs": 1348.52,
+    "bh_return": 

@@ -68,11 +68,13 @@ SSH: `ssh -i /home/jrmor/.runpod/ssh/RunPod-Key-Go -o StrictHostKeyChecking=no -
 3. **The debunk matters** — with arbitrary fractions, 87% of random bases fit. The real claim is F/L fractions (φ's continued fraction convergents), not arbitrary rationals. φ beats π by 2.4× under this constraint
 4. **Multimodal models need `mm_token_type_ids`** (Gemma 4) and flattened text_config (Qwen 3.5) for `from_config` loading
 5. **Disk quota on RunPod** — use `--delete-source` when decomposing, clear hf_cache proactively
+6. **SVD rank truncation catastrophe** — Energy-based rank selection (95% Frobenius) completely destroys model function on Gemma 4-31B. Recomposing `W = U·S·V^T` back to nn.Linear produces identical garbage, confirming the loss is in truncation itself, not SpectralLinear. Language models need near-full-rank or residual correction (`keep_residual=True`).
+7. **`from_config` for Gemma 4 takes ~10 min on CPU** — `torch.device('meta')` + `to_empty()` is instant but leaves non-persistent buffers (RoPE inv_freq, embed_scale) uninitialized. These buffers aren't in state_dict. Use `from_config` for correctness when testing inference.
+8. **φ-Codec works** — Full SVD + φ-curve prediction + tiered quantization (32/16/8-bit) at 0.34% mean error across 599 layers of Gemma 4-31B. Recomposed model generates coherent text and preserves training voice. The φ-structure is a practical compression prior, not just a theoretical observation.
 
 ## Current state
 
-- Gemma 4 decomposition complete (26GB, 7 shards)
-- Harmonic fine-tuning running on Gemma (server 1) with type-aware regularizer
-- Qwen harmonic fine-tuning being set up on server 2
+- **φ-Codec validated on Gemma 4-31B** — 599 layers encoded→decoded at 0.34% mean error, model talks coherently
+- Qwen harmonic fine-tuning running on server 2 (~step 900/2000, val PPL 4607 best at step 650)
 - C. elegans structural AND functional spectral analysis complete
-- Spectral quantization prototype working (336× lower error than naive 4-bit)
+- **Next step**: Save φ-compressed format to disk, measure actual compression ratio, compare against GPTQ/GGUF

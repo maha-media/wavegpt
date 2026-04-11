@@ -1,0 +1,349 @@
+{
+  "args": {
+    "timescale": "5min",
+    "hidden": 128,
+    "context": 20,
+    "n_layers": 3,
+    "epochs": 3000,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 64,
+    "seq_len": 256,
+    "stride": 32,
+    "patience": 200,
+    "eval_every": 10,
+    "cost_bps": 5.0,
+    "lambda_dd": 0.5,
+    "lambda_activity": 0.01,
+    "seeds": 20
+  },
+  "buy_hold": {
+    "train_pnl": 46.512203216552734,
+    "val_pnl": 11.547347068786621,
+    "test_pnl": 11.837729454040527
+  },
+  "n_models": 20,
+  "elapsed_seconds": 595.9262051582336,
+  "models": [
+    {
+      "seed": 91,
+      "val_sharpe": 2.0320866107940674,
+      "test": {
+        "sharpe": 1.9718106985092163,
+        "total_pnl": 0.001124498976423638,
+        "max_drawdown": 0.12568100355565548,
+        "win_rate": 49.79906380176544,
+        "trade_intensity": 0.0014516316587105393,
+        "total_costs": 0.01683892623987049,
+        "mean_position": 0.06263458728790283,
+        "mean_confidence": 0.08132914453744888
+      },
+      "n_params": 291096,
+      "n_epochs": 2420
+    },
+    {
+      "seed": 805,
+      "val_sharpe": 2.0225350856781006,
+      "test": {
+        "sharpe": 1.8384199142456055,
+        "total_pnl": 0.1531156012788415,
+        "max_drawdown": 1.3466169126331806,
+        "win_rate": 49.483418464660645,
+        "trade_intensity": 0.0017097488744184375,
+        "total_costs": 0.019833089027088135,
+        "mean_position": 0.9304667115211487,
+        "mean_confidence": 0.9304680824279785
+      },
+      "n_params": 291096,
+      "n_epochs": 2230
+    },
+    {
+      "seed": 763,
+      "val_sharpe": 1.8973768949508667,
+      "test": {
+        "sharpe": 1.7940757274627686,
+        "total_pnl": 0.009806948946788907,
+        "max_drawdown": 0.06787086022086442,
+        "win_rate": 49.72015619277954,
+        "trade_intensity": 0.0011848239228129387,
+        "total_costs": 0.013743957970291376,
+        "mean_position": 0.03792974352836609,
+        "mean_confidence": 0.07429307699203491
+      },
+      "n_params": 291096,
+      "n_epochs": 2420
+    },
+    {
+      "seed": 175,
+      "val_sharpe": 1.871322512626648,
+      "test": {
+        "sharpe": 1.951416254043579,
+        "total_pnl": 0.00015554138599327416,
+        "max_drawdown": 0.13943681260570884,
+        "win_rate": 49.989768862724304,
+        "trade_intensity": 0.001137480023317039,
+        "total_costs": 0.013194768689572811,
+        "mean_position": 0.07738987356424332,
+        "mean_confidence": 0.22662031650543213
+      },
+      "n_params": 291096,
+      "n_epochs": 2190
+    },
+    {
+      "seed": 721,
+      "val_sharpe": 1.7029513120651245,
+      "test": {
+        "sharpe": 1.436824083328247,
+        "total_pnl": 0.0028836999263148755,
+        "max_drawdown": 0.03138488682452589,
+        "win_rate": 50.06868243217468,
+        "trade_intensity": 7.481075590476394e-05,
+        "total_costs": 0.0008678048288857099,
+        "mean_position": 0.02172972448170185,
+        "mean_confidence": 0.02173040248453617
+      },
+      "n_params": 291096,
+      "n_epochs": 2050
+    },
+    {
+      "seed": 385,
+      "val_sharpe": 1.6767834424972534,
+      "test": {
+        "sharpe": 1.9847924709320068,
+        "total_pnl": -0.002901371226471383,
+        "max_drawdown": 0.1582041964866221,
+        "win_rate": 49.989768862724304,
+        "trade_intensity": 0.0014596059918403625,
+        "total_costs": 0.01693142985459417,
+        "mean_position": 0.07653145492076874,
+        "mean_confidence": 0.07866481691598892
+      },
+      "n_params": 291096,
+      "n_epochs": 2130
+    },
+    {
+      "seed": 679,
+      "val_sharpe": 1.6523150205612183,
+      "test": {
+        "sharpe": 2.0008504390716553,
+        "total_pnl": 0.16027864767238498,
+        "max_drawdown": 1.398765854537487,
+        "win_rate": 50.167316198349,
+        "trade_intensity": 3.135642440144082e-11,
+        "total_costs": 3.6373456330229814e-10,
+        "mean_position": 1.0,
+        "mean_confidence": 1.0
+      },
+      "n_params": 291096,
+      "n_epochs": 3010
+    },
+    {
+      "seed": 259,
+      "val_sharpe": 1.6448508501052856,
+      "test": {
+        "sharpe": 1.7080403566360474,
+        "total_pnl": 0.0015834631994948722,
+        "max_drawdown": 0.01036725370795466,
+        "win_rate": 50.09498596191406,
+        "trade_intensity": 5.246578803053126e-05,
+        "total_costs": 0.0006086032044549938,
+        "mean_position": 0.007383417338132858,
+        "mean_confidence": 0.007387737277895212
+      },
+      "n_params": 291096,
+      "n_epochs": 2110
+    },
+    {
+      "seed": 553,
+      "val_sharpe": 1.636750340461731,
+      "test": {
+        "sharpe": 1.8092644214630127,
+        "total_pnl": 0.015135723515413702,
+        "max_drawdown": 0.1526534790173173,
+        "win_rate": 50.15416741371155,
+        "trade_intensity": 0.00012023633462376893,
+        "total_costs": 0.0013947415936854668,
+        "mean_position": 0.10749486088752747,
+        "mean_confidence": 0.10778690129518509
+      },
+      "n_params": 291096,
+      "n_epochs": 2040
+    },
+    {
+      "seed": 301,
+      "val_sharpe": 1.6324602365493774,
+      "test": {
+        "sharpe": 1.9374878406524658,
+        "total_pnl": 0.024221144849434495,
+        "max_drawdown": 0.2205349039286375,
+        "win_rate": 50.167316198349,
+        "trade_intensity": 0.00012062826135661453,
+        "total_costs": 0.0013992878848512191,
+        "mean_position": 0.15716439485549927,
+        "mean_confidence": 0.17485345900058746
+      },
+      "n_params": 291096,
+      "n_epochs": 2050
+    },
+    {
+      "seed": 469,
+      "val_sharpe": 1.6226083040237427,
+      "test": {
+        "sharpe": 1.973427414894104,
+        "total_pnl": 0.05538822733797133,
+        "max_drawdown": 0.4980053286999464,
+        "win_rate": 50.167316198349,
+        "trade_intensity": 0.00010076199396280572,
+        "total_costs": 0.0011688391168718226,
+        "mean_position": 0.35571953654289246,
+        "mean_confidence": 0.3683050870895386
+      },
+      "n_params": 291096,
+      "n_epochs": 2040
+    },
+    {
+      "seed": 511,
+      "val_sharpe": 1.6129473447799683,
+      "test": {
+        "sharpe": 2.011207342147827,
+        "total_pnl": 0.06916788988746703,
+        "max_drawdown": 0.6189536303281784,
+        "win_rate": 50.167316198349,
+        "trade_intensity": 0.00017995295638684183,
+        "total_costs": 0.00208745441341307,
+        "mean_position": 0.44171103835105896,
+        "mean_confidence": 0.4417177140712738
+      },
+      "n_params": 291096,
+      "n_epochs": 2040
+    },
+    {
+      "seed": 595,
+      "val_sharpe": 1.594579815864563,
+      "test": {
+        "sharpe": 1.8626331090927124,
+        "total_pnl": 0.0008535336746717803,
+        "max_drawdown": 0.008144712046487257,
+        "win_rate": 50.14101266860962,
+        "trade_intensity": 1.161917043646099e-05,
+        "total_costs": 0.00013478238543029875,
+        "mean_position": 0.005683216266334057,
+        "mean_confidence": 0.005700451787561178
+      },
+      "n_params": 291096,
+      "n_epochs": 2120
+    },
+    {
+      "seed": 217,
+      "val_sharpe": 1.5512012243270874,
+      "test": {
+        "sharpe": 2.0738162994384766,
+        "total_pnl": -0.0024128334189299494,
+        "max_drawdown": 0.20707976073026657,
+        "win_rate": 50.0357985496521,
+        "trade_intensity": 0.001515176147222519,
+        "total_costs": 0.017576044774614275,
+        "mean_position": 0.10666993260383606,
+        "mean_confidence": 0.21343182027339935
+      },
+      "n_params": 291096,
+      "n_epochs": 2290
+    },
+    {
+      "seed": 133,
+      "val_sharpe": 1.4975640773773193,
+      "test": {
+        "sharpe": 1.8983485698699951,
+        "total_pnl": 0.039928569458425045,
+        "max_drawdown": 0.43530305847525597,
+        "win_rate": 50.121283531188965,
+        "trade_intensity": 0.0007070478168316185,
+        "total_costs": 0.008201755554182455,
+        "mean_position": 0.30769428610801697,
+        "mean_confidence": 0.43058547377586365
+      },
+      "n_params": 291096,
+      "n_epochs": 2050
+    },
+    {
+      "seed": 427,
+      "val_sharpe": 1.463854432106018,
+      "test": {
+        "sharpe": 1.8381414413452148,
+        "total_pnl": 0.005666667129844427,
+        "max_drawdown": 0.11969921179115772,
+        "win_rate": 50.00949501991272,
+        "trade_intensity": 0.0012510288506746292,
+        "total_costs": 0.014511935296468437,
+        "mean_position": 0.06747490912675858,
+        "mean_confidence": 0.11663403362035751
+      },
+      "n_params": 291096,
+      "n_epochs": 2290
+    },
+    {
+      "seed": 7,
+      "val_sharpe": 1.4296971559524536,
+      "test": {
+        "sharpe": 1.7764055728912354,
+        "total_pnl": 0.022557015472557396,
+        "max_drawdown": 0.2931969240307808,
+        "win_rate": 50.08840560913086,
+        "trade_intensity": 0.0007829474634490907,
+        "total_costs": 0.009082191536435857,
+        "mean_position": 0.2051248550415039,
+        "mean_confidence": 0.46832334995269775
+      },
+      "n_params": 291096,
+      "n_epochs": 2040
+    },
+    {
+      "seed": 343,
+      "val_sharpe": 1.2910654544830322,
+      "test": {
+        "sharpe": 1.035518765449524,
+        "total_pnl": -0.03740502870641649,
+        "max_drawdown": 0.18500849837437272,
+        "win_rate": 49.286141991615295,
+        "trade_intensity": 0.0019445690559223294,
+        "total_costs": 0.02255700237583369,
+        "mean_position": 0.07973118126392365,
+        "mean_confidence": 0.11863959580659866
+      },
+      "n_params": 291096,
+      "n_epochs": 2600
+    },
+    {
+      "seed": 637,
+      "val_sharpe": -1.6279491186141968,
+      "test": {
+        "sharpe": -2.0639374256134033,
+        "total_pnl": -0.16573014436289668,
+        "max_drawdown": 1.4804167672991753,
+        "win_rate": 48.941245675086975,
+        "trade_intensity": 0.0010788856307044625,
+        "total_costs": 0.012515073467511684,
+        "mean_position": 0.9574061036109924,
+        "mean_confidence": 0.9574141502380371
+      },
+      "n_params": 291096,
+      "n_epochs": 2540
+    },
+    {
+      "seed": 49,
+      "val_sharpe": -1.6523150205612183,
+      "test": {
+        "sharpe": -2.0008435249328613,
+        "total_pnl": -0.16027690144255757,
+        "max_drawdown": 1.5192188322544098,
+        "win_rate": 49.15825128555298,
+        "trade_intensity": 1.9064705369942203e-08,
+        "total_costs": 2.2115058673222165e-07,
+        "mean_position": 0.9999995827674866,
+        "mean_confidence": 0.9999995827674866
+      },
+      "n_params": 291096,
+      "n_epochs": 2150
+    }
+  ]
+}

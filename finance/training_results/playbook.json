@@ -1,0 +1,74 @@
+{
+  "thresholds": {
+    "alpha_p40": 1.6654492616653442,
+    "alpha_p50": 1.7047356367111206,
+    "alpha_p60": 1.753593921661377,
+    "alpha_p80": 2.0508012771606445,
+    "da_p25": -0.1306992471218109,
+    "da_p75": 0.1299450546503067
+  },
+  "rules": [
+    {
+      "name": "CONTRARIAN_LONG",
+      "condition": "alpha <= 1.6654 OR da < -0.1307",
+      "position": "+30% * risk_scaler"
+    },
+    {
+      "name": "MILD_LONG",
+      "condition": "alpha in (1.6654, 1.7047]",
+      "position": "+10% * risk_scaler"
+    },
+    {
+      "name": "FLAT",
+      "condition": "alpha > 1.7047 and da >= 0",
+      "position": "0%"
+    },
+    {
+      "name": "SHORT",
+      "condition": "alpha > 2.0508 AND da > 0.1299",
+      "position": "-60% * risk_scaler"
+    }
+  ],
+  "regime_bounds": {
+    "DEEP_CALM": [
+      1.3683217763900757,
+      1.5317353010177612
+    ],
+    "CALM": [
+      1.5317353010177612,
+      1.5950510501861572
+    ],
+    "NORMAL": [
+      1.5950510501861572,
+      1.7047356367111206
+    ],
+    "ELEVATED": [
+      1.7047356367111206,
+      1.9311583042144775
+    ],
+    "STRESS": [
+      1.9311583042144775,
+      2.38850736618042
+    ],
+    "CRISIS": [
+      2.38850736618042,
+      Infinity
+    ]
+  },
+  "regime_risk_scalers": {
+    "DEEP_CALM": 1.0,
+    "CALM": 1.0,
+    "NORMAL": 1.0,
+    "ELEVATED": 0.8231680662941989,
+    "STRESS": 0.341832759309603,
+    "CRISIS": 0.8449465492713917
+  },
+  "current_state": {
+    "date": "2026-04-10",
+    "alpha": 1.945748209953308,
+    "delta_alpha": 0.5053382515907288,
+    "action": "FLAT",
+    "position": 0.0,
+    "abs_regime": "STRESS"
+  }
+}

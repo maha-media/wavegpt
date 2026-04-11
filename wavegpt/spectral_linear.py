@@ -140,7 +140,7 @@ class SpectralLinear(nn.Module):
     def to_linear(self) -> nn.Linear:
         """Reconstruct a standard nn.Linear from current spectral params."""
         with torch.no_grad():
-            spectrum = self.get_spectrum()
+            spectrum = self.get_spectrum().to(self.U.dtype)
             W = (self.U * spectrum.unsqueeze(0)) @ self.V.t()
         linear = nn.Linear(self.in_dim, self.out_dim, bias=self.bias is not None)
         linear.weight.data = W

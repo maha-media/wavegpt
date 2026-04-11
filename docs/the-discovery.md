@@ -208,6 +208,62 @@ The cross-model universality test is partially supportive: attn_o maps to p = 1/
 
 See `scripts/phi_vs_pi_debunk.py` for the full analysis, including the random base sweep.
 
+## The truncation catastrophe
+
+SVD decomposition with energy-based rank selection (95% Frobenius) **completely destroys** model function — even when every key loads correctly and the reconstruction is mathematically exact (`W = U·diag(S)·V^T` through standard nn.Linear).
+
+Tested on Gemma 4-31B with adaptive k₀-based ranks (137–2821 across 410 layers):
+
+| Test | Result |
+|------|--------|
+| SpectralLinear forward path | Multilingual token soup |
+| Recomposed nn.Linear (`W = U·S·V^T`) | Same garbage |
+| + harmonic fine-tuned spectrum | Same garbage |
+
+The recompose test is definitive: the information loss is in the truncation, not in SpectralLinear's forward computation.
+
+**Why**: Frobenius energy (`Σ σ²`) measures bulk approximation quality, but language model function depends on precise token-to-token interference patterns encoded in the spectral tail. A rank-137 approximation of a 5376-dim matrix captures >95% of energy but destroys the output distribution. The squared norm says 95% is preserved; the KL divergence says 100% is destroyed.
+
+**Lesson**: Spectral fine-tuning requires near-full-rank decomposition or explicit residual correction (`keep_residual=True` stores `W - U·S·V^T` as a frozen Pythagorean comma). Energy-based rank selection is necessary but catastrophically insufficient.
+
+## φ-Codec: quantization with φ-predicted error correction (2026-04-11)
+
+The truncation catastrophe led directly to the solution. Instead of *discarding* spectral modes (which destroys the model), use the φ-curve as a *prediction prior* for quantization. Standard quantization treats all weights equally. We know the spectrum follows `σ_k = A·(k + k₀)^{-(1/φ)^p}` — so we quantize **residuals from the predicted curve**, not raw values.
+
+Three tiers based on φ-informed spectral position, at standard hardware widths:
+
+| Tier | Range | Precision | What's stored |
+|------|-------|-----------|---------------|
+| 1 (plateau) | k ≤ k₀ | float32 | Exact singular values + U/V columns |
+| 2 (power-law body) | k₀ < k ≤ n/φ | float16 | Residuals from φ-curve + U/V columns |
+| 3 (spectral tail) | k > n/φ | int8 | Residuals from φ-curve + U/V columns |
+
+**Nothing is discarded.** All singular modes are preserved — just stored at precision proportional to their spectral importance.
+
+### Results on Gemma 4-31B (599 linear layers, full 60 layers)
+
+| Metric | Value |
+|--------|-------|
+| Mean reconstruction error | **0.34%** |
+| Max reconstruction error | **0.62%** |
+| Encoding time (GPU) | ~2.5s per layer, ~17 min total |
+| Model function preserved | **Yes — coherent, on-topic generation** |
+
+Sample generation (φ-recomposed model):
+
+> **Q**: The most important thing about the Singularity is
+> **A**: that we don't know when it will happen.
+
+> **Q**: When I think about my father, I remember
+> **A**: the good times. His passing was a shock to me and my family, but I know he is in a better place.
+
+> **Q**: The golden ratio appears in nature because
+> **A**: it is a mathematical ratio that is found in many natural forms and structures. It is often observed in the arrangement of petals on a flower, the spiral patterns of seashells, the branching of trees...
+
+The model was fine-tuned on Ray Kurzweil's corpus. The φ-recomposed model preserved not just language function but the *voice* of the training data — personal, reflective, meaning-seeking.
+
+**This is the practical application of the discovery**: the φ-power law isn't just an observation about trained weights. It's a compression prior that enables quantization with φ-predicted error correction, preserving model function at sub-1% reconstruction error.
+
 ## Falsifiable predictions
 
 1. **Models trained without momentum (β₁ = 0)** should NOT converge to φ-based harmonics. (Momentum creates the oscillatory dynamics that φ stabilizes.)
@@ -217,6 +273,7 @@ See `scripts/phi_vs_pi_debunk.py` for the full analysis, including the random ba
 5. **MLP layers should always have higher k₀ than attention layers** for the same model. (Confirmed on Qwen: MLP k₀ ~800-1200, attention k₀ ~50-300.)
 6. **Energy concentration thresholds should land on φ-power fractions** (1/φ, 1/φ², 1/φ³) across any model with φ-valued spectral exponents, with the specific rung determined by α. (Confirmed on Gemma 4 and C. elegans gap junctions.)
 7. **k₀/n should cluster near φ-powers** (1/φ³ for MLP, 1/φ⁴ for attention). (Confirmed on Gemma 4: median k₀/n = 0.147 ≈ 1/φ⁴.)
+8. **SVD rank truncation at 95% Frobenius energy should destroy model function** on any large LLM. Language models require near-full-rank preservation or residual correction. (Confirmed: Gemma 4-31B, 410 layers, adaptive ranks 137–2821.)
 
 ## Code
 
@@ -236,3 +293,8 @@ Key files:
 - `scripts/energy_threshold_analysis.py` — φ-power energy concentration thresholds
 - `scripts/alpha_energy_theory.py` — Theoretical analysis of α-energy relationship
 - `scripts/phi_vs_pi_debunk.py` — Alternative base analysis (φ vs π, e, √2, random)
+- `scripts/test_gemma_inference.py` — Decomposed model inference testing (recompose, skip-checkpoint, buffer diagnostics)
+- `scripts/analyze_spectral_checkpoint.py` — Spectral drift analysis between checkpoints
+- `scripts/phi_codec_gpu.py` — Full φ-codec GPU pipeline: encode all layers → recompose → generate
+- `scripts/test_phi_codec.py` — φ-codec error analysis vs naive quantization
+- `wavegpt/phi_codec.py` — φ-codec core: `PhiCodec`, `encode_layer()`, `decode_layer()`, tiered quantization

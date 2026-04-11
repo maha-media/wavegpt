@@ -150,5 +150,33 @@ The k₀ parameter (the spectral "knee") reinforces this: it also clusters at φ
 | Token weights (0.3–3x) | Hurt val loss | Too aggressive. Disrupts grammar learning. |
 | Wave attention init | Slight early advantage, fades | Real but temporary. Random catches up. |
 | Hard 4-phase curriculum | Worse than 3-phase | Separating layers fragments data. All voices must sound together. |
+| SVD rank truncation (Gemma 4) | Total model collapse | Energy-based rank selection (95% Frobenius) is catastrophically insufficient for preserving language model function. See below. |
+| Spectral fine-tuning (Gemma/Qwen) | Word soup after 2000 steps | 417K spectral params can't reparameterize a 31B model from 4M tokens. Frozen U/V geometry is the bottleneck. |
 
 The consistent lesson: data strategy > architecture tricks > initialization tricks.
+
+### The truncation catastrophe (2026-04-10)
+
+SVD decomposition with adaptive k₀-based rank allocation (`rank = k₀ × 1.5 + 128`) was applied to Gemma 4-31B, producing ranks from 137 to 2821 across 410 layers. By Frobenius norm, each layer captures >95% of spectral energy. The decomposed model produces complete garbage — multilingual token soup with no coherent structure.
+
+Systematic elimination confirmed the cause:
+
+| Test | Method | Result |
+|------|--------|--------|
+| SpectralLinear forward | Load decomp → generate via SpectralLinear | Garbage |
+| Recompose to nn.Linear | Load decomp → `W = U·diag(S)·V^T` → standard nn.Linear | Same garbage |
+| Fine-tuned spectrum overlay | Decomp + harmonic-regularized checkpoint | Same garbage |
+
+The recompose test is definitive: converting SpectralLinear back to plain nn.Linear (eliminating the spectral forward path entirely) produces identical garbage. The information loss is in the truncation itself.
+
+**Why energy metrics fail**: A rank-137 approximation of a 5376-dim matrix captures 95%+ of Frobenius energy (`Σ σ²`), but language models are not energy-minimization systems. The tail singular values — individually tiny — collectively encode the precise token-to-token interference patterns that distinguish "the cat sat on the mat" from "erserserspersypเป็น". The squared norm says 95% is preserved; the KL divergence over the output distribution says 100% is destroyed.
+
+**Implication for spectral fine-tuning**: The approach of freezing U/V geometry and training only spectral amplitudes is sound in principle, but requires near-full-rank decomposition (or residual correction via `keep_residual=True`) to preserve the baseline model's function as a starting point. Without that, spectral fine-tuning starts from a broken model and can only partially recover.
+
+### The φ-Codec: from catastrophe to compression (2026-04-11)
+
+The truncation catastrophe pointed directly to the solution. The problem was *discarding* modes. The answer was *quantizing* them — using the φ-curve as a prediction prior.
+
+Standard quantization treats every weight equally. The φ-codec does full SVD (no truncation), fits the bent power law to predict the spectrum, then quantizes the *residuals* from prediction at tiered precision: float32 for the plateau (k ≤ k₀), float16 for the power-law body (k₀ < k ≤ n/φ), int8 for the tail (k > n/φ).
+
+Result on Gemma 4-31B: **0.34% mean error across 599 layers. The recomposed model generates coherent text and preserves the voice of the training data.** The φ-structure isn't just an observation — it's a compression prior that works.

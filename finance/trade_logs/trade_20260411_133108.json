@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-11T13:31:08.485076",
+  "mode": "dry_run",
+  "environment": "sandbox",
+  "capital": 1000000.0,
+  "regime": "NORMAL",
+  "singularity": false,
+  "leader_score": -0.03196481572889304,
+  "tech_pct": 0.9,
+  "allocation": {
+    "XLK": 0.3333333333333333,
+    "XLP": 0.3333333333333333,
+    "HYG": 0.3333333333333333
+  },
+  "targets": {},
+  "orders": []
+}
