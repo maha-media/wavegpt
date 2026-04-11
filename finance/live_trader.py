@@ -29,6 +29,7 @@ import yfinance as yf
 from dotenv import load_dotenv
 
 from tastytrade import Session, Account
+from decimal import Decimal
 from tastytrade.order import (
     NewOrder, OrderAction, OrderTimeInForce, OrderType, PriceEffect,
 )
@@ -323,35 +324,44 @@ async def execute_trades(session, account, current_positions, target_shares, dry
 
         action = OrderAction.BUY_TO_OPEN if diff > 0 else OrderAction.SELL_TO_CLOSE
         qty = abs(diff)
+        limit_price = Decimal(str(round(tgt.get('price', 0), 2)))
 
         print(f"    {sym:<6} current={cur_shares:>5}  target={tgt_shares:>5}  "
-              f"{'BUY' if diff > 0 else 'SELL':>4} {qty}")
+              f"{'BUY' if diff > 0 else 'SELL':>4} {qty}  limit=${limit_price}")
 
         if dry_run:
             orders_placed.append({
                 'symbol': sym, 'action': 'BUY' if diff > 0 else 'SELL',
-                'quantity': qty, 'dry_run': True,
+                'quantity': qty, 'limit_price': float(limit_price), 'dry_run': True,
             })
         else:
             try:
-                equity = Equity.get_equity(session, sym)
+                equity = await Equity.get(session, [sym])
+                if isinstance(equity, list):
+                    equity = equity[0]
                 leg = equity.build_leg(qty, action)
+                # TastyTrade: positive price = credit, negative = debit
+                # BUY = debit (negative), SELL = credit (positive)
+                order_price = -limit_price if diff > 0 else limit_price
                 order = NewOrder(
-                    time_in_force=OrderTimeInForce.DAY,
-                    order_type=OrderType.MARKET,
+                    time_in_force=OrderTimeInForce.GTC,
+                    order_type=OrderType.LIMIT,
+                    price=order_price,
                     legs=[leg],
                 )
                 resp = await account.place_order(session, order)
                 orders_placed.append({
                     'symbol': sym, 'action': 'BUY' if diff > 0 else 'SELL',
-                    'quantity': qty, 'order_id': str(resp),
+                    'quantity': qty, 'limit_price': float(limit_price),
+                    'order_id': str(resp),
                 })
-                print(f"      -> Order placed: {resp}")
+                print(f"      -> GTC LIMIT order placed @ ${limit_price}: {resp}")
             except Exception as e:
                 print(f"      -> ERROR: {e}")
                 orders_placed.append({
                     'symbol': sym, 'action': 'BUY' if diff > 0 else 'SELL',
-                    'quantity': qty, 'error': str(e),
+                    'quantity': qty, 'limit_price': float(limit_price),
+                    'error': str(e),
                 })
 
     return orders_placed

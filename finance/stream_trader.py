@@ -336,7 +336,9 @@ async def rebalance(session, account, engine, capital, dry_run=True):
         for sym, diff in orders:
             try:
                 action = OrderAction.BUY_TO_OPEN if diff > 0 else OrderAction.SELL_TO_CLOSE
-                equity = Equity.get_equity(session, sym)
+                equity = await Equity.get(session, [sym])
+                if isinstance(equity, list):
+                    equity = equity[0]
                 leg = equity.build_leg(abs(diff), action)
                 order = NewOrder(
                     time_in_force=OrderTimeInForce.DAY,

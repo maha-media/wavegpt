@@ -1,0 +1,156 @@
+{
+  "timestamp": "2026-04-11T17:07:21.368788",
+  "mode": "live",
+  "environment": "sandbox",
+  "capital": 1000000.0,
+  "regime": "NORMAL",
+  "singularity": false,
+  "leader_score": -0.04593758102961371,
+  "tech_pct": 0.6703120948519314,
+  "allocation": {
+    "AAPL": 0.072879101182887,
+    "MSFT": 0.03099497552513525,
+    "NVDA": 0.10062129849406741,
+    "GOOGL": 0.20442059946643423,
+    "AMZN": 0.1596719671622589,
+    "META": 0.07072917749601343,
+    "TSLA": 0.03099497552513525,
+    "XLK": 0.10989596838268952,
+    "XLP": 0.10989596838268952,
+    "HYG": 0.10989596838268952
+  },
+  "targets": {
+    "AAPL": {
+      "shares": 279,
+      "price": 260.4800109863281,
+      "dollar_value": 72673.92306518555,
+      "pct": 0.072879101182887
+    },
+    "MSFT": {
+      "shares": 83,
+      "price": 370.8699951171875,
+      "dollar_value": 30782.209594726562,
+      "pct": 0.03099497552513525
+    },
+    "NVDA": {
+      "shares": 533,
+      "price": 188.6300048828125,
+      "dollar_value": 100539.79260253906,
+      "pct": 0.10062129849406741
+    },
+    "GOOGL": {
+      "shares": 644,
+      "price": 317.239990234375,
+      "dollar_value": 204302.5537109375,
+      "pct": 0.20442059946643423
+    },
+    "AMZN": {
+      "shares": 669,
+      "price": 238.3800048828125,
+      "dollar_value": 159476.22326660156,
+      "pct": 0.1596719671622589
+    },
+    "META": {
+      "shares": 112,
+      "price": 629.8599853515625,
+      "dollar_value": 70544.318359375,
+      "pct": 0.07072917749601343
+    },
+    "TSLA": {
+      "shares": 88,
+      "price": 348.95001220703125,
+      "dollar_value": 30707.60107421875,
+      "pct": 0.03099497552513525
+    },
+    "XLK": {
+      "shares": 770,
+      "price": 142.6199951171875,
+      "dollar_value": 109817.39624023438,
+      "pct": 0.10989596838268952
+    },
+    "XLP": {
+      "shares": 1334,
+      "price": 82.37000274658203,
+      "dollar_value": 109881.58366394043,
+      "pct": 0.10989596838268952
+    },
+    "HYG": {
+      "shares": 1374,
+      "price": 79.95999908447266,
+      "dollar_value": 109865.03874206543,
+      "pct": 0.10989596838268952
+    }
+  },
+  "orders": [
+    {
+      "symbol": "AAPL",
+      "action": "BUY",
+      "quantity": 279,
+      "limit_price": 260.48,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.224') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.776') impact=Decimal('1.224') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='AAPL' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='AAPL' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=279 remaining_quantity=Decimal('279'))] id=-1 size=Decimal('279') price=Decimal('-260.48') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.224') total_fees=Decimal('-0.224')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "AMZN",
+      "action": "BUY",
+      "quantity": 669,
+      "limit_price": 238.38,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.536') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.464') impact=Decimal('1.536') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='AMZN' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='AMZN' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=669 remaining_quantity=Decimal('669'))] id=-1 size=Decimal('669') price=Decimal('-238.38') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.536') total_fees=Decimal('-0.536')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "GOOGL",
+      "action": "BUY",
+      "quantity": 644,
+      "limit_price": 317.24,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.516') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.484') impact=Decimal('1.516') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='GOOGL' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='GOOGL' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=644 remaining_quantity=Decimal('644'))] id=-1 size=Decimal('644') price=Decimal('-317.24') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.516') total_fees=Decimal('-0.516')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "HYG",
+      "action": "BUY",
+      "quantity": 1374,
+      "limit_price": 79.96,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-2.1') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999998.9') impact=Decimal('2.1') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='HYG' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='HYG' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=1374 remaining_quantity=Decimal('1374'))] id=-1 size=Decimal('1374') price=Decimal('-79.96') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-1.1') total_fees=Decimal('-1.1')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "META",
+      "action": "BUY",
+      "quantity": 112,
+      "limit_price": 629.86,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.09') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.91') impact=Decimal('1.09') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='META' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='META' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=112 remaining_quantity=Decimal('112'))] id=-1 size=Decimal('112') price=Decimal('-629.86') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.09') total_fees=Decimal('-0.09')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "MSFT",
+      "action": "BUY",
+      "quantity": 83,
+      "limit_price": 370.87,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.067') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.933') impact=Decimal('1.067') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='MSFT' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='MSFT' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=83 remaining_quantity=Decimal('83'))] id=-1 size=Decimal('83') price=Decimal('-370.87') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.067') total_fees=Decimal('-0.067')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "NVDA",
+      "action": "BUY",
+      "quantity": 533,
+      "limit_price": 188.63,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.427') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.573') impact=Decimal('1.427') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='NVDA' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='NVDA' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=533 remaining_quantity=Decimal('533'))] id=-1 size=Decimal('533') price=Decimal('-188.63') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.427') total_fees=Decimal('-0.427')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "TSLA",
+      "action": "BUY",
+      "quantity": 88,
+      "limit_price": 348.95,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.071') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.929') impact=Decimal('1.071') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='TSLA' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='TSLA' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=88 remaining_quantity=Decimal('88'))] id=-1 size=Decimal('88') price=Decimal('-348.95') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.071') total_fees=Decimal('-0.071')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "XLK",
+      "action": "BUY",
+      "quantity": 770,
+      "limit_price": 142.62,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-1.616') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999999.384') impact=Decimal('1.616') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='XLK' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='XLK' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=770 remaining_quantity=Decimal('770'))] id=-1 size=Decimal('770') price=Decimal('-142.62') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-0.616') total_fees=Decimal('-0.616')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    },
+    {
+      "symbol": "XLP",
+      "action": "BUY",
+      "quantity": 1334,
+      "limit_price": 82.37,
+      "order_id": "buying_power_effect=BuyingPowerEffect(change_in_margin_requirement=Decimal('-1.0') change_in_buying_power=Decimal('-2.068') current_buying_power=Decimal('1000000.0') new_buying_power=Decimal('999998.932') impact=Decimal('2.068') effect=<PriceEffect.DEBIT: 'Debit'>) order=PlacedOrder(account_number='5WZ44803' time_in_force=<OrderTimeInForce.GTC: 'GTC'> order_type=<OrderType.LIMIT: 'Limit'> underlying_symbol='XLP' underlying_instrument_type=<InstrumentType.EQUITY: 'Equity'> status=<OrderStatus.RECEIVED: 'Received'> cancellable=True editable=True updated_at=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=TzInfo(0)) legs=[Leg(instrument_type=<InstrumentType.EQUITY: 'Equity'> symbol='XLP' action=<OrderAction.BUY_TO_OPEN: 'Buy to Open'> quantity=1334 remaining_quantity=Decimal('1334'))] id=-1 size=Decimal('1334') price=Decimal('-82.37') source='tastyware/tastytrade:v12.3.2') fee_calculation=FeeCalculation(clearing_fees=Decimal('-1.068') total_fees=Decimal('-1.068')) warnings=[Message(tif.next_valid_session: Your order will begin working during next valid session.)]"
+    }
+  ]
+}
