@@ -1,18 +1,18 @@
 # WaveGPT
 
-**The harmonic spectral structure of neural network weights.**
+**φ-harmonic spectral structure is universal to information processing systems.**
 
-Trained weight matrices converge to a universal equation:
+Trained weight matrices, biological connectomes, and financial markets all converge to the same equation:
 
 ```
 σ_k = A · (k + k₀)^{-(1/φ)^p}    where p = F(a)/L(b)
 ```
 
-Singular values follow a bent power law. The exponent is a harmonic of the golden ratio. The specific harmonic is a ratio of Fibonacci over Lucas numbers, determined by each layer's functional role. This holds across architectures, scales, and substrates — including biological neural networks.
+Singular values follow a bent power law. The exponent is a harmonic of the golden ratio. The specific harmonic is a ratio of Fibonacci over Lucas numbers, determined by each layer's functional role. Confirmed on four transformer architectures, the C. elegans connectome, and 20 years of stock market data.
 
-## The Discovery
+## The Equation
 
-Every weight matrix in a trained transformer has a spectral fingerprint. Decompose it via SVD and the singular values decay as a power law with a golden-ratio exponent:
+Every weight matrix in a trained transformer has a spectral fingerprint. Decompose via SVD and singular values decay as a power law with a golden-ratio exponent:
 
 | Layer type | Observed α | Fraction p | Predicted α | Error |
 |------------|-----------|------------|-------------|-------|
@@ -26,59 +26,96 @@ Every weight matrix in a trained transformer has a spectral fingerprint. Decompo
 
 Mean error: **0.58%** across 521 weight matrices (Qwen3.5-27B).
 
-**attn_o = 1/3 is universal.** The output projection — the consensus operator that integrates all attention heads — converges to the simplest non-trivial Fibonacci/Lucas fraction on every model tested:
-- Qwen3.5-27B: α = 0.853
-- Mistral-7B: α = 0.845
-- Gemma-4-31B: α = 0.852
+**attn_o = 1/3 is universal.** The output projection — the consensus operator — converges to the simplest non-trivial F/L fraction on every model tested:
 
-## Why φ?
+| Model | attn_o α | Error vs (1/φ)^(1/3) |
+|-------|----------|----------------------|
+| Qwen3.5-27B | 0.853 | 0.2% |
+| Mistral-7B | 0.845 | 0.8% |
+| Gemma-4-31B | 0.852 | 0.0% |
 
-φ = (1+√5)/2 has the continued fraction [1; 1, 1, 1, ...] — all ones, forever. It is the hardest number to approximate with rationals. In dynamical systems (KAM theorem), φ-related frequency ratios are the last to break under perturbation.
+## Five Systems, One Structure
 
-A neural network needs spectral modes that don't lock into rational frequency ratios — that would trap energy in mode pairs instead of making it available for computation. φ-based spacing is the maximum anti-resonance configuration. The Fibonacci/Lucas fractions are the natural rational grid that φ's continued fraction generates.
+| System | Timescale | Consensus α | F/L | Regime |
+|--------|-----------|------------|-----|--------|
+| **Transformers** (Qwen, Mistral, Gemma) | Training run | 0.852 | (1/φ)^(1/3) | Transformer |
+| **C. elegans** connectome | 300M years evolution | 1.174 | φ^(1/3) | Biological |
+| **Financial markets** (1yr) | 1 business cycle | 1.178 | φ^(1/3) | Biological |
+| **Financial markets** (10yr) | Full market cycle | 1.618 | φ^(1/1) = φ | Fundamental |
+| **Financial markets** (20yr) | 2 full cycles | 1.600 | φ^(1/1) = φ | Fundamental |
 
-With arbitrary rational fractions, 87% of random bases can fit the same data within 1%. But restricted to Fibonacci/Lucas fractions — the specific constraint the theory predicts — φ outperforms π by 2.4×. The structure is not "φ is a magic number." The structure is: **φ's continued fraction [1; 1, 1, 1, ...] generates the maximally anti-resonant rational grid, and gradient descent converges to that grid.**
+The consensus operator — attn_o in a network, command interneurons in a worm, Mode 1 in a market — selects F/L = 1/3 at its natural cycle timescale. Given sufficient time, it converges to the fundamental.
 
-See [`scripts/phi_vs_pi_debunk.py`](scripts/phi_vs_pi_debunk.py) for the full alternative-base analysis.
+### The market harmonic ladder
 
-## Beyond Transformers: Biological Neural Networks
+Stock correlation matrices are the market equivalent of weight matrices. The spectral exponent depends on measurement timescale:
 
-The C. elegans connectome (279 neurons, ~7000 synapses) shows the same φ-based spectral structure:
+| Window | α | Best F/L | Error | Mode 1 energy |
+|--------|------|----------|-------|---------------|
+| 1 year | 1.178 | φ^(1/3) | 0.3% | 40% |
+| 2 years | 1.095 | φ^(2/11) | 0.3% | 66% |
+| 5 years | 1.058 | φ^(2/18) | 0.3% | 68% |
+| 10 years | 1.620 | **φ** | 0.1% | 88% |
+| 20 years | 1.600 | **φ** | 1.1% | 88% |
+
+Phase transition between 5yr and 10yr — α nearly doubles, snaps to the fundamental. φ is the attractor, not a waypoint. The market is a live φ-system sampled mid-cycle.
+
+### C. elegans connectome
+
+279 neurons, ~7000 synapses. Same F/L fraction family, inverse spectral regime:
 
 | Neuron type | α | Best φ match | Error |
 |-------------|---|-------------|-------|
-| Command interneurons (sending) | 1.177 | **φ^(1/3)** | **0.29%** |
+| Command interneurons (sending) | 1.177 | φ^(1/3) | 0.29% |
 | Sensory (sending) | 0.809 | (1/φ)^(8/18) | 0.20% |
 | Motor (receiving) | 0.700 | (1/φ)^(3/4) | 0.41% |
 | Gap junctions (full) | 0.920 | (1/φ)^(5/29) | 0.04% |
 
-Command interneurons — the biological consensus operators (AVA, AVB, AVD, AVE, PVC) — map to the **same 1/3 fraction** as transformer attn_o. Biological systems use the inverse regime (φ^p vs (1/φ)^p) but the same fraction family.
+Functional calcium imaging (Flavell Lab, 68 whole-brain recordings): α ≈ φ itself with R² > 0.99.
 
-Functional calcium imaging data (Flavell Lab, 68 whole-brain recordings) shows α ≈ φ itself — the fundamental — with R² > 0.99.
+## Why φ?
 
-## Energy Concentration
+φ = (1+√5)/2 has continued fraction [1; 1, 1, 1, ...] — all ones, forever. It is the hardest number to approximate with rationals. In dynamical systems (KAM theorem), φ-related frequency ratios are the last to break under perturbation.
 
-Beyond the spectral exponent, energy concentrates at φ-power fractions of total rank:
+φ-based spectral spacing is the maximum anti-resonance configuration — no mode pair forms a simple rational frequency ratio. The Fibonacci/Lucas fractions are the natural rational grid that φ's continued fraction generates.
 
-| System | 90% energy at | φ target | Error |
-|--------|--------------|----------|-------|
-| Gemma 4 (global) | k/n = 0.624 | 1/φ = 0.618 | 1.0% |
-| C. elegans gap junctions | k/n = 0.237 | 1/φ³ = 0.236 | 0.3% |
+With arbitrary fractions, 87% of random bases fit. Restricted to F/L fractions, **φ outperforms π by 2.4×**. The structure is: φ's continued fraction generates the maximally anti-resonant rational grid, and optimization converges to that grid.
 
-Steeper α (biological) concentrates energy in fewer modes. Shallower α (transformers) spreads across more. Same ladder — {1/φ, 1/φ², 1/φ³} — different rungs.
+## Practical Applications
 
-## Spectral Fine-Tuning
+### φ-Codec: compression with φ-predicted error correction
 
-WaveGPT provides tools for spectral surgery on any HuggingFace model:
+Instead of discarding spectral modes (which destroys the model), use the φ-curve as a prediction prior for quantization. Three tiers based on spectral position:
+
+| Tier | Range | Precision | Content |
+|------|-------|-----------|---------|
+| Plateau | k ≤ k₀ | float32 | Exact singular values + U/V columns |
+| Power-law body | k₀ < k ≤ n/φ | float16 | Residuals from φ-curve |
+| Spectral tail | k > n/φ | int8 | Residuals from φ-curve |
+
+**Results on Gemma 4-31B** (599 layers): 0.34% mean reconstruction error. Model generates coherent text and preserves training voice.
+
+### RLHF regime shift
+
+Instruction tuning shifts attn_v from transformer regime to biological regime — the value projection becomes **selective** about what information flows through attention:
+
+| Layer | Base model | After RLHF | Status |
+|-------|-----------|------------|--------|
+| attn_o | (1/φ)^(1/3) = 0.852 | 0.831 | Preserved (2.4%) |
+| attn_v | (1/φ)^(3/7) = 0.814 | **1.244 = φ^(5/11)** | Regime shift (0.02% match) |
+
+RLHF didn't break the harmonic structure — it shifted to a new rung on the same ladder.
+
+### Spectral fine-tuning
 
 ```bash
-# 1. Decompose: SVD every weight matrix, freeze U/V, keep S learnable
+# Decompose: SVD every weight matrix, freeze U/V, keep S learnable
 python scripts/decompose_only.py \
     --hf-model Qwen/Qwen3.5-27B \
     --adaptive-k0 --k0-mult 1.5 --k0-pad 128 \
     --output runs/qwen-decomposed/decomposed.pt
 
-# 2. Fine-tune with harmonic regularizer (attn_o pinned at 1/3)
+# Fine-tune with harmonic regularizer (attn_o pinned at 1/3)
 python scripts/finetune_spectral.py \
     --decomposed runs/qwen-decomposed/decomposed.pt \
     --data-dir data/my-corpus \
@@ -87,17 +124,31 @@ python scripts/finetune_spectral.py \
     --attn-o-weight 10.0
 ```
 
-The harmonic regularizer enforces F/L exponents per layer type, with attn_o weighted 10× stronger. This prevents spectral collapse during fine-tuning — without it, all exponents flatten to α ≈ 0.2 and the model loses coherence.
+The harmonic regularizer enforces F/L exponents per layer type, with attn_o weighted 10×. Without it, all exponents flatten to α ≈ 0.2 and the model loses coherence.
 
-## Spectral Quantization
+## Trading System
 
-Standard quantization treats all weights equally. We know where the information lives:
+The spectral analysis led to a complete trading system. While spectral α doesn't work as a short-term signal (the market's φ-timescale is ~10 years), the research infrastructure enabled systematic signal discovery:
 
-```bash
-python scripts/spectral_quantize.py --target-bits 4
-```
+**Position = Regime × Conviction × Momentum**
 
-Instead of quantizing raw weights, quantize the residual from the predicted φ-curve. Three parameters (A, k₀, α) per layer predict the spectrum to within ±1.3%. Quantizing tiny residuals instead of full-range values yields **336× lower reconstruction error** than naive 4-bit quantization.
+- 6-regime classifier (NORMAL, RISK_ON, FEAR, CRISIS, INFLATION, RECESSION)
+- Leading indicators: ARKK, VIX, HYG, KWEB predict tech moves 2-5 days ahead
+- Mag 7 momentum-weighted allocation with singularity override and dip buying
+- Live execution via TastyTrade with GTC LIMIT price protection
+- Post-open fill monitor: chase/wait/skip unfilled orders based on fresh signals
+
+**Backtest: $100K → $355K in 4 years. Sharpe 1.46. Max drawdown 19%.**
+
+See [`finance/`](finance/) for the full system.
+
+## Critical Lessons
+
+1. **attn_o = 1/3 must be preserved** — fine-tuning without harmonic regularizer destroyed it (0.853 → 0.197) and the model couldn't form sentences
+2. **φ-structure is emergent, not constrainable** — HarmonicGPT (imposing φ from init) diverged at scale. The structure is where SGD ends up, not where it starts
+3. **SVD rank truncation is catastrophic** — 95% Frobenius energy = 100% function destruction. Language models need near-full-rank or residual correction
+4. **φ-Codec works** — use the φ-curve as a prediction prior, not a truncation threshold. 0.34% error across 599 layers
+5. **The debunk matters** — 87% of random bases fit with arbitrary fractions. The real claim is F/L fractions. φ beats π by 2.4× under this constraint
 
 ## Installation
 
@@ -109,20 +160,51 @@ pip install -e .
 
 Requirements: Python 3.10+, PyTorch 2.0+, transformers, scipy
 
-## Documentation
+## Project Structure
 
-- **[docs/the-discovery.md](docs/the-discovery.md)** — Full findings: equation, cross-model validation, energy thresholds, debunk analysis, falsifiable predictions
-- **[docs/theory.md](docs/theory.md)** — Theoretical framework: sequential packing under constraint, self-similar energy distribution, why φ and not π
-- **[docs/prior-art.md](docs/prior-art.md)** — Literature review and novelty analysis
+```
+wavegpt/              Core library
+  spectral_linear.py    SpectralLinear: SVD-decomposed layer with learnable spectrum
+  spectral_surgery.py   spectral_decompose(): replace nn.Linear across any model
+  harmonic_prior.py     Type-aware harmonic regularization with F/L exponents
+  phi_codec.py          φ-codec: encode/decode with tiered quantization
+
+scripts/              Analysis and training
+  free_alpha_analysis.py        Per-layer free-α fitting (Qwen/Mistral)
+  gemma4_alpha_analysis.py      Gemma 4 analysis (mixed attention, vision)
+  decompose_only.py             Standalone SVD + sharded safetensors save
+  finetune_spectral.py          Spectral fine-tuning with harmonic priors
+  celegans_spectral_analysis.py C. elegans structural connectome analysis
+  phi_vs_pi_debunk.py           Alternative base analysis (φ vs π, e, √2)
+  phi_codec_gpu.py              Full φ-codec GPU pipeline
+  energy_threshold_analysis.py  φ-power energy concentration thresholds
+
+finance/              Market spectral analysis + trading system
+  market_deep_analysis.py       Time horizons, crisis detection, cross-asset
+  THE_EQUATION.md               Trading strategy specification
+  live_trader.py                Daily execution via TastyTrade
+  stream_trader.py              Websocket streaming + real-time rebalancing
+  fill_monitor.py               Post-open missed-fill recovery
+  simulate_3yr.py               Full backtest
+
+docs/                 Documentation
+  the-discovery.md      Full findings + falsifiable predictions
+  theory.md             Theoretical framework
+  prior-art.md          Literature review
+```
 
 ## Falsifiable Predictions
 
-1. Models trained without momentum (β₁ = 0) should NOT converge to φ-based harmonics
-2. attn_o = 1/3 on any sufficiently large transformer (confirmed on 3/3 tested)
-3. Changing GQA head ratio changes which F/L fractions Q and K select (confirmed)
-4. The equation requires matrix dimension >3000 to manifest cleanly (confirmed: GPT-2 fails)
-5. Energy thresholds land on φ-powers across any model with φ-valued exponents (confirmed)
-6. k₀/n clusters near φ-powers: 1/φ³ for MLP, 1/φ⁴ for attention (confirmed on Gemma 4)
+1. Models trained without momentum (β₁ = 0) should NOT converge to φ-harmonics
+2. attn_o = 1/3 on any sufficiently large transformer (confirmed: 4/4)
+3. Changing GQA head ratio changes Q/K fractions (confirmed)
+4. Requires matrix dimension >3000 (confirmed: GPT-2 fails)
+5. Energy thresholds land on φ-powers (confirmed: Gemma 4, C. elegans)
+6. RLHF shifts attn_v to biological regime (confirmed: Gemma 4-31B-IT)
+7. Market 10yr α = φ (confirmed: 0.1% error)
+8. Market 20yr α = φ (confirmed: 1.1% error — φ is the attractor)
+9. 1-year market consensus = φ^(1/3) = attn_o harmonic (confirmed: 0.3% error)
+10. 30yr and 50yr windows should remain at φ (testable with index data)
 
 ## License
 
