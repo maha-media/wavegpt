@@ -31,6 +31,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from dotenv import load_dotenv
+from httpx_ws._exceptions import WebSocketDisconnect
 
 from tastytrade import Session, Account, DXLinkStreamer
 from tastytrade.dxfeed import Quote, Trade
@@ -68,6 +69,191 @@ REGIME_ASSETS = {
 
 REBALANCE_THRESHOLD = 0.05  # 5% allocation change triggers rebalance
 MIN_REBALANCE_INTERVAL = 300  # seconds between rebalances
+MAX_ORDER_RETRIES = 3
+ORDER_RETRY_DELAY = 2  # seconds, doubles each retry
+
+
+class LocalPortfolio:
+    """Local position/P&L tracking with tax-aware rebalancing.
+
+    Tax logic:
+      - Short-term gains (<1yr): taxed at 30%. Don't sell unless signal is strong.
+      - Long-term gains (>1yr): taxed at 15%. More flexibility to sell.
+      - Losses: actively beneficial. Offset gains dollar-for-dollar, plus
+        $3k/yr deductible against ordinary income. Sell aggressively.
+      - Wash sale rule: can't buy back substantially identical security
+        within 30 days of selling at a loss. Track recent loss sales.
+    """
+
+    # Sell threshold multipliers (applied to REBALANCE_THRESHOLD)
+    # Higher = stickier (harder to trigger a sell)
+    SELL_THRESHOLD = {
+        'short_term_gain': 3.0,   # 5% * 3 = 15% drift needed to sell a ST winner
+        'long_term_gain':  2.0,   # 5% * 2 = 10% drift needed to sell a LT winner
+        'loss':            0.4,   # 5% * 0.4 = 2% drift triggers selling a loser
+        'neutral':         1.0,   # 5% standard threshold
+    }
+
+    # Proactively harvest losses when position drops this much from cost
+    LOSS_HARVEST_THRESHOLD = 0.05  # 5% below cost basis
+
+    SHORT_TERM_DAYS = 365
+    WASH_SALE_DAYS = 30
+
+    def __init__(self, starting_capital):
+        self.starting_capital = starting_capital
+        self.cash = starting_capital
+        self.positions = {}   # symbol -> {'shares', 'avg_cost', 'buy_date'}
+        self.realized_gains = 0.0   # total realized gains (pre-tax)
+        self.realized_losses = 0.0  # total realized losses (negative)
+        self.wash_sale_blacklist = {}  # symbol -> datetime when loss was sold
+        self.tax_events = []  # log of all taxable events
+
+    def fill_order(self, symbol, shares, price, pool='core'):
+        """Record a fill. Positive shares = buy, negative = sell."""
+        now = datetime.now()
+        if shares > 0:
+            # Buy
+            pos = self.positions.get(symbol, {'shares': 0, 'avg_cost': 0.0, 'buy_date': now, 'pool': pool})
+            total_cost = pos['shares'] * pos['avg_cost'] + shares * price
+            new_shares = pos['shares'] + shares
+            pos['avg_cost'] = total_cost / new_shares if new_shares > 0 else 0
+            if pos['shares'] == 0:
+                pos['buy_date'] = now  # fresh position
+            pos['shares'] = new_shares
+            self.positions[symbol] = pos
+            self.cash -= shares * price
+        elif shares < 0:
+            # Sell — record realized P/L
+            qty = abs(shares)
+            pos = self.positions.get(symbol, {'shares': 0, 'avg_cost': 0.0, 'buy_date': now})
+            sell_qty = min(qty, pos['shares'])
+            if sell_qty > 0:
+                pnl = sell_qty * (price - pos['avg_cost'])
+                holding_days = (now - pos.get('buy_date', now)).days
+                is_long_term = holding_days >= self.SHORT_TERM_DAYS
+                tax_type = 'long_term' if is_long_term else 'short_term'
+
+                if pnl >= 0:
+                    self.realized_gains += pnl
+                else:
+                    self.realized_losses += pnl  # negative
+                    self.wash_sale_blacklist[symbol] = now
+
+                self.tax_events.append({
+                    'time': now.isoformat(),
+                    'symbol': symbol,
+                    'shares': sell_qty,
+                    'cost': pos['avg_cost'],
+                    'price': price,
+                    'pnl': pnl,
+                    'type': tax_type,
+                    'holding_days': holding_days,
+                    'pool': self.positions.get(symbol, {}).get('pool', pool),
+                })
+
+                pos['shares'] -= sell_qty
+                if pos['shares'] == 0:
+                    del self.positions[symbol]
+                else:
+                    self.positions[symbol] = pos
+                self.cash += sell_qty * price
+
+    def tax_status(self, symbol, current_price):
+        """Classify a position's tax status for rebalance decisions."""
+        if symbol not in self.positions:
+            return 'neutral'
+        pos = self.positions[symbol]
+        pnl_pct = (current_price - pos['avg_cost']) / pos['avg_cost'] if pos['avg_cost'] > 0 else 0
+        holding_days = (datetime.now() - pos.get('buy_date', datetime.now())).days
+
+        if pnl_pct < 0:
+            return 'loss'
+        elif holding_days >= self.SHORT_TERM_DAYS:
+            return 'long_term_gain'
+        else:
+            return 'short_term_gain'
+
+    def should_sell(self, symbol, current_alloc_pct, target_alloc_pct, current_price):
+        """Tax-aware sell decision. Returns (should_sell, reason)."""
+        diff = current_alloc_pct - target_alloc_pct  # positive = overweight = sell candidate
+        if diff <= 0:
+            return False, None  # underweight, no sell needed
+
+        status = self.tax_status(symbol, current_price)
+        threshold = REBALANCE_THRESHOLD * self.SELL_THRESHOLD[status]
+
+        if diff >= threshold:
+            return True, f"{status} drift={diff:.1%}>{threshold:.1%}"
+        return False, f"TAX HOLD {status} drift={diff:.1%}<{threshold:.1%}"
+
+    def harvest_candidates(self, live_prices):
+        """Find positions ripe for tax-loss harvesting."""
+        candidates = []
+        for sym, pos in self.positions.items():
+            price = live_prices.get(sym, pos['avg_cost'])
+            pnl_pct = (price - pos['avg_cost']) / pos['avg_cost'] if pos['avg_cost'] > 0 else 0
+            if pnl_pct <= -self.LOSS_HARVEST_THRESHOLD:
+                loss_amount = pos['shares'] * (price - pos['avg_cost'])
+                candidates.append((sym, pnl_pct, loss_amount))
+        return candidates
+
+    def is_wash_sale(self, symbol):
+        """Check if buying this symbol would trigger a wash sale."""
+        if symbol not in self.wash_sale_blacklist:
+            return False
+        days_since = (datetime.now() - self.wash_sale_blacklist[symbol]).days
+        return days_since < self.WASH_SALE_DAYS
+
+    def market_value(self, live_prices):
+        """Total portfolio value at current prices."""
+        holdings = 0
+        for sym, pos in self.positions.items():
+            price = live_prices.get(sym, pos['avg_cost'])
+            holdings += pos['shares'] * price
+        return self.cash + holdings
+
+    def tax_summary(self):
+        """Summary of realized tax events."""
+        net = self.realized_gains + self.realized_losses
+        harvestable = min(abs(self.realized_losses), self.realized_gains) if self.realized_losses < 0 else 0
+        excess_loss = max(0, abs(self.realized_losses) - self.realized_gains)
+        deductible = min(excess_loss, 3000)
+        return (f"Realized: ${self.realized_gains:+,.0f} gains / ${self.realized_losses:+,.0f} losses  "
+                f"Net: ${net:+,.0f}  Deductible: ${deductible:,.0f}")
+
+    def summary(self, live_prices):
+        """One-line portfolio summary."""
+        mv = self.market_value(live_prices)
+        pnl = mv - self.starting_capital
+        pct = pnl / self.starting_capital * 100
+        n = len(self.positions)
+        return f"${mv:,.0f} ({pnl:+,.0f} / {pct:+.2f}%) {n} positions ${self.cash:,.0f} cash"
+
+    def detail(self, live_prices):
+        """Full position breakdown with tax status."""
+        lines = []
+        lines.append(f"  {'Symbol':<8} {'Shares':>7} {'AvgCost':>9} {'Price':>9} {'Value':>11} {'P/L':>10} {'Tax':>6}")
+        lines.append(f"  {'-'*65}")
+        total_val = 0
+        total_pnl = 0
+        for sym in sorted(self.positions.keys(), key=lambda s: self.positions[s]['shares'] * live_prices.get(s, self.positions[s]['avg_cost']), reverse=True):
+            pos = self.positions[sym]
+            price = live_prices.get(sym, pos['avg_cost'])
+            val = pos['shares'] * price
+            cost = pos['shares'] * pos['avg_cost']
+            pnl = val - cost
+            total_val += val
+            total_pnl += pnl
+            status = self.tax_status(sym, price)
+            tag = {'short_term_gain': 'ST+', 'long_term_gain': 'LT+', 'loss': 'LOSS', 'neutral': '—'}[status]
+            lines.append(f"  {sym:<8} {pos['shares']:>7} ${pos['avg_cost']:>8.2f} ${price:>8.2f} ${val:>10,.0f} ${pnl:>+9,.0f} {tag:>6}")
+        lines.append(f"  {'-'*65}")
+        lines.append(f"  {'TOTAL':<8} {'':>7} {'':>9} {'':>9} ${total_val:>10,.0f} ${total_pnl:>+9,.0f}")
+        lines.append(f"  Cash: ${self.cash:,.0f}  |  Portfolio: ${self.cash + total_val:,.0f}  |  P/L: ${total_pnl:>+,.0f}")
+        if self.realized_gains != 0 or self.realized_losses != 0:
+            lines.append(f"  {self.tax_summary()}")
+        return '\n'.join(lines)
 
 
 class SignalEngine:
@@ -109,9 +295,11 @@ class SignalEngine:
         return None
 
     def compute_regime(self):
-        """Classify current regime from live + historical data."""
-        # VIX proxy (UVXY)
-        vix_mom = self.safe_mom(VIX_PROXY, 5)
+        """Classify current regime from historical ^VIX + live credit/gold data.
+
+        Uses ^VIX daily closes (from yfinance) for VIX z-score — NOT UVXY,
+        which is a leveraged decaying ETF with completely different z-scores.
+        """
         # HYG/TLT credit spread
         hyg_p = self.get_price('HYG')
         tlt_p = self.get_price('TLT')
@@ -127,7 +315,17 @@ class SignalEngine:
                 return 0
             return (p - hist.mean()) / (hist.std() + 1e-8)
 
-        vix_z = z_score(VIX_PROXY)
+        # Use ^VIX from historical daily data (not UVXY live)
+        def vix_z_from_history():
+            if '^VIX' not in self.daily_closes.columns:
+                return 0
+            hist = self.daily_closes['^VIX'].dropna().iloc[-50:]
+            if len(hist) < 20:
+                return 0
+            val = float(hist.iloc[-1])
+            return (val - hist.mean()) / (hist.std() + 1e-8)
+
+        vix_z = vix_z_from_history()
         gld_z = z_score('GLD')
 
         # Credit z
@@ -218,13 +416,21 @@ class SignalEngine:
 
         other_pct = 1.0 - tech_pct
 
-        # Bear switch (unless singularity)
+        # Bear switch (unless singularity) — matches live_trader logic:
+        # avg_50 = 50-day momentum, n_above = price above 50-day MA
         if not singularity:
             moms_50d = [self.safe_mom(sym, 50) for sym in TECH7]
             moms_50d = [m for m in moms_50d if m is not None]
             if len(moms_50d) >= 5:
                 avg_50 = np.mean(moms_50d)
-                n_above = sum(1 for m in moms_50d if m > 0)
+                # Count stocks above their 50-day moving average
+                n_above = 0
+                for sym in TECH7:
+                    price = self.get_price(sym)
+                    if price is not None and sym in self.daily_closes.columns:
+                        ma50 = self.daily_closes[sym].dropna().iloc[-50:].mean()
+                        if price > ma50:
+                            n_above += 1
                 if avg_50 < -0.05 and n_above <= 2:
                     tech_pct *= 0.3
                     other_pct = 1.0 - tech_pct
@@ -285,7 +491,56 @@ class SignalEngine:
         return max_diff > REBALANCE_THRESHOLD
 
 
-async def rebalance(session, account, engine, capital, dry_run=True):
+LIVE_STATE_FILE = LOG_DIR / 'live_state.json'
+
+
+def write_live_state(portfolio, engine, result, tick_count):
+    """Write current portfolio state to JSON for dashboard consumption."""
+    positions = []
+    for sym in sorted(portfolio.positions.keys(),
+                      key=lambda s: portfolio.positions[s]['shares'] * engine.live_prices.get(s, portfolio.positions[s]['avg_cost']),
+                      reverse=True):
+        pos = portfolio.positions[sym]
+        price = engine.live_prices.get(sym, pos['avg_cost'])
+        val = pos['shares'] * price
+        cost = pos['shares'] * pos['avg_cost']
+        pnl = val - cost
+        status = portfolio.tax_status(sym, price)
+        tag = {'short_term_gain': 'ST+', 'long_term_gain': 'LT+', 'loss': 'LOSS', 'neutral': '—'}[status]
+        positions.append({
+            'symbol': sym,
+            'shares': pos['shares'],
+            'avg_cost': round(pos['avg_cost'], 2),
+            'price': round(price, 2),
+            'value': round(val, 2),
+            'pnl': round(pnl, 2),
+            'tax_status': tag,
+        })
+
+    mv = portfolio.market_value(engine.live_prices)
+    state = {
+        'timestamp': datetime.now().isoformat(),
+        'regime': result['regime'],
+        'leader_score': round(result['leader_score'], 4),
+        'tech_pct': round(result['tech_pct'], 4),
+        'portfolio_value': round(mv, 2),
+        'cash': round(portfolio.cash, 2),
+        'starting_capital': portfolio.starting_capital,
+        'pnl': round(mv - portfolio.starting_capital, 2),
+        'pnl_pct': round((mv - portfolio.starting_capital) / portfolio.starting_capital * 100, 2),
+        'positions': positions,
+        'orders': [],
+        'ticks': tick_count,
+        'prices_connected': len(engine.live_prices),
+    }
+
+    # Atomic write
+    tmp = LIVE_STATE_FILE.with_suffix('.tmp')
+    tmp.write_text(json.dumps(state))
+    tmp.rename(LIVE_STATE_FILE)
+
+
+async def rebalance(session, account, engine, capital, dry_run=True, portfolio=None):
     """Execute a rebalance based on current signals."""
     result = engine.compute_allocation()
     alloc = result['allocation']
@@ -297,9 +552,12 @@ async def rebalance(session, account, engine, capital, dry_run=True):
           f"{'  *** SINGULARITY ***' if result['singularity'] else ''}")
     print(f"  Tech: {result['tech_pct']*100:.0f}%  Leader: {result['leader_score']:+.3f}")
 
-    # Get current positions
-    positions = await account.get_positions(session)
-    current = {p.symbol: int(p.quantity) for p in positions}
+    # Get current positions (from local tracker if available, else broker)
+    if portfolio and portfolio.positions:
+        current = {sym: pos['shares'] for sym, pos in portfolio.positions.items()}
+    else:
+        positions = await account.get_positions(session)
+        current = {p.symbol: int(p.quantity) for p in positions}
 
     # Compute target shares
     targets = {}
@@ -312,43 +570,97 @@ async def rebalance(session, account, engine, capital, dry_run=True):
             if shares > 0:
                 targets[sym] = shares
 
-    # Show changes
+    # Tax-aware loss harvesting: check for positions to proactively sell
+    if portfolio:
+        harvest = portfolio.harvest_candidates(engine.live_prices)
+        if harvest:
+            print(f"\n  TAX-LOSS HARVEST CANDIDATES:")
+            for sym, pnl_pct, loss_amt in harvest:
+                print(f"    {sym:<6} down {pnl_pct*100:.1f}%  loss=${loss_amt:,.0f}")
+                # Force target to 0 for harvest candidates (will be reallocated next cycle)
+                if sym not in targets or targets[sym] == current.get(sym, 0):
+                    targets[sym] = 0
+
+    # Build orders with tax-aware sell filtering
     all_syms = sorted(set(list(current.keys()) + list(targets.keys())))
     orders = []
+    tax_holds = []
     for sym in all_syms:
         cur = current.get(sym, 0)
         tgt = targets.get(sym, 0)
         diff = tgt - cur
         if abs(diff) < 1:
             continue
-        action = 'BUY' if diff > 0 else 'SELL'
+
         price = engine.get_price(sym)
+
+        if diff < 0 and portfolio:
+            # Selling — apply tax-aware threshold
+            cur_alloc = (cur * (price or 0)) / capital if capital > 0 else 0
+            tgt_alloc = (tgt * (price or 0)) / capital if capital > 0 else 0
+            should, reason = portfolio.should_sell(sym, cur_alloc, tgt_alloc, price or 0)
+            if not should:
+                tax_holds.append((sym, reason))
+                continue
+            # Check wash sale on the buy side (handled separately)
+
+        if diff > 0 and portfolio and portfolio.is_wash_sale(sym):
+            print(f"    {sym:<6} WASH SALE BLOCKED — sold at loss within 30d")
+            continue
+
+        action = 'BUY' if diff > 0 else 'SELL'
         print(f"    {sym:<6} {cur:>5} -> {tgt:>5}  {action} {abs(diff):>5}  "
               f"(${abs(diff) * (price or 0):,.0f})")
         orders.append((sym, diff))
+
+    if tax_holds:
+        print(f"\n  TAX HOLDS (not selling):")
+        for sym, reason in tax_holds:
+            print(f"    {sym:<6} {reason}")
 
     if not orders:
         print("    No changes needed")
         return
 
-    # Execute
+    # Execute with retry on transient errors
     if not dry_run:
         for sym, diff in orders:
-            try:
-                action = OrderAction.BUY_TO_OPEN if diff > 0 else OrderAction.SELL_TO_CLOSE
-                equity = await Equity.get(session, [sym])
-                if isinstance(equity, list):
-                    equity = equity[0]
-                leg = equity.build_leg(abs(diff), action)
-                order = NewOrder(
-                    time_in_force=OrderTimeInForce.DAY,
-                    order_type=OrderType.MARKET,
-                    legs=[leg],
-                )
-                resp = await account.place_order(session, order)
-                print(f"    -> {sym} order placed: {resp}")
-            except Exception as e:
-                print(f"    -> {sym} ERROR: {e}")
+            action = OrderAction.BUY_TO_OPEN if diff > 0 else OrderAction.SELL_TO_CLOSE
+            placed = False
+            for attempt in range(MAX_ORDER_RETRIES):
+                try:
+                    equity = await Equity.get(session, [sym])
+                    if isinstance(equity, list):
+                        equity = equity[0]
+                    leg = equity.build_leg(abs(diff), action)
+                    order = NewOrder(
+                        time_in_force=OrderTimeInForce.DAY,
+                        order_type=OrderType.MARKET,
+                        legs=[leg],
+                    )
+                    resp = await account.place_order(session, order)
+                    print(f"    -> {sym} order placed")
+                    # Record fill locally
+                    if portfolio:
+                        fill_price = engine.get_price(sym) or 0
+                        portfolio.fill_order(sym, diff, fill_price)
+                    placed = True
+                    break
+                except Exception as e:
+                    delay = ORDER_RETRY_DELAY * (2 ** attempt)
+                    if attempt < MAX_ORDER_RETRIES - 1:
+                        print(f"    -> {sym} ERROR (attempt {attempt+1}/{MAX_ORDER_RETRIES}): {e}")
+                        print(f"       Retrying in {delay}s...")
+                        await asyncio.sleep(delay)
+                    else:
+                        print(f"    -> {sym} FAILED after {MAX_ORDER_RETRIES} attempts: {e}")
+            if not placed:
+                print(f"    -> {sym} SKIPPED — could not place order")
+
+    # Show portfolio after rebalance
+    if portfolio:
+        print(f"\n  PORTFOLIO:")
+        print(portfolio.detail(engine.live_prices))
 
     # Update state
     engine.last_allocation = alloc
@@ -389,6 +701,7 @@ async def main():
 
     # Load historical data for lookback
     print("\n  Loading historical prices...")
+    # ^VIX is critical for regime classification — must be in historical data
     hist = yf.download(ALL_STREAM + ['^VIX', 'TLT', 'SHY'], period='120d',
                        interval='1d', auto_adjust=True)
     hist_closes = hist['Close'].dropna(how='all')
@@ -408,74 +721,117 @@ async def main():
     print(f"  Account: {account.account_number}")
     print(f"  Capital: ${capital:,.2f}")
 
-    # Initialize signal engine
+    # Initialize signal engine and local portfolio tracker
     engine = SignalEngine(hist_closes)
+    portfolio = LocalPortfolio(capital)
 
     # Initial rebalance
-    await rebalance(session, account, engine, capital, dry_run)
+    await rebalance(session, account, engine, capital, dry_run, portfolio=portfolio)
 
-    # Start streaming
+    # Start streaming with automatic reconnect
     print(f"\n  Starting live stream for {len(ALL_STREAM)} symbols...")
     print(f"  Watching for regime changes and {REBALANCE_THRESHOLD*100:.0f}% allocation shifts...")
     print(f"  Press Ctrl+C to stop\n")
 
     tick_count = 0
     last_status = 0
+    reconnect_attempts = 0
+    max_reconnect_attempts = 10
+    shutting_down = False
 
-    async with DXLinkStreamer(session) as streamer:
-        await streamer.subscribe(Quote, ALL_STREAM)
+    while not shutting_down:
+        try:
+            if reconnect_attempts > 0:
+                delay = min(5 * (2 ** (reconnect_attempts - 1)), 60)
+                print(f"  [{datetime.now().strftime('%H:%M:%S')}] "
+                      f"Reconnecting (attempt {reconnect_attempts}/{max_reconnect_attempts}) "
+                      f"in {delay}s...")
+                await asyncio.sleep(delay)
+                # Refresh session on reconnect
+                session = Session(
+                    provider_secret=os.environ['TASTYTRADE_CLIENT_SECRET'],
+                    refresh_token=os.environ['TASTYTRADE_REFRESH_TOKEN'],
+                    is_test=is_sandbox,
+                )
+                accounts = await Account.get(session)
+                account = accounts[0]
 
-        while True:
-            try:
-                quote = await asyncio.wait_for(streamer.get_event(Quote), timeout=30)
+            async with DXLinkStreamer(session) as streamer:
+                await streamer.subscribe(Quote, ALL_STREAM)
+                reconnect_attempts = 0  # reset on successful connect
+                if tick_count > 0:
+                    print(f"  [{datetime.now().strftime('%H:%M:%S')}] Reconnected, resuming stream")
 
-                sym = quote.event_symbol
-                bid = float(quote.bid_price) if quote.bid_price else 0
-                ask = float(quote.ask_price) if quote.ask_price else 0
-                mid = (bid + ask) / 2 if bid > 0 and ask > 0 else None
+                while True:
+                    try:
+                        quote = await asyncio.wait_for(streamer.get_event(Quote), timeout=30)
 
-                if mid and mid > 0:
-                    engine.update_price(sym, float(mid))
-                    tick_count += 1
+                        sym = quote.event_symbol
+                        bid = float(quote.bid_price) if quote.bid_price else 0
+                        ask = float(quote.ask_price) if quote.ask_price else 0
+                        mid = (bid + ask) / 2 if bid > 0 and ask > 0 else None
 
-                    # Check for rebalance every 100 ticks
-                    if tick_count % 100 == 0:
-                        now = asyncio.get_event_loop().time()
-                        if now - engine.last_rebalance_time > MIN_REBALANCE_INTERVAL:
-                            result = engine.compute_allocation()
-                            new_regime = result['regime']
+                        if mid and mid > 0:
+                            engine.update_price(sym, float(mid))
+                            tick_count += 1
 
-                            # Regime change OR allocation shift -> rebalance
-                            regime_changed = new_regime != engine.last_regime
-                            alloc_changed = engine.allocation_changed(result['allocation'])
+                            # Check for rebalance every 100 ticks
+                            if tick_count % 100 == 0:
+                                now = asyncio.get_event_loop().time()
+                                if now - engine.last_rebalance_time > MIN_REBALANCE_INTERVAL:
+                                    result = engine.compute_allocation()
+                                    new_regime = result['regime']
 
-                            if regime_changed or alloc_changed:
-                                reason = f"REGIME: {engine.last_regime}->{new_regime}" if regime_changed else "ALLOCATION SHIFT"
-                                print(f"  [{datetime.now().strftime('%H:%M:%S')}] {reason}")
-                                bal = await account.get_balances(session)
-                                capital = float(bal.net_liquidating_value)
-                                await rebalance(session, account, engine, capital, dry_run)
+                                    # Regime change OR allocation shift -> rebalance
+                                    regime_changed = new_regime != engine.last_regime
+                                    alloc_changed = engine.allocation_changed(result['allocation'])
 
-                    # Status update every 60 seconds
-                    now_ts = asyncio.get_event_loop().time()
-                    if now_ts - last_status > 60:
-                        result = engine.compute_allocation()
-                        n_prices = len(engine.live_prices)
-                        print(f"  [{datetime.now().strftime('%H:%M:%S')}] "
-                              f"ticks={tick_count} prices={n_prices}/{len(ALL_STREAM)} "
-                              f"regime={result['regime']} tech={result['tech_pct']*100:.0f}% "
-                              f"leader={result['leader_score']:+.3f}"
-                              f"{'  SINGULARITY' if result['singularity'] else ''}")
-                        last_status = now_ts
+                                    if regime_changed or alloc_changed:
+                                        reason = f"REGIME: {engine.last_regime}->{new_regime}" if regime_changed else "ALLOCATION SHIFT"
+                                        print(f"  [{datetime.now().strftime('%H:%M:%S')}] {reason}")
+                                        bal = await account.get_balances(session)
+                                        capital = float(bal.net_liquidating_value)
+                                        await rebalance(session, account, engine, capital, dry_run, portfolio=portfolio)
 
-            except asyncio.TimeoutError:
-                print(f"  [{datetime.now().strftime('%H:%M:%S')}] No data (market closed?)")
-            except KeyboardInterrupt:
-                print("\n  Shutting down...")
+                            # Status update every 60 seconds
+                            now_ts = asyncio.get_event_loop().time()
+                            if now_ts - last_status > 60:
+                                result = engine.compute_allocation()
+                                n_prices = len(engine.live_prices)
+                                port_str = f"  | {portfolio.summary(engine.live_prices)}" if portfolio.positions else ""
+                                print(f"  [{datetime.now().strftime('%H:%M:%S')}] "
+                                      f"ticks={tick_count} prices={n_prices}/{len(ALL_STREAM)} "
+                                      f"regime={result['regime']} tech={result['tech_pct']*100:.0f}% "
+                                      f"leader={result['leader_score']:+.3f}"
+                                      f"{'  SINGULARITY' if result['singularity'] else ''}"
+                                      f"{port_str}")
+                                last_status = now_ts
+
+                                # Write live state for dashboard
+                                write_live_state(portfolio, engine, result, tick_count)
+
+                    except asyncio.TimeoutError:
+                        print(f"  [{datetime.now().strftime('%H:%M:%S')}] No data (market closed?)")
+                    except KeyboardInterrupt:
+                        print("\n  Shutting down...")
+                        shutting_down = True
+                        break
+
+        except KeyboardInterrupt:
+            print("\n  Shutting down...")
+            shutting_down = True
+        except (WebSocketDisconnect, BaseExceptionGroup) as e:
+            reconnect_attempts += 1
+            print(f"  [{datetime.now().strftime('%H:%M:%S')}] WebSocket disconnected: {e}")
+            if reconnect_attempts >= max_reconnect_attempts:
+                print(f"  FATAL: {max_reconnect_attempts} reconnect attempts failed, giving up")
                 break
-            except Exception as e:
-                print(f"  ERROR: {e}")
-                await asyncio.sleep(5)
+        except Exception as e:
+            reconnect_attempts += 1
+            print(f"  [{datetime.now().strftime('%H:%M:%S')}] Stream error: {e}")
+            if reconnect_attempts >= max_reconnect_attempts:
+                print(f"  FATAL: {max_reconnect_attempts} reconnect attempts failed, giving up")
+                break
 
     await session._client.aclose()
     print("  Done.")
