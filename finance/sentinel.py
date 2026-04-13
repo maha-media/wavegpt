@@ -1,8 +1,18 @@
 """Sentinel — social firehose monitoring with fuzzy matching."""
 
+import asyncio
+import json
 import re
+import time
 from collections import defaultdict
-from config import SIGNAL_KEYWORDS
+from pathlib import Path
+from config import (
+    SIGNAL_KEYWORDS, AI_DEDUP_WINDOW_SEC, KEYWORD_TRIGGER_SCORE,
+    VELOCITY_SPIKE_MULT, FAST_SEARCH_QUERIES, SLOW_SEARCH_QUERIES,
+    SENTINEL_FAST_POLL_SEC, SENTINEL_SLOW_POLL_SEC, QUEUE_FILE,
+)
+
+QUEUE_PATH = Path(__file__).parent / QUEUE_FILE
 
 # Cashtag regex: $AAPL, $NVDA (2-5 uppercase letters, not common words)
 _CASHTAG_RE = re.compile(r'\$([A-Z]{2,5})\b')
@@ -62,3 +72,119 @@ class VelocityTracker:
         older = len(times) - recent
         avg_rate = max(older / 2, 1)  # expected per third from older portion
         return recent > avg_rate * self.spike_mult
+
+
+class SentinelMonitor:
+    """Monitors social feeds via Exa, flags tickers for speculator."""
+
+    def __init__(self, exa_api_key: str, watched_tickers: list[str] | None = None):
+        self.exa_api_key = exa_api_key
+        self.watched_tickers = set(watched_tickers or [])
+        self.velocity = VelocityTracker(spike_mult=VELOCITY_SPIKE_MULT)
+        self._last_prompted: dict[str, float] = {}
+
+    def _should_dedupe(self, ticker: str) -> bool:
+        last = self._last_prompted.get(ticker)
+        if last is None:
+            return False
+        return (time.time() - last) < AI_DEDUP_WINDOW_SEC
+
+    def evaluate_content(self, text: str, source: str) -> list[dict]:
+        """Evaluate a piece of content. Returns list of flagged opportunities."""
+        tickers = extract_tickers(text)
+        if not tickers:
+            return []
+
+        keyword_score = compute_keyword_score(text)
+        now = time.time()
+        results = []
+
+        for ticker in tickers:
+            velocity_spike = self.velocity.record_and_check(ticker, now)
+
+            if keyword_score >= KEYWORD_TRIGGER_SCORE or velocity_spike:
+                if self._should_dedupe(ticker):
+                    continue
+                self._last_prompted[ticker] = now
+                results.append({
+                    'ticker': ticker,
+                    'score': keyword_score,
+                    'velocity_spike': velocity_spike,
+                    'text': text[:500],
+                    'source': source,
+                    'timestamp': now,
+                })
+
+        return results
+
+    def write_to_queue(self, opportunities: list[dict]):
+        """Append opportunities to the JSON queue file for the Speculator."""
+        existing = []
+        if QUEUE_PATH.exists():
+            try:
+                existing = json.loads(QUEUE_PATH.read_text())
+            except (json.JSONDecodeError, FileNotFoundError):
+                existing = []
+        existing.extend(opportunities)
+        tmp = QUEUE_PATH.with_suffix('.tmp')
+        tmp.write_text(json.dumps(existing, indent=2))
+        tmp.rename(QUEUE_PATH)
+
+    async def run_fast_poll(self):
+        """Run targeted Exa searches every SENTINEL_FAST_POLL_SEC."""
+        from exa_py import Exa
+        exa = Exa(self.exa_api_key)
+
+        while True:
+            for query_template in FAST_SEARCH_QUERIES:
+                tickers_to_search = list(self.watched_tickers)[:10]
+                for ticker in tickers_to_search:
+                    query = query_template.format(ticker=ticker)
+                    try:
+                        results = exa.search(
+                            query,
+                            num_results=10,
+                            use_autoprompt=True,
+                            type='neural',
+                        )
+                        for r in results.results:
+                            content = f"{r.title} {r.text}" if hasattr(r, 'text') else r.title
+                            opps = self.evaluate_content(content, source=f'exa_fast:{query}')
+                            if opps:
+                                self.write_to_queue(opps)
+                    except Exception as e:
+                        print(f"  [Sentinel] Exa search error: {e}")
+
+            await asyncio.sleep(SENTINEL_FAST_POLL_SEC)
+
+    async def run_slow_sweep(self):
+        """Run broad discovery searches every SENTINEL_SLOW_POLL_SEC."""
+        from exa_py import Exa
+        exa = Exa(self.exa_api_key)
+
+        while True:
+            for query in SLOW_SEARCH_QUERIES:
+                try:
+                    results = exa.search(
+                        query,
+                        num_results=10,
+                        use_autoprompt=True,
+                        type='neural',
+                    )
+                    for r in results.results:
+                        content = f"{r.title} {r.text}" if hasattr(r, 'text') else r.title
+                        opps = self.evaluate_content(content, source=f'exa_slow:{query}')
+                        if opps:
+                            self.write_to_queue(opps)
+                except Exception as e:
+                    print(f"  [Sentinel] Exa sweep error: {e}")
+
+            await asyncio.sleep(SENTINEL_SLOW_POLL_SEC)
+
+    async def run(self):
+        """Main entry point — runs fast poll and slow sweep concurrently."""
+        print(f"  [Sentinel] Starting — watching {len(self.watched_tickers)} tickers")
+        await asyncio.gather(
+            self.run_fast_poll(),
+            self.run_slow_sweep(),
+        )

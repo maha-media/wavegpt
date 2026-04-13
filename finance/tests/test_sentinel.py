@@ -1,9 +1,10 @@
 import sys
+import time
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pytest
-from sentinel import extract_tickers, compute_keyword_score, VelocityTracker
+from sentinel import extract_tickers, compute_keyword_score, VelocityTracker, SentinelMonitor
 
 
 class TestExtractTickers:
@@ -56,3 +57,36 @@ class TestVelocityTracker:
         for i in range(10):
             result = vt.record_and_check('NVDA', base_time + 11)
         assert result is True
+
+
+class TestSentinelDedup:
+    def test_dedup_blocks_repeat_within_window(self):
+        mon = SentinelMonitor(exa_api_key='fake')
+        mon._last_prompted = {'NVDA': time.time()}
+        assert mon._should_dedupe('NVDA') is True
+
+    def test_dedup_allows_after_window(self):
+        mon = SentinelMonitor(exa_api_key='fake')
+        mon._last_prompted = {'NVDA': time.time() - 700}
+        assert mon._should_dedupe('NVDA') is False
+
+    def test_dedup_allows_new_ticker(self):
+        mon = SentinelMonitor(exa_api_key='fake')
+        assert mon._should_dedupe('NVDA') is False
+
+
+class TestSentinelEvaluate:
+    def test_flags_high_score_ticker(self):
+        mon = SentinelMonitor(exa_api_key='fake')
+        results = mon.evaluate_content(
+            '$NVDA squeeze to the moon! Diamond hands!',
+            source='test'
+        )
+        assert len(results) > 0
+        assert results[0]['ticker'] == 'NVDA'
+        assert results[0]['score'] > 0
+
+    def test_ignores_low_score(self):
+        mon = SentinelMonitor(exa_api_key='fake')
+        results = mon.evaluate_content('$AAPL mentioned', source='test')
+        assert len(results) == 0
