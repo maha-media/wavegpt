@@ -4,7 +4,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import json
 import pytest
-from speculator import build_evaluation_prompt, parse_ai_decision, SpecPool
+from speculator import build_evaluation_prompt, parse_ai_decision, SpecPool, Speculator
 
 
 class TestBuildPrompt:
@@ -115,3 +115,27 @@ class TestSpecPool:
         pool2.load()
         assert 'NVDA' in pool2.positions
         assert pool2.daily_pnl == -150
+
+
+class TestSpeculatorQueue:
+    def test_read_queue_empty(self, tmp_path):
+        spec = Speculator.__new__(Speculator)
+        spec.queue_path = tmp_path / 'queue.json'
+        assert spec.read_queue() == []
+
+    def test_read_queue_with_items(self, tmp_path):
+        spec = Speculator.__new__(Speculator)
+        spec.queue_path = tmp_path / 'queue.json'
+        spec.queue_path.write_text(json.dumps([
+            {'ticker': 'NVDA', 'score': 7.0, 'text': 'moon'},
+        ]))
+        items = spec.read_queue()
+        assert len(items) == 1
+        assert items[0]['ticker'] == 'NVDA'
+
+    def test_read_queue_clears_after_read(self, tmp_path):
+        spec = Speculator.__new__(Speculator)
+        spec.queue_path = tmp_path / 'queue.json'
+        spec.queue_path.write_text(json.dumps([{'ticker': 'NVDA'}]))
+        spec.read_queue()
+        assert spec.read_queue() == []
