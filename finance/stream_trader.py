@@ -39,6 +39,7 @@ from tastytrade.order import (
     NewOrder, OrderAction, OrderTimeInForce, OrderType,
 )
 from tastytrade.instruments import Equity
+from decimal import Decimal
 
 load_dotenv(Path(__file__).parent / '.env')
 
@@ -540,7 +541,7 @@ def write_live_state(portfolio, engine, result, tick_count):
     tmp.rename(LIVE_STATE_FILE)
 
 
-async def rebalance(session, account, engine, capital, dry_run=True, portfolio=None):
+async def rebalance(session, account, engine, capital, dry_run=True, portfolio=None, is_sandbox=False):
     """Execute a rebalance based on current signals."""
     result = engine.compute_allocation()
     alloc = result['allocation']
@@ -633,11 +634,34 @@ async def rebalance(session, account, engine, capital, dry_run=True, portfolio=N
                     if isinstance(equity, list):
                         equity = equity[0]
                     leg = equity.build_leg(abs(diff), action)
-                    order = NewOrder(
-                        time_in_force=OrderTimeInForce.DAY,
-                        order_type=OrderType.MARKET,
-                        legs=[leg],
-                    )
+                    # Extended hours (before 9:30 or after 16:00 ET) require
+                    # GTC_EXT + limit orders. Regular hours use DAY + market.
+                    now_et = datetime.now()  # TODO: proper ET conversion
+                    hour = now_et.hour
+                    is_extended = hour < 9 or (hour == 9 and now_et.minute < 30) or hour >= 16
+                    if is_extended and is_sandbox:
+                        # Sandbox can't trade after hours — record locally only
+                        print(f"    -> {sym} SANDBOX ext-hours — recording locally")
+                        if portfolio:
+                            fill_price = engine.get_price(sym) or 0
+                            portfolio.fill_order(sym, diff, fill_price)
+                        placed = True
+                        break
+                    if is_extended:
+                        limit_price = Decimal(str(round(engine.get_price(sym) or 0, 2)))
+                        order_price = -limit_price if diff > 0 else limit_price
+                        order = NewOrder(
+                            time_in_force=OrderTimeInForce.GTC_EXT,
+                            order_type=OrderType.LIMIT,
+                            price=order_price,
+                            legs=[leg],
+                        )
+                    else:
+                        order = NewOrder(
+                            time_in_force=OrderTimeInForce.DAY,
+                            order_type=OrderType.MARKET,
+                            legs=[leg],
+                        )
                     resp = await account.place_order(session, order)
                     print(f"    -> {sym} order placed")
                     # Record fill locally
@@ -726,7 +750,7 @@ async def main():
     portfolio = LocalPortfolio(capital)
 
     # Initial rebalance
-    await rebalance(session, account, engine, capital, dry_run, portfolio=portfolio)
+    await rebalance(session, account, engine, capital, dry_run, portfolio=portfolio, is_sandbox=is_sandbox)
 
     # Start streaming with automatic reconnect
     print(f"\n  Starting live stream for {len(ALL_STREAM)} symbols...")
@@ -791,7 +815,7 @@ async def main():
                                         print(f"  [{datetime.now().strftime('%H:%M:%S')}] {reason}")
                                         bal = await account.get_balances(session)
                                         capital = float(bal.net_liquidating_value)
-                                        await rebalance(session, account, engine, capital, dry_run, portfolio=portfolio)
+                                        await rebalance(session, account, engine, capital, dry_run, portfolio=portfolio, is_sandbox=is_sandbox)
 
                             # Status update every 60 seconds
                             now_ts = asyncio.get_event_loop().time()

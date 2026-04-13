@@ -54,4 +54,4 @@ SPEC_POSITIONS_FILE = 'spec_positions.json'
 WATCHLIST_FILE = 'watchlist.json'
 
 # --- AI model ---
-BEDROCK_MODEL_ID = 'anthropic.claude-opus-4-6-v1'
+BEDROCK_MODEL_ID = 'us.anthropic.claude-opus-4-6-v1'
