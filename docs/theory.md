@@ -75,7 +75,9 @@ Waking consciousness is φ^(1/3). The brain is continuously driven (sensory inpu
 
 ---
 
-## Harmonic Structure in Training Data
+## Early Work: Harmonic Data Curriculum (historical)
+
+The following sections document the original WaveGPT approach — structuring training *data* harmonically to prevent semantic collapse. This was the 16M-param GPT-2 era, before the spectral discovery. The data curriculum ideas are valid but superseded by spectral fine-tuning (SVD decompose → freeze U/V → train spectrum with harmonic regularizer). Kept here as lineage.
 
 ### The Core Equation
 
@@ -94,13 +96,13 @@ Every corpus — every collection of human knowledge — has harmonic structure.
 
 This isn't a GPT-2 artifact. It's the structure of language itself. The fundamental dominates because most words appear in most contexts. The overtones carry the actual meaning.
 
-## The Problem: Semantic Collapse
+### The Problem: Semantic Collapse
 
 Standard training converges toward the fundamental. Every gradient step, every batch, every epoch pulls representations toward the centroid — the average of all words. This is **semantic collapse**: the model learns "this is English" and stops learning "this is specifically about nanotechnology vs biotechnology."
 
 You can see it in the training dynamics: val loss oscillates ±1.5. The model periodically escapes the centroid attractor (low val loss = nuance preserved), then collapses back (high val loss = everything looks the same), then escapes again.
 
-## The Solution: Harmonic Training
+### The Solution (then): Harmonic Data Curriculum
 
 ### 1. Data as Instrument
 
@@ -151,7 +153,7 @@ Training walks the harmonic ladder:
 - **Phase 2** (30–70%): Mixed augmented + raw text. The model integrates structured knowledge with natural prose.
 - **Phase 3** (70–100%): Full corpus. Natural language dominates, but the harmonic foundation is already in place.
 
-## The Pythagorean Comma
+### The Pythagorean Comma
 
 In music, if you stack 12 perfect fifths, you should return to the same note — but you don't. The ratio (3/2)^12 ≈ 129.75, while 7 octaves = 128. The difference (~1.36%) is the **Pythagorean comma** — an irreducible residual that no tuning system can eliminate.
 
@@ -159,7 +161,7 @@ In our corpus: directions 181+ capture ~2% of variance. This is the comma zone. 
 
 The comma is not noise to be eliminated. It's the space where genuine novelty lives.
 
-## Results
+### Results (16M GPT-2 era)
 
 On a 16M param GPT-2 trained on 4.7M tokens:
 
