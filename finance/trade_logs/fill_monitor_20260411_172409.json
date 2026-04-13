@@ -1,0 +1,119 @@
+{
+  "timestamp": "2026-04-11T17:24:09.273452",
+  "mode": "dry_run",
+  "environment": "sandbox",
+  "regime": "NORMAL",
+  "leader_score": -0.045963223568420086,
+  "proposals": [
+    {
+      "symbol": "AAPL",
+      "order_id": -1,
+      "limit_price": 260.4800109863281,
+      "current_price": 278.7136117553711,
+      "gap_pct": 0.07000000000000009,
+      "mom_score": 0.07780133387344684,
+      "shares": 279,
+      "action": "SKIP",
+      "reason": "large gap (7.0%) + weak signal (mom=0.08), cancel and reallocate"
+    },
+    {
+      "symbol": "MSFT",
+      "order_id": -1,
+      "limit_price": 370.8699951171875,
+      "current_price": 396.8308947753907,
+      "gap_pct": 0.07000000000000013,
+      "mom_score": -3.479495809123108,
+      "shares": 83,
+      "action": "SKIP",
+      "reason": "large gap (7.0%) + weak signal (mom=-3.48), cancel and reallocate"
+    },
+    {
+      "symbol": "NVDA",
+      "order_id": -1,
+      "limit_price": 188.6300048828125,
+      "current_price": 201.83410522460937,
+      "gap_pct": 0.06999999999999999,
+      "mom_score": 0.4003639417696996,
+      "shares": 533,
+      "action": "WAIT",
+      "reason": "large gap (7.0%) but strong signal (mom=0.40), hold GTC \u2014 do not chase"
+    },
+    {
+      "symbol": "GOOGL",
+      "order_id": -1,
+      "limit_price": 317.239990234375,
+      "current_price": 339.44678955078126,
+      "gap_pct": 0.07000000000000003,
+      "mom_score": 1.109178971355673,
+      "shares": 644,
+      "action": "WAIT",
+      "reason": "large gap (7.0%) but strong signal (mom=1.11), hold GTC \u2014 do not chase"
+    },
+    {
+      "symbol": "AMZN",
+      "order_id": -1,
+      "limit_price": 238.3800048828125,
+      "current_price": 255.0666052246094,
+      "gap_pct": 0.07000000000000006,
+      "mom_score": 0.8621209189554514,
+      "shares": 669,
+      "action": "WAIT",
+      "reason": "large gap (7.0%) but strong signal (mom=0.86), hold GTC \u2014 do not chase"
+    },
+    {
+      "symbol": "META",
+      "order_id": -1,
+      "limit_price": 629.8599853515625,
+      "current_price": 673.9501843261719,
+      "gap_pct": 0.07000000000000003,
+      "mom_score": 0.04785759570020745,
+      "shares": 112,
+      "action": "SKIP",
+      "reason": "large gap (7.0%) + weak signal (mom=0.05), cancel and reallocate"
+    },
+    {
+      "symbol": "TSLA",
+      "order_id": -1,
+      "limit_price": 348.95001220703125,
+      "current_price": 373.37651306152344,
+      "gap_pct": 0.07,
+      "mom_score": -1.9597970856296762,
+      "shares": 88,
+      "action": "SKIP",
+      "reason": "large gap (7.0%) + weak signal (mom=-1.96), cancel and reallocate"
+    },
+    {
+      "symbol": "XLK",
+      "order_id": -1,
+      "limit_price": 142.6199951171875,
+      "current_price": 152.60339477539063,
+      "gap_pct": 0.07,
+      "mom_score": 0.39911001810664803,
+      "shares": 770,
+      "action": "WAIT",
+      "reason": "large gap (7.0%) but strong signal (mom=0.40), hold GTC \u2014 do not chase"
+    },
+    {
+      "symbol": "XLP",
+      "order_id": -1,
+      "limit_price": 82.37000274658203,
+      "current_price": 88.13590293884278,
+      "gap_pct": 0.07000000000000003,
+      "mom_score": 0.812718432244768,
+      "shares": 1334,
+      "action": "WAIT",
+      "reason": "large gap (7.0%) but strong signal (mom=0.81), hold GTC \u2014 do not chase"
+    },
+    {
+      "symbol": "HYG",
+      "order_id": -1,
+      "limit_price": 79.95999908447266,
+      "current_price": 85.55719902038575,
+      "gap_pct": 0.07000000000000013,
+      "mom_score": 2.2530317024798725,
+      "shares": 1374,
+      "action": "WAIT",
+      "reason": "large gap (7.0%) but strong signal (mom=2.25), hold GTC \u2014 do not chase"
+    }
+  ]
+}

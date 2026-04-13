@@ -147,7 +147,7 @@ def harmonic_regularization(
     for name, m in named_modules:
         if m.mode != 'per_mode':
             continue
-        s = m.spectrum
+        s = m.get_spectrum()
         device = s.device
         k = torch.arange(1, len(s) + 1, device=device, dtype=s.dtype)
 

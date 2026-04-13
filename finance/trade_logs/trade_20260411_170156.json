@@ -1,0 +1,146 @@
+{
+  "timestamp": "2026-04-11T17:01:56.211393",
+  "mode": "live",
+  "environment": "sandbox",
+  "capital": 1000000.0,
+  "regime": "NORMAL",
+  "singularity": false,
+  "leader_score": -0.045939525839897064,
+  "tech_pct": 0.6703023708005147,
+  "allocation": {
+    "AAPL": 0.07287803700513754,
+    "MSFT": 0.030994525838431857,
+    "NVDA": 0.10061988738669997,
+    "GOOGL": 0.20441761445770595,
+    "AMZN": 0.15966963558600442,
+    "META": 0.07072814468810307,
+    "TSLA": 0.030994525838431857,
+    "XLK": 0.10989920973316177,
+    "XLP": 0.10989920973316177,
+    "HYG": 0.10989920973316177
+  },
+  "targets": {
+    "AAPL": {
+      "shares": 279,
+      "price": 260.4800109863281,
+      "dollar_value": 72673.92306518555,
+      "pct": 0.07287803700513754
+    },
+    "MSFT": {
+      "shares": 83,
+      "price": 370.8699951171875,
+      "dollar_value": 30782.209594726562,
+      "pct": 0.030994525838431857
+    },
+    "NVDA": {
+      "shares": 533,
+      "price": 188.6300048828125,
+      "dollar_value": 100539.79260253906,
+      "pct": 0.10061988738669997
+    },
+    "GOOGL": {
+      "shares": 644,
+      "price": 317.239990234375,
+      "dollar_value": 204302.5537109375,
+      "pct": 0.20441761445770595
+    },
+    "AMZN": {
+      "shares": 669,
+      "price": 238.3800048828125,
+      "dollar_value": 159476.22326660156,
+      "pct": 0.15966963558600442
+    },
+    "META": {
+      "shares": 112,
+      "price": 629.8599853515625,
+      "dollar_value": 70544.318359375,
+      "pct": 0.07072814468810307
+    },
+    "TSLA": {
+      "shares": 88,
+      "price": 348.95001220703125,
+      "dollar_value": 30707.60107421875,
+      "pct": 0.030994525838431857
+    },
+    "XLK": {
+      "shares": 770,
+      "price": 142.6199951171875,
+      "dollar_value": 109817.39624023438,
+      "pct": 0.10989920973316177
+    },
+    "XLP": {
+      "shares": 1334,
+      "price": 82.37000274658203,
+      "dollar_value": 109881.58366394043,
+      "pct": 0.10989920973316177
+    },
+    "HYG": {
+      "shares": 1374,
+      "price": 79.95999908447266,
+      "dollar_value": 109865.03874206543,
+      "pct": 0.10989920973316177
+    }
+  },
+  "orders": [
+    {
+      "symbol": "AAPL",
+      "action": "BUY",
+      "quantity": 279,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "AMZN",
+      "action": "BUY",
+      "quantity": 669,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "GOOGL",
+      "action": "BUY",
+      "quantity": 644,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "HYG",
+      "action": "BUY",
+      "quantity": 1374,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "META",
+      "action": "BUY",
+      "quantity": 112,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "MSFT",
+      "action": "BUY",
+      "quantity": 83,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "NVDA",
+      "action": "BUY",
+      "quantity": 533,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "TSLA",
+      "action": "BUY",
+      "quantity": 88,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "XLK",
+      "action": "BUY",
+      "quantity": 770,
+      "error": "get_equity"
+    },
+    {
+      "symbol": "XLP",
+      "action": "BUY",
+      "quantity": 1334,
+      "error": "get_equity"
+    }
+  ]
+}

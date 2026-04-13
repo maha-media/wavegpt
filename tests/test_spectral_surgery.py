@@ -119,7 +119,7 @@ def test_scaffold_from_state_dict_variable_rank():
     decomposed = spectral_decompose(model1, rank=12, mode='per_mode')
     sd = decomposed.state_dict()
     # Verify the saved spectrum shapes
-    assert sd['linear1.spectrum'].shape[0] == 12
+    assert sd['linear1.log_spectrum'].shape[0] == 12
     # Now scaffold a fresh model using that state_dict
     model2 = TinyModel()
     spectral_scaffold(model2, rank=999, mode='per_mode', state_dict=sd)

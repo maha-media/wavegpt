@@ -181,23 +181,44 @@ def spectral_scaffold(
     def should_skip(name: str) -> bool:
         return any(re.search(p, name) for p in skip_patterns)
 
-    # Build rank map from state dict if provided
+    # Build rank map and residual set from state dict if provided
     rank_map: dict[str, int] = {}
+    residual_set: set[str] = set()
+    migrated_count = 0
     if state_dict is not None:
+        # Migrate old .spectrum keys → .log_spectrum (log-space parameterization)
+        keys_to_migrate = [k for k in state_dict if k.endswith('.spectrum') and state_dict[k].dim() == 1]
+        for key in keys_to_migrate:
+            raw_spectrum = state_dict.pop(key)
+            log_key = key.rsplit('.spectrum', 1)[0] + '.log_spectrum'
+            state_dict[log_key] = torch.log(raw_spectrum.clamp(min=1e-12))
+            # Also create the frozen init buffer
+            init_key = key.rsplit('.spectrum', 1)[0] + '.log_spectrum_init'
+            state_dict[init_key] = state_dict[log_key].clone()
+            migrated_count += 1
+
         for key, tensor in state_dict.items():
-            # spectrum tensor: <layer_name>.spectrum with shape (rank,)
-            if key.endswith('.spectrum') and tensor.dim() == 1:
-                layer_name = key.rsplit('.spectrum', 1)[0]
+            # log_spectrum tensor: <layer_name>.log_spectrum with shape (rank,)
+            if key.endswith('.log_spectrum') and tensor.dim() == 1:
+                layer_name = key.rsplit('.log_spectrum', 1)[0]
                 rank_map[layer_name] = tensor.shape[0]
             # Fallback: U_basis tensor: <layer_name>.U with shape (out, rank)
             elif key.endswith('.U') and tensor.dim() == 2:
                 layer_name = key.rsplit('.U', 1)[0]
                 if layer_name not in rank_map:
                     rank_map[layer_name] = tensor.shape[1]
+            # Track which layers have residual buffers
+            elif key.endswith('.residual'):
+                layer_name = key.rsplit('.residual', 1)[0]
+                residual_set.add(layer_name)
+        if migrated_count > 0:
+            print(f"  Migrated {migrated_count} layers: .spectrum → .log_spectrum (log-space)")
         if rank_map:
             ranks = list(rank_map.values())
             print(f"  Rank map from state_dict: {len(rank_map)} layers, "
                   f"rank range [{min(ranks)}, {max(ranks)}]")
+        if residual_set:
+            print(f"  Residual buffers: {len(residual_set)} layers")
 
     replacements = []
     for full_name, module in model.named_modules():
@@ -214,10 +235,11 @@ def spectral_scaffold(
 
         # Determine rank: from state_dict if available, else fixed
         layer_rank = rank_map.get(full_name, rank)
+        has_residual = full_name in residual_set
 
         spec = SpectralLinear.from_shape(
             out_dim, in_dim, rank=layer_rank, mode=mode,
-            has_bias=has_bias, dtype=dtype,
+            has_bias=has_bias, has_residual=has_residual, dtype=dtype,
         )
 
         parts = full_name.split('.')

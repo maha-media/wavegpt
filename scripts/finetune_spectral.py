@@ -26,8 +26,10 @@ import gc
 import json
 import math
 import os
+import signal
 import sys
 import time
+import traceback
 from pathlib import Path
 
 import torch
@@ -140,11 +142,13 @@ def compute_loss(model, model_type, x, y, loss_mask=None):
         kwargs['mm_token_type_ids'] = torch.zeros_like(x)
     outputs = model(input_ids=x, **kwargs)
     logits = outputs.logits
+    # y is already shifted by +1 from x (data loader does this), so logits[t]
+    # predicts y[t]. Just align lengths by dropping the last position.
     shift_logits = logits[..., :-1, :].contiguous()
-    shift_labels = y[..., 1:].contiguous()
+    shift_labels = y[..., :-1].contiguous()
 
     if loss_mask is not None:
-        shift_mask = loss_mask[..., 1:].contiguous()
+        shift_mask = loss_mask[..., :-1].contiguous()
         flat_logits = shift_logits.view(-1, shift_logits.size(-1))
         flat_labels = shift_labels.view(-1)
         flat_mask = shift_mask.view(-1)
@@ -170,9 +174,24 @@ def generate_samples(model, model_type, tokenizer, device, prompts, max_new=200)
     model.eval()
     results = []
     for prompt in prompts:
-        input_ids = tokenizer.encode(prompt, return_tensors='pt').to(device)
+        # Use chat template if available (Gemma IT, Qwen, etc.)
+        if model_type == 'hf' and hasattr(tokenizer, 'apply_chat_template'):
+            try:
+                messages = [{"role": "user", "content": prompt}]
+                chat_text = tokenizer.apply_chat_template(
+                    messages, tokenize=False, add_generation_prompt=True,
+                )
+                input_ids = tokenizer.encode(chat_text, return_tensors='pt').to(device)
+            except Exception:
+                input_ids = tokenizer.encode(prompt, return_tensors='pt').to(device)
+        else:
+            input_ids = tokenizer.encode(prompt, return_tensors='pt').to(device)
+        prompt_len = input_ids.shape[1]
         with torch.no_grad():
             if model_type == 'hf':
+                kwargs = {}
+                if hasattr(model.config, 'model_type') and 'gemma' in getattr(model.config, 'model_type', ''):
+                    kwargs['mm_token_type_ids'] = torch.zeros_like(input_ids)
                 out = model.generate(
                     input_ids,
                     max_new_tokens=max_new,
@@ -180,6 +199,7 @@ def generate_samples(model, model_type, tokenizer, device, prompts, max_new=200)
                     temperature=0.7,
                     top_p=0.9,
                     pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+                    **kwargs,
                 )
             else:
                 # WaveGPT — simple autoregressive
@@ -190,8 +210,8 @@ def generate_samples(model, model_type, tokenizer, device, prompts, max_new=200)
                     probs = F.softmax(logits, dim=-1)
                     next_tok = torch.multinomial(probs, 1)
                     out = torch.cat([out, next_tok], dim=1)
-        text = tokenizer.decode(out[0], skip_special_tokens=True)
-        results.append({'prompt': prompt, 'response': text[len(prompt):]})
+        response = tokenizer.decode(out[0][prompt_len:], skip_special_tokens=True)
+        results.append({'prompt': prompt, 'response': response})
     return results
 
 
@@ -263,7 +283,7 @@ def freeze_non_spectral(model):
             if m.mode == 'sigma1':
                 m.sigma1.requires_grad = True
             elif m.mode == 'per_mode':
-                m.spectrum.requires_grad = True
+                m.log_spectrum.requires_grad = True
 
 
 def get_skip_patterns(model_type):
@@ -298,6 +318,10 @@ def main():
     parser.add_argument("--mode", type=str, default='per_mode',
                         choices=['sigma1', 'per_mode'])
     parser.add_argument("--keep-residual", action="store_true")
+    parser.add_argument("--offload", action="store_true",
+                        help="Keep frozen U/V/residual on CPU, page to GPU per layer (saves VRAM)")
+    parser.add_argument("--no-save-decomposed", action="store_true",
+                        help="Skip saving decomposed model (saves disk when using keep-residual)")
 
     # Harmonic priors
     parser.add_argument("--harmonic-lambda", type=float, default=0.0)
@@ -306,6 +330,26 @@ def main():
     parser.add_argument("--attn-o-weight", type=float, default=10.0,
                         help="Extra regularization weight on attn_o layers (default 10x)")
     parser.add_argument("--collapse-alpha", type=float, default=0.0)
+
+    # Spectral training dynamics (stolen from DoRA, HFT, LoRA, QLoRA)
+    parser.add_argument("--max-log-drift", type=float, default=None,
+                        help="Clamp max log-space drift from init (e.g. 0.7 = ±2x). From LoRA α/r")
+    parser.add_argument("--tier-top-scale", type=float, default=0.1,
+                        help="LR scale for top modes (default 0.1). From DoRA magnitude/direction")
+    parser.add_argument("--tier-mid-scale", type=float, default=1.0,
+                        help="LR scale for mid modes (default 1.0)")
+    parser.add_argument("--tier-tail-scale", type=float, default=0.01,
+                        help="LR scale for tail modes (default 0.01). From HFT freeze-half")
+    parser.add_argument("--tier-top-k", type=int, default=50,
+                        help="Number of top modes for gentle LR tier")
+    parser.add_argument("--tier-tail-start", type=int, default=500,
+                        help="Mode index where tail tier begins")
+    parser.add_argument("--no-tiers", action="store_true",
+                        help="Disable spectral tier scaling (flat LR across all modes)")
+    parser.add_argument("--alternate-freeze", type=int, default=0,
+                        help="Alternate spectral freeze every N steps (0=off). From HFT")
+    parser.add_argument("--quantize-buffers", action="store_true",
+                        help="Quantize frozen U,V to int8 (~50%% buffer memory). From QLoRA")
 
     # Data
     parser.add_argument("--data-dir", type=str, required=True)
@@ -323,6 +367,8 @@ def main():
     parser.add_argument("--eval-batches", type=int, default=20)
     parser.add_argument("--generate-interval", type=int, default=200,
                         help="Generate sample completions every N steps (0=off)")
+    parser.add_argument("--skip-pretraining-gen", action="store_true",
+                        help="Skip pre-training generation (slow with offloading)")
     parser.add_argument("--trust-remote-code", action="store_true")
 
     # Output
@@ -366,16 +412,21 @@ def main():
         from transformers import AutoModelForCausalLM, AutoConfig
         # Need the HF model name to reconstruct architecture
         decomp_dir = Path(args.decomposed).parent
-        config_path = decomp_dir / "config.json"
-        if config_path.exists():
-            with open(config_path) as f:
-                saved_config = json.load(f)
-            hf_model_name = saved_config.get('hf_model', hf_model_name)
+        # Check hf_model.json first (not overwritten by training), then config.json
+        for cfg_name in ["hf_model.json", "config.json"]:
+            cfg_path = decomp_dir / cfg_name
+            if cfg_path.exists():
+                with open(cfg_path) as f:
+                    saved_config = json.load(f)
+                resolved = saved_config.get('hf_model')
+                if resolved:
+                    hf_model_name = resolved
+                    break
         if not hf_model_name:
             print("ERROR: --decomposed requires HF model name in config.json or directory name")
             sys.exit(1)
         print(f"  Architecture from: {hf_model_name}")
-        # Build model from config (random init — weights come from decomposed shards)
+        # Build model skeleton on meta device (zero memory) — weights come from state_dict
         hf_config = AutoConfig.from_pretrained(
             hf_model_name, trust_remote_code=True,
         )
@@ -383,7 +434,7 @@ def main():
             hf_config, torch_dtype=torch.bfloat16,
             trust_remote_code=True,
         )
-        print(f"  ✓ Model skeleton created (random init, will load decomposed weights)")
+        print(f"  ✓ Model skeleton created (random init on CPU)")
         # Load state dict first to read variable ranks
         print(f"  Loading saved state_dict...")
         decomp_path = Path(args.decomposed)
@@ -408,10 +459,10 @@ def main():
                 sd = load_file(str(st_path), device='cpu')
                 print(f"  Loaded safetensors: {len(sd)} tensors")
             else:
-                sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
+                sd = torch.load(args.decomposed, map_location='cpu', weights_only=True, mmap=True)
         else:
             try:
-                sd = torch.load(args.decomposed, map_location='cpu', weights_only=True)
+                sd = torch.load(args.decomposed, map_location='cpu', weights_only=True, mmap=True)
             except RuntimeError:
                 # Corrupted .pt? Try .safetensors fallback
                 st_path = decomp_path.with_suffix('.safetensors')
@@ -427,9 +478,24 @@ def main():
         print(f"  Scaffolding SpectralLinear architecture (no SVD)...")
         spectral_scaffold(model, rank=rank, mode=args.mode,
                           skip_patterns=skip, state_dict=sd)
-        model.load_state_dict(sd, strict=False)
+        n_tensors = len(sd)
+        missing, unexpected = model.load_state_dict(sd, strict=False)
+        del sd  # Free mmap references
+        import gc; gc.collect()
         model_type = 'hf'
-        print(f"  ✓ Loaded decomposed model ({len(sd)} tensors) — no SVD needed")
+        if missing:
+            print(f"  ⚠ {len(missing)} missing keys:")
+            for k in missing[:10]:
+                print(f"    MISSING: {k}")
+            if len(missing) > 10:
+                print(f"    ... and {len(missing) - 10} more")
+        if unexpected:
+            print(f"  ⚠ {len(unexpected)} unexpected keys:")
+            for k in unexpected[:10]:
+                print(f"    UNEXPECTED: {k}")
+            if len(unexpected) > 10:
+                print(f"    ... and {len(unexpected) - 10} more")
+        print(f"  ✓ Loaded decomposed model ({n_tensors} tensors) — no SVD needed")
     elif args.checkpoint:
         print(f"\nLoading WaveGPT checkpoint: {args.checkpoint}")
         model, model_type = load_wavegpt(args)
@@ -494,12 +560,14 @@ def main():
     # Save decomposed model for instant reuse (skip 3hr SVD next time)
     run_dir = Path(args.output_dir) / args.run_name
     run_dir.mkdir(parents=True, exist_ok=True)
-    if not args.decomposed:
+    if not args.decomposed and not args.no_save_decomposed:
         decomp_path = run_dir / "decomposed.pt"
         print(f"\n  Saving decomposed model to {decomp_path}...")
         torch.save(model.state_dict(), decomp_path)
         decomp_size = os.path.getsize(decomp_path)
         print(f"  ✓ Saved ({decomp_size / 1e9:.2f} GB) — reuse with --decomposed {decomp_path}")
+    elif args.no_save_decomposed:
+        print(f"\n  Skipping decomposed save (--no-save-decomposed)")
 
     # ===================================================================
     # 4. Move to GPU + enable memory optimizations
@@ -509,6 +577,22 @@ def main():
 
     print(f"\n  Moving model to {device}...")
     model.to(device)
+
+    if args.offload:
+        from wavegpt.spectral_linear import SpectralLinear
+        offloaded = 0
+        offloaded_bytes = 0
+        for module in model.modules():
+            if isinstance(module, SpectralLinear):
+                for buf_name in ('U', 'V', 'residual'):
+                    buf = getattr(module, buf_name, None)
+                    if buf is not None:
+                        offloaded_bytes += buf.nelement() * buf.element_size()
+                        setattr(module, buf_name, buf.cpu().pin_memory())
+                offloaded += 1
+        torch.cuda.empty_cache()
+        print(f"  ✓ Offloaded {offloaded} SpectralLinear layers ({offloaded_bytes/1e9:.1f} GB) to pinned CPU RAM")
+
     log_mem("after model.to(device)")
 
     # Gradient checkpointing for HF models
@@ -525,6 +609,28 @@ def main():
     # 5. Freeze + count
     # ===================================================================
     freeze_non_spectral(model)
+
+    # Apply spectral training dynamics
+    for m in model.modules():
+        if isinstance(m, SpectralLinear):
+            if args.max_log_drift is not None:
+                m.max_log_drift = args.max_log_drift
+
+    # Quantize frozen U,V to int8 (from QLoRA — ~50% buffer memory)
+    if args.quantize_buffers:
+        quant_count = 0
+        saved_bytes = 0
+        for m in model.modules():
+            if isinstance(m, SpectralLinear):
+                before = sum(getattr(m, n).nelement() * getattr(m, n).element_size()
+                             for n in ('U', 'V') if getattr(m, n, None) is not None)
+                m.quantize_buffers(bits=8)
+                after = sum(getattr(m, n).nelement() * getattr(m, n).element_size()
+                            for n in ('U', 'V') if getattr(m, n, None) is not None)
+                saved_bytes += before - after
+                quant_count += 1
+        print(f"  ✓ Quantized {quant_count} layers to int8 (saved {saved_bytes/1e9:.1f} GB)")
+
     learnable, frozen = count_params(model)
     print(f"  Learnable params: {learnable:,}")
     print(f"  Frozen params:    {frozen:,}")
@@ -535,6 +641,15 @@ def main():
             print(f"  attn_o weight: {args.attn_o_weight}× (pinned at (1/φ)^(1/3))")
     if args.collapse_alpha > 0:
         print(f"  Anti-collapse α: {args.collapse_alpha}")
+
+    # RAI test prompts (needed for pre-training generation + training loop)
+    test_prompts = [
+        "The most important thing about the Singularity is",
+        "When I think about my father, I remember",
+        "The exponential growth of technology means that",
+        "People often ask me if I'm afraid of death. My answer is",
+        "Pattern recognition is fundamental to intelligence because",
+    ]
 
     # ===================================================================
     # 6. Post-decomposition eval
@@ -551,6 +666,28 @@ def main():
     dec_ppl = math.exp(min(dec_val, 20))
     print(f"  Post-decomp val loss: {dec_val:.4f} (PPL {dec_ppl:.1f})")
     log_mem("after eval")
+
+    # --- Pre-training generation: prove decomposition is lossless ---
+    if tokenizer is not None and not args.skip_pretraining_gen:
+        print(f"\n  Pre-training generation (decomposed, NO fine-tuning):")
+        print(f"  {'─' * 60}")
+        try:
+            pre_samples = generate_samples(
+                model, model_type, tokenizer, device,
+                test_prompts, max_new=200,
+            )
+            for s in pre_samples:
+                resp = s['response'][:400].replace('\n', ' ')
+                print(f"  Q: {s['prompt']}")
+                print(f"  A: {resp}")
+                print()
+            # Save pre-training samples
+            with open(run_dir / "pre_training_samples.json", "w") as f:
+                json.dump(pre_samples, f, indent=2)
+            print(f"  ✓ Saved {len(pre_samples)} pre-training samples")
+        except Exception as e:
+            print(f"  Pre-training generation failed: {e}")
+        print(f"  {'─' * 60}")
 
     # ===================================================================
     # 7. Test backward pass with single microbatch before committing
@@ -612,17 +749,18 @@ def main():
     # ===================================================================
     # 9. Output directory + sample prompts
     # ===================================================================
+    config_to_save = vars(args).copy()
+    config_to_save['hf_model'] = hf_model_name  # persist resolved name
     with open(run_dir / "config.json", "w") as f:
-        json.dump(vars(args), f, indent=2)
+        json.dump(config_to_save, f, indent=2)
 
-    # RAI test prompts for live monitoring
-    test_prompts = [
-        "The most important thing about the Singularity is",
-        "When I think about my father, I remember",
-        "The exponential growth of technology means that",
-        "People often ask me if I'm afraid of death. My answer is",
-        "Pattern recognition is fundamental to intelligence because",
-    ]
+    # Signal handler to catch external kills
+    def _signal_handler(sig, frame):
+        print(f"\n  *** SIGNAL {sig} ({signal.Signals(sig).name}) received! ***", flush=True)
+        traceback.print_stack(frame)
+        sys.exit(1)
+    for _sig in (signal.SIGTERM, signal.SIGHUP, signal.SIGUSR1, signal.SIGUSR2):
+        signal.signal(_sig, _signal_handler)
 
     # ===================================================================
     # 10. Training loop
@@ -633,10 +771,28 @@ def main():
     features = []
     if args.adaptive_rank: features.append("adaptive-rank")
     if args.keep_residual: features.append("residual")
+    if args.offload: features.append("cpu-offload")
     if args.harmonic_lambda > 0: features.append(f"harmonic-λ={args.harmonic_lambda}")
     if args.collapse_alpha > 0: features.append(f"collapse-α={args.collapse_alpha}")
+    if not args.no_tiers:
+        features.append(f"tiers(top={args.tier_top_scale},mid={args.tier_mid_scale},tail={args.tier_tail_scale})")
+    if args.max_log_drift is not None:
+        features.append(f"drift-clamp={args.max_log_drift}")
+    if args.alternate_freeze > 0:
+        features.append(f"alt-freeze={args.alternate_freeze}")
+    if args.quantize_buffers:
+        features.append("int8-buffers")
     if features:
-        print(f"  Harmonic: {', '.join(features)}")
+        print(f"  Features: {', '.join(features)}")
+
+    # Initialize alternating freeze mask (start with even modes)
+    if args.alternate_freeze > 0:
+        for m in model.modules():
+            if isinstance(m, SpectralLinear) and m.mode == 'per_mode':
+                mask = torch.zeros(m.rank, dtype=torch.bool)
+                mask[0::2] = True  # phase 0: even modes
+                m.set_mode_mask(mask)
+        print(f"  Alternating freeze: starting with even modes")
     print(f"{'=' * 70}\n")
 
     log_data = []
@@ -652,6 +808,7 @@ def main():
         accum_loss = 0.0
         accum_hreg = 0.0
 
+        nan_in_step = False
         for micro in range(args.grad_accum):
             x, y, m = train_loader.get_batch()
             with torch.amp.autocast('cuda', dtype=torch.bfloat16):
@@ -668,13 +825,60 @@ def main():
                     loss = loss + hreg
                     accum_hreg += hreg.item() / args.grad_accum
 
+            # NaN guard: check BEFORE backward to avoid poisoning gradients
+            if torch.isnan(loss) or torch.isinf(loss):
+                nan_in_step = True
+                break
+
             scaled = loss / args.grad_accum
             scaled.backward()
             accum_loss += scaled.item()
 
+        if nan_in_step:
+            print(f"  ⚠ NaN/Inf loss at step {step} — skipping backward+optimizer", flush=True)
+            optimizer.zero_grad(set_to_none=True)
+            nan_count = getattr(main, '_nan_count', 0) + 1
+            main._nan_count = nan_count
+            if nan_count >= 10:
+                print(f"  ✗ {nan_count} consecutive NaN — aborting", flush=True)
+                break
+            continue
+
+        main._nan_count = 0  # reset on good step
+
+        # Spectral tier scaling: different effective LR for top/mid/tail modes
+        if not args.no_tiers:
+            for m in model.modules():
+                if isinstance(m, SpectralLinear):
+                    m.apply_tier_scaling(
+                        top_scale=args.tier_top_scale,
+                        mid_scale=args.tier_mid_scale,
+                        tail_scale=args.tier_tail_scale,
+                        top_k=args.tier_top_k,
+                        tail_start=args.tier_tail_start,
+                    )
+
+        # Alternating spectral freeze: train even/odd modes in alternation
+        if args.alternate_freeze > 0:
+            for m in model.modules():
+                if isinstance(m, SpectralLinear):
+                    m.apply_mode_mask()
+
         torch.nn.utils.clip_grad_norm_(spectral_params, 1.0)
         optimizer.step()
         optimizer.zero_grad(set_to_none=True)
+
+        # Update alternating freeze mask at interval boundaries
+        if args.alternate_freeze > 0 and step > 0 and step % args.alternate_freeze == 0:
+            phase = (step // args.alternate_freeze) % 2
+            for m in model.modules():
+                if isinstance(m, SpectralLinear) and m.mode == 'per_mode':
+                    mask = torch.zeros(m.rank, dtype=torch.bool)
+                    if phase == 0:
+                        mask[0::2] = True   # even modes
+                    else:
+                        mask[1::2] = True   # odd modes
+                    m.set_mode_mask(mask)
 
         # --- Log ---
         if step % args.log_interval == 0:
@@ -720,8 +924,9 @@ def main():
             with open(run_dir / "training_log.json", "w") as f:
                 json.dump(log_data, f, indent=2)
 
-        # --- Generate samples ---
+        # --- Generate samples (skip when offloading — ~12s/token is too slow) ---
         if (args.generate_interval > 0 and tokenizer is not None
+                and not args.offload
                 and step > 0 and step % args.generate_interval == 0):
             print(f"\n  --- Samples at step {step} ---")
             try:

@@ -1,4 +1,5 @@
 """Tests for SpectralLinear — post-training spectral decomposition."""
+import math
 import torch
 import torch.nn as nn
 import pytest
@@ -84,8 +85,8 @@ def test_per_mode_gradient_frozen_geometry():
     y = spec(x)
     loss = y.sum()
     loss.backward()
-    assert spec.spectrum.grad is not None
-    assert spec.spectrum.grad.shape == (16,)
+    assert spec.log_spectrum.grad is not None
+    assert spec.log_spectrum.grad.shape == (16,)
 
 
 def test_to_linear_roundtrip():
@@ -95,7 +96,7 @@ def test_to_linear_roundtrip():
     spec = SpectralLinear.from_linear(linear, rank=24, mode='per_mode')
     # Modify the spectrum (simulate fine-tuning)
     with torch.no_grad():
-        spec.spectrum *= 1.1
+        spec.log_spectrum += math.log(1.1)  # multiply spectrum by 1.1 in log-space
     x = torch.randn(2, 5, 48)
     y_spec = spec(x).detach()
     # Merge back
@@ -111,9 +112,10 @@ def test_save_load_spectral_params():
     spec1 = SpectralLinear.from_linear(linear, rank=16, mode='per_mode')
     # Simulate fine-tuning
     with torch.no_grad():
-        spec1.spectrum *= 0.9
+        spec1.log_spectrum += math.log(0.9)  # multiply spectrum by 0.9 in log-space
     # Save just the learnable params
-    spectral_state = {k: v for k, v in spec1.state_dict().items() if 'spectrum' in k or 'sigma1' in k}
+    spectral_state = {k: v for k, v in spec1.state_dict().items()
+                      if 'log_spectrum' in k or 'sigma1' in k}
     # Load into fresh decomposition of same layer
     spec2 = SpectralLinear.from_linear(linear, rank=16, mode='per_mode')
     spec2.load_state_dict(spec2.state_dict() | spectral_state)

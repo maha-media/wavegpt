@@ -1,0 +1,553 @@
+=========================================
+  RAI Gemma 4-31B Spectral Fine-Tuning
+  Full rank, harmonic regularization
+  10k steps (~20 epochs)
+=========================================
+
+Device: cuda
+GPU: NVIDIA RTX PRO 6000 Blackwell Server Edition
+  [MEM] startup: 0.0GB alloc / 0.0GB reserved / 102.0GB total
+
+Loading HuggingFace model: google/gemma-4-31b-it
+  Loading HF model: google/gemma-4-31b-it
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+`torch_dtype` is deprecated! Use `dtype` instead!
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [02:50<02:50, 170.77s/it]Fetching 2 files: 100%|██████████| 2/2 [02:50<00:00, 85.39s/it] 
+Loading weights:   0%|          | 0/1188 [00:00<?, ?it/s]Loading weights:  69%|██████▉   | 821/1188 [00:00<00:00, 8208.95it/s]Loading weights: 100%|██████████| 1188/1188 [00:00<00:00, 9185.22it/s]
+  Total params: 31,273,086,512
+
+Loading data...
+  Train: 4,016,754 tokens
+  Val:   448,140 tokens
+
+Spectral decomposition (on CPU):
+  Skip patterns: ['embed_tokens', 'lm_head', 'visual', 'vision', 'wte', 'wpe']
+  Mode: fixed rank=99999
+  [1/410] model.language_model.layers.0.self_attn.k_proj (4096, 5376) → rank 4096 k₀=94 
+  [2/410] model.language_model.layers.0.self_attn.q_proj (8192, 5376) → rank 5376 k₀=98 (33s elapsed, ETA 13599s)
+  [3/410] model.language_model.layers.0.self_attn.v_proj (4096, 5376) → rank 4096 k₀=30 (47s elapsed, ETA 9648s)
+  [4/410] model.language_model.layers.0.self_attn.o_proj (5376, 8192) → rank 5376 k₀=7 (67s elapsed, ETA 9092s)
+  [5/410] model.language_model.layers.0.mlp.gate_proj (21504, 5376) → rank 5376 k₀=376 (90s elapsed, ETA 9161s)
+  [6/410] model.language_model.layers.0.mlp.up_proj (21504, 5376) → rank 5376 k₀=328 (112s elapsed, ETA 9034s)
+  [7/410] model.language_model.layers.0.mlp.down_proj (5376, 21504) → rank 5376 k₀=395 (214s elapsed, ETA 14421s)
+  [8/410] model.language_model.layers.1.self_attn.k_proj (4096, 5376) → rank 4096 k₀=187 (229s elapsed, ETA 13172s)
+  [9/410] model.language_model.layers.1.self_attn.q_proj (8192, 5376) → rank 5376 k₀=243 (245s elapsed, ETA 12295s)
+  [10/410] model.language_model.layers.1.self_attn.v_proj (4096, 5376) → rank 4096 k₀=37 (259s elapsed, ETA 11560s)
+  [11/410] model.language_model.layers.1.self_attn.o_proj (5376, 8192) → rank 5376 k₀=16 (279s elapsed, ETA 11171s)
+  [12/410] model.language_model.layers.1.mlp.gate_proj (21504, 5376) → rank 5376 k₀=621 (304s elapsed, ETA 11023s)
+  [13/410] model.language_model.layers.1.mlp.up_proj (21504, 5376) → rank 5376 k₀=543 (328s elapsed, ETA 10879s)
+  [14/410] model.language_model.layers.1.mlp.down_proj (5376, 21504) → rank 5376 k₀=468 (424s elapsed, ETA 12937s)
+  [15/410] model.language_model.layers.2.self_attn.k_proj (4096, 5376) → rank 4096 k₀=54 (438s elapsed, ETA 12393s)
+  [16/410] model.language_model.layers.2.self_attn.q_proj (8192, 5376) → rank 5376 k₀=74 (455s elapsed, ETA 11977s)
+  [17/410] model.language_model.layers.2.self_attn.v_proj (4096, 5376) → rank 4096 k₀=34 (469s elapsed, ETA 11541s)
+  [18/410] model.language_model.layers.2.self_attn.o_proj (5376, 8192) → rank 5376 k₀=14 (490s elapsed, ETA 11319s)
+  [19/410] model.language_model.layers.2.mlp.gate_proj (21504, 5376) → rank 5376 k₀=688 (512s elapsed, ETA 11161s)
+  [20/410] model.language_model.layers.2.mlp.up_proj (21504, 5376) → rank 5376 k₀=780 (533s elapsed, ETA 10979s)
+  [21/410] model.language_model.layers.2.mlp.down_proj (5376, 21504) → rank 5376 k₀=663 (643s elapsed, ETA 12540s)
+  [22/410] model.language_model.layers.3.self_attn.k_proj (4096, 5376) → rank 4096 k₀=54 (658s elapsed, ETA 12197s)
+  [23/410] model.language_model.layers.3.self_attn.q_proj (8192, 5376) → rank 5376 k₀=68 (675s elapsed, ETA 11912s)
+  [24/410] model.language_model.layers.3.self_attn.v_proj (4096, 5376) → rank 4096 k₀=25 (690s elapsed, ETA 11614s)
+  [25/410] model.language_model.layers.3.self_attn.o_proj (5376, 8192) → rank 5376 k₀=16 (710s elapsed, ETA 11427s)
+  [26/410] model.language_model.layers.3.mlp.gate_proj (21504, 5376) → rank 5376 k₀=627 (739s elapsed, ETA 11383s)
+  [27/410] model.language_model.layers.3.mlp.up_proj (21504, 5376) → rank 5376 k₀=595 (765s elapsed, ETA 11295s)
+  [28/410] model.language_model.layers.3.mlp.down_proj (5376, 21504) → rank 5376 k₀=493 (869s elapsed, ETA 12322s)
+  [29/410] model.language_model.layers.4.self_attn.k_proj (4096, 5376) → rank 4096 k₀=77 (883s elapsed, ETA 12045s)
+  [30/410] model.language_model.layers.4.self_attn.q_proj (8192, 5376) → rank 5376 k₀=96 (901s elapsed, ETA 11831s)
+  [31/410] model.language_model.layers.4.self_attn.v_proj (4096, 5376) → rank 4096 k₀=259 (915s elapsed, ETA 11592s)
+  [32/410] model.language_model.layers.4.self_attn.o_proj (5376, 8192) → rank 5376 k₀=224 (937s elapsed, ETA 11454s)
+  [33/410] model.language_model.layers.4.mlp.gate_proj (21504, 5376) → rank 5376 k₀=559 (959s elapsed, ETA 11331s)
+  [34/410] model.language_model.layers.4.mlp.up_proj (21504, 5376) → rank 5376 k₀=631 (983s elapsed, ETA 11226s)
+  [35/410] model.language_model.layers.4.mlp.down_proj (5376, 21504) → rank 5376 k₀=761 (1086s elapsed, ETA 12015s)
+  [36/410] model.language_model.layers.5.self_attn.k_proj (2048, 5376) → rank 2048 k₀=87 (1095s elapsed, ETA 11728s)
+  [37/410] model.language_model.layers.5.self_attn.q_proj (16384, 5376) → rank 5376 k₀=186 (1116s elapsed, ETA 11593s)
+  [38/410] model.language_model.layers.5.self_attn.o_proj (5376, 16384) → rank 5376 k₀=80 (1164s elapsed, ETA 11738s)
+  [39/410] model.language_model.layers.5.mlp.gate_proj (21504, 5376) → rank 5376 k₀=569 (1188s elapsed, ETA 11629s)
+  [40/410] model.language_model.layers.5.mlp.up_proj (21504, 5376) → rank 5376 k₀=533 (1211s elapsed, ETA 11524s)
+  [41/410] model.language_model.layers.5.mlp.down_proj (5376, 21504) → rank 5376 k₀=605 (1316s elapsed, ETA 12175s)
+  [42/410] model.language_model.layers.6.self_attn.k_proj (4096, 5376) → rank 4096 k₀=98 (1332s elapsed, ETA 11986s)
+  [43/410] model.language_model.layers.6.self_attn.q_proj (8192, 5376) → rank 5376 k₀=140 (1349s elapsed, ETA 11824s)
+  [44/410] model.language_model.layers.6.self_attn.v_proj (4096, 5376) → rank 4096 k₀=73 (1364s elapsed, ETA 11645s)
+  [45/410] model.language_model.layers.6.self_attn.o_proj (5376, 8192) → rank 5376 k₀=70 (1385s elapsed, ETA 11520s)
+  [46/410] model.language_model.layers.6.mlp.gate_proj (21504, 5376) → rank 5376 k₀=628 (1408s elapsed, ETA 11421s)
+  [47/410] model.language_model.layers.6.mlp.up_proj (21504, 5376) → rank 5376 k₀=955 (1432s elapsed, ETA 11334s)
+  [48/410] model.language_model.layers.6.mlp.down_proj (5376, 21504) → rank 5376 k₀=796 (1534s elapsed, ETA 11845s)
+  [49/410] model.language_model.layers.7.self_attn.k_proj (4096, 5376) → rank 4096 k₀=66 (1548s elapsed, ETA 11674s)
+  [50/410] model.language_model.layers.7.self_attn.q_proj (8192, 5376) → rank 5376 k₀=104 (1565s elapsed, ETA 11532s)
+  [51/410] model.language_model.layers.7.self_attn.v_proj (4096, 5376) → rank 4096 k₀=41 (1581s elapsed, ETA 11384s)
+  [52/410] model.language_model.layers.7.self_attn.o_proj (5376, 8192) → rank 5376 k₀=42 (1603s elapsed, ETA 11285s)
+  [53/410] model.language_model.layers.7.mlp.gate_proj (21504, 5376) → rank 5376 k₀=669 (1625s elapsed, ETA 11185s)
+  [54/410] model.language_model.layers.7.mlp.up_proj (21504, 5376) → rank 5376 k₀=610 (1647s elapsed, ETA 11091s)
+  [55/410] model.language_model.layers.7.mlp.down_proj (5376, 21504) → rank 5376 k₀=556 (1760s elapsed, ETA 11604s)
+  [56/410] model.language_model.layers.8.self_attn.k_proj (4096, 5376) → rank 4096 k₀=105 (1774s elapsed, ETA 11453s)
+  [57/410] model.language_model.layers.8.self_attn.q_proj (8192, 5376) → rank 5376 k₀=143 (1790s elapsed, ETA 11314s)
+  [58/410] model.language_model.layers.8.self_attn.v_proj (4096, 5376) → rank 4096 k₀=82 (1806s elapsed, ETA 11184s)
+  [59/410] model.language_model.layers.8.self_attn.o_proj (5376, 8192) → rank 5376 k₀=79 (1827s elapsed, ETA 11086s)
+  [60/410] model.language_model.layers.8.mlp.gate_proj (21504, 5376) → rank 5376 k₀=705 (1853s elapsed, ETA 11023s)
+  [61/410] model.language_model.layers.8.mlp.up_proj (21504, 5376) → rank 5376 k₀=771 (1879s elapsed, ETA 10963s)
+  [62/410] model.language_model.layers.8.mlp.down_proj (5376, 21504) → rank 5376 k₀=969 (1981s elapsed, ETA 11336s)
+  [63/410] model.language_model.layers.9.self_attn.k_proj (4096, 5376) → rank 4096 k₀=78 (1997s elapsed, ETA 11207s)
+  [64/410] model.language_model.layers.9.self_attn.q_proj (8192, 5376) → rank 5376 k₀=104 (2014s elapsed, ETA 11093s)
+  [65/410] model.language_model.layers.9.self_attn.v_proj (4096, 5376) → rank 4096 k₀=49 (2029s elapsed, ETA 10968s)
+  [66/410] model.language_model.layers.9.self_attn.o_proj (5376, 8192) → rank 5376 k₀=17 (2051s elapsed, ETA 10884s)
+  [67/410] model.language_model.layers.9.mlp.gate_proj (21504, 5376) → rank 5376 k₀=642 (2073s elapsed, ETA 10807s)
+  [68/410] model.language_model.layers.9.mlp.up_proj (21504, 5376) → rank 5376 k₀=742 (2096s elapsed, ETA 10731s)
+  [69/410] model.language_model.layers.9.mlp.down_proj (5376, 21504) → rank 5376 k₀=1322 (2201s elapsed, ETA 11070s)
+  [70/410] model.language_model.layers.10.self_attn.k_proj (4096, 5376) → rank 4096 k₀=133 (2216s elapsed, ETA 10951s)
+  [71/410] model.language_model.layers.10.self_attn.q_proj (8192, 5376) → rank 5376 k₀=186 (2232s elapsed, ETA 10843s)
+  [72/410] model.language_model.layers.10.self_attn.v_proj (4096, 5376) → rank 4096 k₀=77 (2249s elapsed, ETA 10736s)
+  [73/410] model.language_model.layers.10.self_attn.o_proj (5376, 8192) → rank 5376 k₀=80 (2268s elapsed, ETA 10649s)
+  [74/410] model.language_model.layers.10.mlp.gate_proj (21504, 5376) → rank 5376 k₀=886 (2296s elapsed, ETA 10597s)
+  [75/410] model.language_model.layers.10.mlp.up_proj (21504, 5376) → rank 5376 k₀=1119 (2319s elapsed, ETA 10527s)
+  [76/410] model.language_model.layers.10.mlp.down_proj (5376, 21504) → rank 5376 k₀=1486 (2420s elapsed, ETA 10811s)
+  [77/410] model.language_model.layers.11.self_attn.k_proj (2048, 5376) → rank 2048 k₀=126 (2428s elapsed, ETA 10669s)
+  [78/410] model.language_model.layers.11.self_attn.q_proj (16384, 5376) → rank 5376 k₀=333 (2447s elapsed, ETA 10582s)
+  [79/410] model.language_model.layers.11.self_attn.o_proj (5376, 16384) → rank 5376 k₀=86 (2493s elapsed, ETA 10611s)
+  [80/410] model.language_model.layers.11.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1000 (2516s elapsed, ETA 10544s)
+  [81/410] model.language_model.layers.11.mlp.up_proj (21504, 5376) → rank 5376 k₀=1064 (2539s elapsed, ETA 10474s)
+  [82/410] model.language_model.layers.11.mlp.down_proj (5376, 21504) → rank 5376 k₀=1268 (2644s elapsed, ETA 10739s)
+  [83/410] model.language_model.layers.12.self_attn.k_proj (4096, 5376) → rank 4096 k₀=33 (2659s elapsed, ETA 10635s)
+  [84/410] model.language_model.layers.12.self_attn.q_proj (8192, 5376) → rank 5376 k₀=49 (2680s elapsed, ETA 10559s)
+  [85/410] model.language_model.layers.12.self_attn.v_proj (4096, 5376) → rank 4096 k₀=39 (2696s elapsed, ETA 10462s)
+  [86/410] model.language_model.layers.12.self_attn.o_proj (5376, 8192) → rank 5376 k₀=29 (2719s elapsed, ETA 10397s)
+  [87/410] model.language_model.layers.12.mlp.gate_proj (21504, 5376) → rank 5376 k₀=991 (2744s elapsed, ETA 10337s)
+  [88/410] model.language_model.layers.12.mlp.up_proj (21504, 5376) → rank 5376 k₀=1192 (2768s elapsed, ETA 10275s)
+  [89/410] model.language_model.layers.12.mlp.down_proj (5376, 21504) → rank 5376 k₀=887 (2909s elapsed, ETA 10644s)
+  [90/410] model.language_model.layers.13.self_attn.k_proj (4096, 5376) → rank 4096 k₀=143 (2924s elapsed, ETA 10545s)
+  [91/410] model.language_model.layers.13.self_attn.q_proj (8192, 5376) → rank 5376 k₀=200 (2942s elapsed, ETA 10461s)
+  [92/410] model.language_model.layers.13.self_attn.v_proj (4096, 5376) → rank 4096 k₀=113 (2958s elapsed, ETA 10369s)
+  [93/410] model.language_model.layers.13.self_attn.o_proj (5376, 8192) → rank 5376 k₀=44 (2979s elapsed, ETA 10297s)
+  [94/410] model.language_model.layers.13.mlp.gate_proj (21504, 5376) → rank 5376 k₀=957 (3003s elapsed, ETA 10235s)
+  [95/410] model.language_model.layers.13.mlp.up_proj (21504, 5376) → rank 5376 k₀=1089 (3029s elapsed, ETA 10183s)
+  [96/410] model.language_model.layers.13.mlp.down_proj (5376, 21504) → rank 5376 k₀=1070 (3139s elapsed, ETA 10407s)
+  [97/410] model.language_model.layers.14.self_attn.k_proj (4096, 5376) → rank 4096 k₀=131 (3153s elapsed, ETA 10314s)
+  [98/410] model.language_model.layers.14.self_attn.q_proj (8192, 5376) → rank 5376 k₀=177 (3171s elapsed, ETA 10231s)
+  [99/410] model.language_model.layers.14.self_attn.v_proj (4096, 5376) → rank 4096 k₀=90 (3186s elapsed, ETA 10143s)
+  [100/410] model.language_model.layers.14.self_attn.o_proj (5376, 8192) → rank 5376 k₀=26 (3208s elapsed, ETA 10078s)
+  [101/410] model.language_model.layers.14.mlp.gate_proj (21504, 5376) → rank 5376 k₀=941 (3230s elapsed, ETA 10014s)
+  [102/410] model.language_model.layers.14.mlp.up_proj (21504, 5376) → rank 5376 k₀=1033 (3255s elapsed, ETA 9958s)
+  [103/410] model.language_model.layers.14.mlp.down_proj (5376, 21504) → rank 5376 k₀=889 (3360s elapsed, ETA 10147s)
+  [104/410] model.language_model.layers.15.self_attn.k_proj (4096, 5376) → rank 4096 k₀=61 (3375s elapsed, ETA 10059s)
+  [105/410] model.language_model.layers.15.self_attn.q_proj (8192, 5376) → rank 5376 k₀=87 (3391s elapsed, ETA 9978s)
+  [106/410] model.language_model.layers.15.self_attn.v_proj (4096, 5376) → rank 4096 k₀=49 (3405s elapsed, ETA 9892s)
+  [107/410] model.language_model.layers.15.self_attn.o_proj (5376, 8192) → rank 5376 k₀=38 (3427s elapsed, ETA 9828s)
+  [108/410] model.language_model.layers.15.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1012 (3452s elapsed, ETA 9776s)
+  [109/410] model.language_model.layers.15.mlp.up_proj (21504, 5376) → rank 5376 k₀=944 (3480s elapsed, ETA 9730s)
+  [110/410] model.language_model.layers.15.mlp.down_proj (5376, 21504) → rank 5376 k₀=844 (3584s elapsed, ETA 9897s)
+  [111/410] model.language_model.layers.16.self_attn.k_proj (4096, 5376) → rank 4096 k₀=108 (3599s elapsed, ETA 9815s)
+  [112/410] model.language_model.layers.16.self_attn.q_proj (8192, 5376) → rank 5376 k₀=148 (3616s elapsed, ETA 9741s)
+  [113/410] model.language_model.layers.16.self_attn.v_proj (4096, 5376) → rank 4096 k₀=293 (3631s elapsed, ETA 9661s)
+  [114/410] model.language_model.layers.16.self_attn.o_proj (5376, 8192) → rank 5376 k₀=357 (3651s elapsed, ETA 9597s)
+  [115/410] model.language_model.layers.16.mlp.gate_proj (21504, 5376) → rank 5376 k₀=732 (3675s elapsed, ETA 9541s)
+  [116/410] model.language_model.layers.16.mlp.up_proj (21504, 5376) → rank 5376 k₀=892 (3698s elapsed, ETA 9485s)
+  [117/410] model.language_model.layers.16.mlp.down_proj (5376, 21504) → rank 5376 k₀=1114 (3800s elapsed, ETA 9631s)
+  [118/410] model.language_model.layers.17.self_attn.k_proj (2048, 5376) → rank 2048 k₀=169 (3807s elapsed, ETA 9534s)
+  [119/410] model.language_model.layers.17.self_attn.q_proj (16384, 5376) → rank 5376 k₀=341 (3827s elapsed, ETA 9471s)
+  [120/410] model.language_model.layers.17.self_attn.o_proj (5376, 16384) → rank 5376 k₀=84 (3875s elapsed, ETA 9477s)
+  [121/410] model.language_model.layers.17.mlp.gate_proj (21504, 5376) → rank 5376 k₀=858 (3898s elapsed, ETA 9420s)
+  [122/410] model.language_model.layers.17.mlp.up_proj (21504, 5376) → rank 5376 k₀=1192 (3922s elapsed, ETA 9367s)
+  [123/410] model.language_model.layers.17.mlp.down_proj (5376, 21504) → rank 5376 k₀=1122 (4027s elapsed, ETA 9506s)
+  [124/410] model.language_model.layers.18.self_attn.k_proj (4096, 5376) → rank 4096 k₀=149 (4042s elapsed, ETA 9432s)
+  [125/410] model.language_model.layers.18.self_attn.q_proj (8192, 5376) → rank 5376 k₀=219 (4059s elapsed, ETA 9362s)
+  [126/410] model.language_model.layers.18.self_attn.v_proj (4096, 5376) → rank 4096 k₀=255 (4075s elapsed, ETA 9290s)
+  [127/410] model.language_model.layers.18.self_attn.o_proj (5376, 8192) → rank 5376 k₀=319 (4095s elapsed, ETA 9231s)
+  [128/410] model.language_model.layers.18.mlp.gate_proj (21504, 5376) → rank 5376 k₀=811 (4118s elapsed, ETA 9175s)
+  [129/410] model.language_model.layers.18.mlp.up_proj (21504, 5376) → rank 5376 k₀=1140 (4141s elapsed, ETA 9124s)
+  [130/410] model.language_model.layers.18.mlp.down_proj (5376, 21504) → rank 5376 k₀=1156 (4244s elapsed, ETA 9244s)
+  [131/410] model.language_model.layers.19.self_attn.k_proj (4096, 5376) → rank 4096 k₀=107 (4259s elapsed, ETA 9173s)
+  [132/410] model.language_model.layers.19.self_attn.q_proj (8192, 5376) → rank 5376 k₀=167 (4275s elapsed, ETA 9106s)
+  [133/410] model.language_model.layers.19.self_attn.v_proj (4096, 5376) → rank 4096 k₀=56 (4291s elapsed, ETA 9036s)
+  [134/410] model.language_model.layers.19.self_attn.o_proj (5376, 8192) → rank 5376 k₀=22 (4311s elapsed, ETA 8979s)
+  [135/410] model.language_model.layers.19.mlp.gate_proj (21504, 5376) → rank 5376 k₀=882 (4335s elapsed, ETA 8928s)
+  [136/410] model.language_model.layers.19.mlp.up_proj (21504, 5376) → rank 5376 k₀=1124 (4358s elapsed, ETA 8877s)
+  [137/410] model.language_model.layers.19.mlp.down_proj (5376, 21504) → rank 5376 k₀=950 (4463s elapsed, ETA 8992s)
+  [138/410] model.language_model.layers.20.self_attn.k_proj (4096, 5376) → rank 4096 k₀=85 (4478s elapsed, ETA 8923s)
+  [139/410] model.language_model.layers.20.self_attn.q_proj (8192, 5376) → rank 5376 k₀=118 (4494s elapsed, ETA 8858s)
+  [140/410] model.language_model.layers.20.self_attn.v_proj (4096, 5376) → rank 4096 k₀=43 (4509s elapsed, ETA 8791s)
+  [141/410] model.language_model.layers.20.self_attn.o_proj (5376, 8192) → rank 5376 k₀=16 (4530s elapsed, ETA 8736s)
+  [142/410] model.language_model.layers.20.mlp.gate_proj (21504, 5376) → rank 5376 k₀=894 (4554s elapsed, ETA 8689s)
+  [143/410] model.language_model.layers.20.mlp.up_proj (21504, 5376) → rank 5376 k₀=1049 (4579s elapsed, ETA 8641s)
+  [144/410] model.language_model.layers.20.mlp.down_proj (5376, 21504) → rank 5376 k₀=840 (4677s elapsed, ETA 8733s)
+  [145/410] model.language_model.layers.21.self_attn.k_proj (4096, 5376) → rank 4096 k₀=97 (4693s elapsed, ETA 8668s)
+  [146/410] model.language_model.layers.21.self_attn.q_proj (8192, 5376) → rank 5376 k₀=158 (4710s elapsed, ETA 8608s)
+  [147/410] model.language_model.layers.21.self_attn.v_proj (4096, 5376) → rank 4096 k₀=213 (4725s elapsed, ETA 8543s)
+  [148/410] model.language_model.layers.21.self_attn.o_proj (5376, 8192) → rank 5376 k₀=248 (4744s elapsed, ETA 8488s)
+  [149/410] model.language_model.layers.21.mlp.gate_proj (21504, 5376) → rank 5376 k₀=713 (4766s elapsed, ETA 8438s)
+  [150/410] model.language_model.layers.21.mlp.up_proj (21504, 5376) → rank 5376 k₀=723 (4789s elapsed, ETA 8388s)
+  [151/410] model.language_model.layers.21.mlp.down_proj (5376, 21504) → rank 5376 k₀=839 (4903s elapsed, ETA 8499s)
+  [152/410] model.language_model.layers.22.self_attn.k_proj (4096, 5376) → rank 4096 k₀=99 (4918s elapsed, ETA 8436s)
+  [153/410] model.language_model.layers.22.self_attn.q_proj (8192, 5376) → rank 5376 k₀=162 (4938s elapsed, ETA 8382s)
+  [154/410] model.language_model.layers.22.self_attn.v_proj (4096, 5376) → rank 4096 k₀=215 (4954s elapsed, ETA 8322s)
+  [155/410] model.language_model.layers.22.self_attn.o_proj (5376, 8192) → rank 5376 k₀=202 (4976s elapsed, ETA 8273s)
+  [156/410] model.language_model.layers.22.mlp.gate_proj (21504, 5376) → rank 5376 k₀=747 (4999s elapsed, ETA 8224s)
+  [157/410] model.language_model.layers.22.mlp.up_proj (21504, 5376) → rank 5376 k₀=881 (5023s elapsed, ETA 8179s)
+  [158/410] model.language_model.layers.22.mlp.down_proj (5376, 21504) → rank 5376 k₀=879 (5125s elapsed, ETA 8259s)
+  [159/410] model.language_model.layers.23.self_attn.k_proj (2048, 5376) → rank 2048 k₀=255 (5133s elapsed, ETA 8187s)
+  [160/410] model.language_model.layers.23.self_attn.q_proj (16384, 5376) → rank 5376 k₀=412 (5157s elapsed, ETA 8140s)
+  [161/410] model.language_model.layers.23.self_attn.o_proj (5376, 16384) → rank 5376 k₀=254 (5208s elapsed, ETA 8137s)
+  [162/410] model.language_model.layers.23.mlp.gate_proj (21504, 5376) → rank 5376 k₀=853 (5232s elapsed, ETA 8091s)
+  [163/410] model.language_model.layers.23.mlp.up_proj (21504, 5376) → rank 5376 k₀=1099 (5255s elapsed, ETA 8045s)
+  [164/410] model.language_model.layers.23.mlp.down_proj (5376, 21504) → rank 5376 k₀=736 (5362s elapsed, ETA 8125s)
+  [165/410] model.language_model.layers.24.self_attn.k_proj (4096, 5376) → rank 4096 k₀=151 (5377s elapsed, ETA 8065s)
+  [166/410] model.language_model.layers.24.self_attn.q_proj (8192, 5376) → rank 5376 k₀=210 (5394s elapsed, ETA 8009s)
+  [167/410] model.language_model.layers.24.self_attn.v_proj (4096, 5376) → rank 4096 k₀=196 (5409s elapsed, ETA 7950s)
+  [168/410] model.language_model.layers.24.self_attn.o_proj (5376, 8192) → rank 5376 k₀=293 (5428s elapsed, ETA 7898s)
+  [169/410] model.language_model.layers.24.mlp.gate_proj (21504, 5376) → rank 5376 k₀=721 (5451s elapsed, ETA 7853s)
+  [170/410] model.language_model.layers.24.mlp.up_proj (21504, 5376) → rank 5376 k₀=676 (5473s elapsed, ETA 7805s)
+  [171/410] model.language_model.layers.24.mlp.down_proj (5376, 21504) → rank 5376 k₀=775 (5584s elapsed, ETA 7884s)
+  [172/410] model.language_model.layers.25.self_attn.k_proj (4096, 5376) → rank 4096 k₀=112 (5600s elapsed, ETA 7827s)
+  [173/410] model.language_model.layers.25.self_attn.q_proj (8192, 5376) → rank 5376 k₀=185 (5618s elapsed, ETA 7774s)
+  [174/410] model.language_model.layers.25.self_attn.v_proj (4096, 5376) → rank 4096 k₀=201 (5634s elapsed, ETA 7718s)
+  [175/410] model.language_model.layers.25.self_attn.o_proj (5376, 8192) → rank 5376 k₀=346 (5657s elapsed, ETA 7672s)
+  [176/410] model.language_model.layers.25.mlp.gate_proj (21504, 5376) → rank 5376 k₀=728 (5679s elapsed, ETA 7626s)
+  [177/410] model.language_model.layers.25.mlp.up_proj (21504, 5376) → rank 5376 k₀=769 (5702s elapsed, ETA 7581s)
+  [178/410] model.language_model.layers.25.mlp.down_proj (5376, 21504) → rank 5376 k₀=803 (5832s elapsed, ETA 7678s)
+  [179/410] model.language_model.layers.26.self_attn.k_proj (4096, 5376) → rank 4096 k₀=157 (5848s elapsed, ETA 7622s)
+  [180/410] model.language_model.layers.26.self_attn.q_proj (8192, 5376) → rank 5376 k₀=179 (5867s elapsed, ETA 7571s)
+  [181/410] model.language_model.layers.26.self_attn.v_proj (4096, 5376) → rank 4096 k₀=249 (5882s elapsed, ETA 7516s)
+  [182/410] model.language_model.layers.26.self_attn.o_proj (5376, 8192) → rank 5376 k₀=387 (5904s elapsed, ETA 7469s)
+  [183/410] model.language_model.layers.26.mlp.gate_proj (21504, 5376) → rank 5376 k₀=667 (5927s elapsed, ETA 7425s)
+  [184/410] model.language_model.layers.26.mlp.up_proj (21504, 5376) → rank 5376 k₀=641 (5950s elapsed, ETA 7381s)
+  [185/410] model.language_model.layers.26.mlp.down_proj (5376, 21504) → rank 5376 k₀=785 (6057s elapsed, ETA 7439s)
+  [186/410] model.language_model.layers.27.self_attn.k_proj (4096, 5376) → rank 4096 k₀=122 (6072s elapsed, ETA 7384s)
+  [187/410] model.language_model.layers.27.self_attn.q_proj (8192, 5376) → rank 5376 k₀=183 (6089s elapsed, ETA 7333s)
+  [188/410] model.language_model.layers.27.self_attn.v_proj (4096, 5376) → rank 4096 k₀=207 (6105s elapsed, ETA 7280s)
+  [189/410] model.language_model.layers.27.self_attn.o_proj (5376, 8192) → rank 5376 k₀=311 (6125s elapsed, ETA 7233s)
+  [190/410] model.language_model.layers.27.mlp.gate_proj (21504, 5376) → rank 5376 k₀=738 (6147s elapsed, ETA 7188s)
+  [191/410] model.language_model.layers.27.mlp.up_proj (21504, 5376) → rank 5376 k₀=930 (6168s elapsed, ETA 7142s)
+  [192/410] model.language_model.layers.27.mlp.down_proj (5376, 21504) → rank 5376 k₀=756 (6273s elapsed, ETA 7193s)
+  [193/410] model.language_model.layers.28.self_attn.k_proj (4096, 5376) → rank 4096 k₀=108 (6287s elapsed, ETA 7139s)
+  [194/410] model.language_model.layers.28.self_attn.q_proj (8192, 5376) → rank 5376 k₀=147 (6303s elapsed, ETA 7087s)
+  [195/410] model.language_model.layers.28.self_attn.v_proj (4096, 5376) → rank 4096 k₀=324 (6318s elapsed, ETA 7035s)
+  [196/410] model.language_model.layers.28.self_attn.o_proj (5376, 8192) → rank 5376 k₀=418 (6339s elapsed, ETA 6989s)
+  [197/410] model.language_model.layers.28.mlp.gate_proj (21504, 5376) → rank 5376 k₀=703 (6362s elapsed, ETA 6946s)
+  [198/410] model.language_model.layers.28.mlp.up_proj (21504, 5376) → rank 5376 k₀=990 (6385s elapsed, ETA 6903s)
+  [199/410] model.language_model.layers.28.mlp.down_proj (5376, 21504) → rank 5376 k₀=1016 (6522s elapsed, ETA 6983s)
+  [200/410] model.language_model.layers.29.self_attn.k_proj (2048, 5376) → rank 2048 k₀=389 (6530s elapsed, ETA 6924s)
+  [201/410] model.language_model.layers.29.self_attn.q_proj (16384, 5376) → rank 5376 k₀=360 (6555s elapsed, ETA 6882s)
+  [202/410] model.language_model.layers.29.self_attn.o_proj (5376, 16384) → rank 5376 k₀=448 (6599s elapsed, ETA 6861s)
+  [203/410] model.language_model.layers.29.mlp.gate_proj (21504, 5376) → rank 5376 k₀=744 (6622s elapsed, ETA 6818s)
+  [204/410] model.language_model.layers.29.mlp.up_proj (21504, 5376) → rank 5376 k₀=1144 (6646s elapsed, ETA 6777s)
+  [205/410] model.language_model.layers.29.mlp.down_proj (5376, 21504) → rank 5376 k₀=1058 (6746s elapsed, ETA 6812s)
+  [206/410] model.language_model.layers.30.self_attn.k_proj (4096, 5376) → rank 4096 k₀=116 (6760s elapsed, ETA 6760s)
+  [207/410] model.language_model.layers.30.self_attn.q_proj (8192, 5376) → rank 5376 k₀=168 (6776s elapsed, ETA 6711s)
+  [208/410] model.language_model.layers.30.self_attn.v_proj (4096, 5376) → rank 4096 k₀=305 (6792s elapsed, ETA 6661s)
+  [209/410] model.language_model.layers.30.self_attn.o_proj (5376, 8192) → rank 5376 k₀=471 (6814s elapsed, ETA 6618s)
+  [210/410] model.language_model.layers.30.mlp.gate_proj (21504, 5376) → rank 5376 k₀=636 (6843s elapsed, ETA 6581s)
+  [211/410] model.language_model.layers.30.mlp.up_proj (21504, 5376) → rank 5376 k₀=1002 (6869s elapsed, ETA 6542s)
+  [212/410] model.language_model.layers.30.mlp.down_proj (5376, 21504) → rank 5376 k₀=1424 (7001s elapsed, ETA 6603s)
+  [213/410] model.language_model.layers.31.self_attn.k_proj (4096, 5376) → rank 4096 k₀=137 (7016s elapsed, ETA 6553s)
+  [214/410] model.language_model.layers.31.self_attn.q_proj (8192, 5376) → rank 5376 k₀=198 (7037s elapsed, ETA 6509s)
+  [215/410] model.language_model.layers.31.self_attn.v_proj (4096, 5376) → rank 4096 k₀=226 (7052s elapsed, ETA 6459s)
+  [216/410] model.language_model.layers.31.self_attn.o_proj (5376, 8192) → rank 5376 k₀=431 (7076s elapsed, ETA 6418s)
+  [217/410] model.language_model.layers.31.mlp.gate_proj (21504, 5376) → rank 5376 k₀=703 (7100s elapsed, ETA 6377s)
+  [218/410] model.language_model.layers.31.mlp.up_proj (21504, 5376) → rank 5376 k₀=1069 (7123s elapsed, ETA 6335s)
+  [219/410] model.language_model.layers.31.mlp.down_proj (5376, 21504) → rank 5376 k₀=1448 (7239s elapsed, ETA 6376s)
+  [220/410] model.language_model.layers.32.self_attn.k_proj (4096, 5376) → rank 4096 k₀=139 (7254s elapsed, ETA 6327s)
+  [221/410] model.language_model.layers.32.self_attn.q_proj (8192, 5376) → rank 5376 k₀=212 (7271s elapsed, ETA 6280s)
+  [222/410] model.language_model.layers.32.self_attn.v_proj (4096, 5376) → rank 4096 k₀=220 (7286s elapsed, ETA 6231s)
+  [223/410] model.language_model.layers.32.self_attn.o_proj (5376, 8192) → rank 5376 k₀=418 (7306s elapsed, ETA 6187s)
+  [224/410] model.language_model.layers.32.mlp.gate_proj (21504, 5376) → rank 5376 k₀=902 (7328s elapsed, ETA 6145s)
+  [225/410] model.language_model.layers.32.mlp.up_proj (21504, 5376) → rank 5376 k₀=1113 (7350s elapsed, ETA 6103s)
+  [226/410] model.language_model.layers.32.mlp.down_proj (5376, 21504) → rank 5376 k₀=1112 (7451s elapsed, ETA 6127s)
+  [227/410] model.language_model.layers.33.self_attn.k_proj (4096, 5376) → rank 4096 k₀=123 (7466s elapsed, ETA 6078s)
+  [228/410] model.language_model.layers.33.self_attn.q_proj (8192, 5376) → rank 5376 k₀=215 (7483s elapsed, ETA 6033s)
+  [229/410] model.language_model.layers.33.self_attn.v_proj (4096, 5376) → rank 4096 k₀=283 (7498s elapsed, ETA 5985s)
+  [230/410] model.language_model.layers.33.self_attn.o_proj (5376, 8192) → rank 5376 k₀=375 (7520s elapsed, ETA 5944s)
+  [231/410] model.language_model.layers.33.mlp.gate_proj (21504, 5376) → rank 5376 k₀=894 (7543s elapsed, ETA 5903s)
+  [232/410] model.language_model.layers.33.mlp.up_proj (21504, 5376) → rank 5376 k₀=1331 (7568s elapsed, ETA 5864s)
+  [233/410] model.language_model.layers.33.mlp.down_proj (5376, 21504) → rank 5376 k₀=1087 (7682s elapsed, ETA 5894s)
+  [234/410] model.language_model.layers.34.self_attn.k_proj (4096, 5376) → rank 4096 k₀=138 (7697s elapsed, ETA 5847s)
+  [235/410] model.language_model.layers.34.self_attn.q_proj (8192, 5376) → rank 5376 k₀=192 (7715s elapsed, ETA 5803s)
+  [236/410] model.language_model.layers.34.self_attn.v_proj (4096, 5376) → rank 4096 k₀=313 (7732s elapsed, ETA 5758s)
+  [237/410] model.language_model.layers.34.self_attn.o_proj (5376, 8192) → rank 5376 k₀=404 (7755s elapsed, ETA 5718s)
+  [238/410] model.language_model.layers.34.mlp.gate_proj (21504, 5376) → rank 5376 k₀=855 (7777s elapsed, ETA 5677s)
+  [239/410] model.language_model.layers.34.mlp.up_proj (21504, 5376) → rank 5376 k₀=1316 (7801s elapsed, ETA 5638s)
+  [240/410] model.language_model.layers.34.mlp.down_proj (5376, 21504) → rank 5376 k₀=924 (7910s elapsed, ETA 5659s)
+  [241/410] model.language_model.layers.35.self_attn.k_proj (2048, 5376) → rank 2048 k₀=266 (7918s elapsed, ETA 5608s)
+  [242/410] model.language_model.layers.35.self_attn.q_proj (16384, 5376) → rank 5376 k₀=439 (7939s elapsed, ETA 5567s)
+  [243/410] model.language_model.layers.35.self_attn.o_proj (5376, 16384) → rank 5376 k₀=535 (7985s elapsed, ETA 5543s)
+  [244/410] model.language_model.layers.35.mlp.gate_proj (21504, 5376) → rank 5376 k₀=891 (8010s elapsed, ETA 5505s)
+  [245/410] model.language_model.layers.35.mlp.up_proj (21504, 5376) → rank 5376 k₀=1283 (8034s elapsed, ETA 5466s)
+  [246/410] model.language_model.layers.35.mlp.down_proj (5376, 21504) → rank 5376 k₀=946 (8149s elapsed, ETA 5488s)
+  [247/410] model.language_model.layers.36.self_attn.k_proj (4096, 5376) → rank 4096 k₀=174 (8165s elapsed, ETA 5444s)
+  [248/410] model.language_model.layers.36.self_attn.q_proj (8192, 5376) → rank 5376 k₀=227 (8182s elapsed, ETA 5399s)
+  [249/410] model.language_model.layers.36.self_attn.v_proj (4096, 5376) → rank 4096 k₀=263 (8198s elapsed, ETA 5355s)
+  [250/410] model.language_model.layers.36.self_attn.o_proj (5376, 8192) → rank 5376 k₀=367 (8219s elapsed, ETA 5314s)
+  [251/410] model.language_model.layers.36.mlp.gate_proj (21504, 5376) → rank 5376 k₀=867 (8243s elapsed, ETA 5275s)
+  [252/410] model.language_model.layers.36.mlp.up_proj (21504, 5376) → rank 5376 k₀=1237 (8265s elapsed, ETA 5236s)
+  [253/410] model.language_model.layers.36.mlp.down_proj (5376, 21504) → rank 5376 k₀=1092 (8389s elapsed, ETA 5260s)
+  [254/410] model.language_model.layers.37.self_attn.k_proj (4096, 5376) → rank 4096 k₀=182 (8404s elapsed, ETA 5215s)
+  [255/410] model.language_model.layers.37.self_attn.q_proj (8192, 5376) → rank 5376 k₀=221 (8423s elapsed, ETA 5173s)
+  [256/410] model.language_model.layers.37.self_attn.v_proj (4096, 5376) → rank 4096 k₀=251 (8438s elapsed, ETA 5129s)
+  [257/410] model.language_model.layers.37.self_attn.o_proj (5376, 8192) → rank 5376 k₀=462 (8460s elapsed, ETA 5089s)
+  [258/410] model.language_model.layers.37.mlp.gate_proj (21504, 5376) → rank 5376 k₀=813 (8482s elapsed, ETA 5050s)
+  [259/410] model.language_model.layers.37.mlp.up_proj (21504, 5376) → rank 5376 k₀=1109 (8505s elapsed, ETA 5011s)
+  [260/410] model.language_model.layers.37.mlp.down_proj (5376, 21504) → rank 5376 k₀=978 (8626s elapsed, ETA 5029s)
+  [261/410] model.language_model.layers.38.self_attn.k_proj (4096, 5376) → rank 4096 k₀=185 (8641s elapsed, ETA 4985s)
+  [262/410] model.language_model.layers.38.self_attn.q_proj (8192, 5376) → rank 5376 k₀=227 (8659s elapsed, ETA 4943s)
+  [263/410] model.language_model.layers.38.self_attn.v_proj (4096, 5376) → rank 4096 k₀=298 (8674s elapsed, ETA 4900s)
+  [264/410] model.language_model.layers.38.self_attn.o_proj (5376, 8192) → rank 5376 k₀=369 (8696s elapsed, ETA 4861s)
+  [265/410] model.language_model.layers.38.mlp.gate_proj (21504, 5376) → rank 5376 k₀=860 (8722s elapsed, ETA 4824s)
+  [266/410] model.language_model.layers.38.mlp.up_proj (21504, 5376) → rank 5376 k₀=1157 (8745s elapsed, ETA 4785s)
+  [267/410] model.language_model.layers.38.mlp.down_proj (5376, 21504) → rank 5376 k₀=991 (8861s elapsed, ETA 4797s)
+  [268/410] model.language_model.layers.39.self_attn.k_proj (4096, 5376) → rank 4096 k₀=101 (8877s elapsed, ETA 4754s)
+  [269/410] model.language_model.layers.39.self_attn.q_proj (8192, 5376) → rank 5376 k₀=152 (8896s elapsed, ETA 4713s)
+  [270/410] model.language_model.layers.39.self_attn.v_proj (4096, 5376) → rank 4096 k₀=295 (8912s elapsed, ETA 4671s)
+  [271/410] model.language_model.layers.39.self_attn.o_proj (5376, 8192) → rank 5376 k₀=386 (8935s elapsed, ETA 4633s)
+  [272/410] model.language_model.layers.39.mlp.gate_proj (21504, 5376) → rank 5376 k₀=887 (8958s elapsed, ETA 4595s)
+  [273/410] model.language_model.layers.39.mlp.up_proj (21504, 5376) → rank 5376 k₀=1195 (8979s elapsed, ETA 4556s)
+  [274/410] model.language_model.layers.39.mlp.down_proj (5376, 21504) → rank 5376 k₀=1190 (9092s elapsed, ETA 4563s)
+  [275/410] model.language_model.layers.40.self_attn.k_proj (4096, 5376) → rank 4096 k₀=165 (9107s elapsed, ETA 4520s)
+  [276/410] model.language_model.layers.40.self_attn.q_proj (8192, 5376) → rank 5376 k₀=221 (9123s elapsed, ETA 4479s)
+  [277/410] model.language_model.layers.40.self_attn.v_proj (4096, 5376) → rank 4096 k₀=425 (9139s elapsed, ETA 4437s)
+  [278/410] model.language_model.layers.40.self_attn.o_proj (5376, 8192) → rank 5376 k₀=410 (9161s elapsed, ETA 4399s)
+  [279/410] model.language_model.layers.40.mlp.gate_proj (21504, 5376) → rank 5376 k₀=936 (9182s elapsed, ETA 4360s)
+  [280/410] model.language_model.layers.40.mlp.up_proj (21504, 5376) → rank 5376 k₀=1282 (9203s elapsed, ETA 4321s)
+  [281/410] model.language_model.layers.40.mlp.down_proj (5376, 21504) → rank 5376 k₀=1340 (9307s elapsed, ETA 4321s)
+  [282/410] model.language_model.layers.41.self_attn.k_proj (2048, 5376) → rank 2048 k₀=140 (9315s elapsed, ETA 4276s)
+  [283/410] model.language_model.layers.41.self_attn.q_proj (16384, 5376) → rank 5376 k₀=281 (9335s elapsed, ETA 4237s)
+  [284/410] model.language_model.layers.41.self_attn.o_proj (5376, 16384) → rank 5376 k₀=482 (9383s elapsed, ETA 4211s)
+  [285/410] model.language_model.layers.41.mlp.gate_proj (21504, 5376) → rank 5376 k₀=914 (9405s elapsed, ETA 4173s)
+  [286/410] model.language_model.layers.41.mlp.up_proj (21504, 5376) → rank 5376 k₀=1316 (9430s elapsed, ETA 4136s)
+  [287/410] model.language_model.layers.41.mlp.down_proj (5376, 21504) → rank 5376 k₀=1636 (9539s elapsed, ETA 4136s)
+  [288/410] model.language_model.layers.42.self_attn.k_proj (4096, 5376) → rank 4096 k₀=226 (9554s elapsed, ETA 4095s)
+  [289/410] model.language_model.layers.42.self_attn.q_proj (8192, 5376) → rank 5376 k₀=321 (9570s elapsed, ETA 4054s)
+  [290/410] model.language_model.layers.42.self_attn.v_proj (4096, 5376) → rank 4096 k₀=389 (9586s elapsed, ETA 4013s)
+  [291/410] model.language_model.layers.42.self_attn.o_proj (5376, 8192) → rank 5376 k₀=632 (9609s elapsed, ETA 3976s)
+  [292/410] model.language_model.layers.42.mlp.gate_proj (21504, 5376) → rank 5376 k₀=979 (9631s elapsed, ETA 3938s)
+  [293/410] model.language_model.layers.42.mlp.up_proj (21504, 5376) → rank 5376 k₀=1304 (9652s elapsed, ETA 3900s)
+  [294/410] model.language_model.layers.42.mlp.down_proj (5376, 21504) → rank 5376 k₀=1774 (9754s elapsed, ETA 3895s)
+  [295/410] model.language_model.layers.43.self_attn.k_proj (4096, 5376) → rank 4096 k₀=323 (9769s elapsed, ETA 3854s)
+  [296/410] model.language_model.layers.43.self_attn.q_proj (8192, 5376) → rank 5376 k₀=503 (9786s elapsed, ETA 3815s)
+  [297/410] model.language_model.layers.43.self_attn.v_proj (4096, 5376) → rank 4096 k₀=392 (9802s elapsed, ETA 3775s)
+  [298/410] model.language_model.layers.43.self_attn.o_proj (5376, 8192) → rank 5376 k₀=659 (9821s elapsed, ETA 3737s)
+  [299/410] model.language_model.layers.43.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1074 (9843s elapsed, ETA 3699s)
+  [300/410] model.language_model.layers.43.mlp.up_proj (21504, 5376) → rank 5376 k₀=1424 (9867s elapsed, ETA 3663s)
+  [301/410] model.language_model.layers.43.mlp.down_proj (5376, 21504) → rank 5376 k₀=1762 (9973s elapsed, ETA 3657s)
+  [302/410] model.language_model.layers.44.self_attn.k_proj (4096, 5376) → rank 4096 k₀=362 (9987s elapsed, ETA 3617s)
+  [303/410] model.language_model.layers.44.self_attn.q_proj (8192, 5376) → rank 5376 k₀=523 (10004s elapsed, ETA 3578s)
+  [304/410] model.language_model.layers.44.self_attn.v_proj (4096, 5376) → rank 4096 k₀=431 (10020s elapsed, ETA 3538s)
+  [305/410] model.language_model.layers.44.self_attn.o_proj (5376, 8192) → rank 5376 k₀=649 (10040s elapsed, ETA 3501s)
+  [306/410] model.language_model.layers.44.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1191 (10065s elapsed, ETA 3465s)
+  [307/410] model.language_model.layers.44.mlp.up_proj (21504, 5376) → rank 5376 k₀=1517 (10091s elapsed, ETA 3430s)
+  [308/410] model.language_model.layers.44.mlp.down_proj (5376, 21504) → rank 5376 k₀=1690 (10208s elapsed, ETA 3425s)
+  [309/410] model.language_model.layers.45.self_attn.k_proj (4096, 5376) → rank 4096 k₀=330 (10222s elapsed, ETA 3385s)
+  [310/410] model.language_model.layers.45.self_attn.q_proj (8192, 5376) → rank 5376 k₀=505 (10240s elapsed, ETA 3347s)
+  [311/410] model.language_model.layers.45.self_attn.v_proj (4096, 5376) → rank 4096 k₀=381 (10256s elapsed, ETA 3308s)
+  [312/410] model.language_model.layers.45.self_attn.o_proj (5376, 8192) → rank 5376 k₀=613 (10276s elapsed, ETA 3271s)
+  [313/410] model.language_model.layers.45.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1128 (10302s elapsed, ETA 3236s)
+  [314/410] model.language_model.layers.45.mlp.up_proj (21504, 5376) → rank 5376 k₀=1560 (10329s elapsed, ETA 3201s)
+  [315/410] model.language_model.layers.45.mlp.down_proj (5376, 21504) → rank 5376 k₀=1648 (10432s elapsed, ETA 3189s)
+  [316/410] model.language_model.layers.46.self_attn.k_proj (4096, 5376) → rank 4096 k₀=315 (10447s elapsed, ETA 3151s)
+  [317/410] model.language_model.layers.46.self_attn.q_proj (8192, 5376) → rank 5376 k₀=446 (10466s elapsed, ETA 3113s)
+  [318/410] model.language_model.layers.46.self_attn.v_proj (4096, 5376) → rank 4096 k₀=414 (10482s elapsed, ETA 3075s)
+  [319/410] model.language_model.layers.46.self_attn.o_proj (5376, 8192) → rank 5376 k₀=567 (10503s elapsed, ETA 3039s)
+  [320/410] model.language_model.layers.46.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1147 (10530s elapsed, ETA 3004s)
+  [321/410] model.language_model.layers.46.mlp.up_proj (21504, 5376) → rank 5376 k₀=1598 (10558s elapsed, ETA 2969s)
+  [322/410] model.language_model.layers.46.mlp.down_proj (5376, 21504) → rank 5376 k₀=1611 (10659s elapsed, ETA 2955s)
+  [323/410] model.language_model.layers.47.self_attn.k_proj (2048, 5376) → rank 2048 k₀=123 (10666s elapsed, ETA 2915s)
+  [324/410] model.language_model.layers.47.self_attn.q_proj (16384, 5376) → rank 5376 k₀=434 (10686s elapsed, ETA 2878s)
+  [325/410] model.language_model.layers.47.self_attn.o_proj (5376, 16384) → rank 5376 k₀=530 (10732s elapsed, ETA 2848s)
+  [326/410] model.language_model.layers.47.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1114 (10756s elapsed, ETA 2813s)
+  [327/410] model.language_model.layers.47.mlp.up_proj (21504, 5376) → rank 5376 k₀=1585 (10778s elapsed, ETA 2777s)
+  [328/410] model.language_model.layers.47.mlp.down_proj (5376, 21504) → rank 5376 k₀=1654 (10879s elapsed, ETA 2761s)
+  [329/410] model.language_model.layers.48.self_attn.k_proj (4096, 5376) → rank 4096 k₀=301 (10893s elapsed, ETA 2723s)
+  [330/410] model.language_model.layers.48.self_attn.q_proj (8192, 5376) → rank 5376 k₀=566 (10910s elapsed, ETA 2686s)
+  [331/410] model.language_model.layers.48.self_attn.v_proj (4096, 5376) → rank 4096 k₀=424 (10924s elapsed, ETA 2648s)
+  [332/410] model.language_model.layers.48.self_attn.o_proj (5376, 8192) → rank 5376 k₀=720 (10948s elapsed, ETA 2613s)
+  [333/410] model.language_model.layers.48.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1149 (10976s elapsed, ETA 2579s)
+  [334/410] model.language_model.layers.48.mlp.up_proj (21504, 5376) → rank 5376 k₀=1641 (11003s elapsed, ETA 2544s)
+  [335/410] model.language_model.layers.48.mlp.down_proj (5376, 21504) → rank 5376 k₀=1558 (11104s elapsed, ETA 2527s)
+  [336/410] model.language_model.layers.49.self_attn.k_proj (4096, 5376) → rank 4096 k₀=370 (11120s elapsed, ETA 2490s)
+  [337/410] model.language_model.layers.49.self_attn.q_proj (8192, 5376) → rank 5376 k₀=539 (11141s elapsed, ETA 2454s)
+  [338/410] model.language_model.layers.49.self_attn.v_proj (4096, 5376) → rank 4096 k₀=283 (11156s elapsed, ETA 2417s)
+  [339/410] model.language_model.layers.49.self_attn.o_proj (5376, 8192) → rank 5376 k₀=431 (11178s elapsed, ETA 2381s)
+  [340/410] model.language_model.layers.49.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1085 (11204s elapsed, ETA 2347s)
+  [341/410] model.language_model.layers.49.mlp.up_proj (21504, 5376) → rank 5376 k₀=1597 (11229s elapsed, ETA 2312s)
+  [342/410] model.language_model.layers.49.mlp.down_proj (5376, 21504) → rank 5376 k₀=1527 (11330s elapsed, ETA 2293s)
+  [343/410] model.language_model.layers.50.self_attn.k_proj (4096, 5376) → rank 4096 k₀=397 (11347s elapsed, ETA 2256s)
+  [344/410] model.language_model.layers.50.self_attn.q_proj (8192, 5376) → rank 5376 k₀=616 (11368s elapsed, ETA 2221s)
+  [345/410] model.language_model.layers.50.self_attn.v_proj (4096, 5376) → rank 4096 k₀=446 (11383s elapsed, ETA 2184s)
+  [346/410] model.language_model.layers.50.self_attn.o_proj (5376, 8192) → rank 5376 k₀=676 (11407s elapsed, ETA 2149s)
+  [347/410] model.language_model.layers.50.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1124 (11432s elapsed, ETA 2115s)
+  [348/410] model.language_model.layers.50.mlp.up_proj (21504, 5376) → rank 5376 k₀=1656 (11457s elapsed, ETA 2080s)
+  [349/410] model.language_model.layers.50.mlp.down_proj (5376, 21504) → rank 5376 k₀=1355 (11577s elapsed, ETA 2063s)
+  [350/410] model.language_model.layers.51.self_attn.k_proj (4096, 5376) → rank 4096 k₀=299 (11592s elapsed, ETA 2026s)
+  [351/410] model.language_model.layers.51.self_attn.q_proj (8192, 5376) → rank 5376 k₀=518 (11607s elapsed, ETA 1990s)
+  [352/410] model.language_model.layers.51.self_attn.v_proj (4096, 5376) → rank 4096 k₀=438 (11622s elapsed, ETA 1954s)
+  [353/410] model.language_model.layers.51.self_attn.o_proj (5376, 8192) → rank 5376 k₀=663 (11641s elapsed, ETA 1918s)
+  [354/410] model.language_model.layers.51.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1204 (11665s elapsed, ETA 1884s)
+  [355/410] model.language_model.layers.51.mlp.up_proj (21504, 5376) → rank 5376 k₀=1644 (11688s elapsed, ETA 1849s)
+  [356/410] model.language_model.layers.51.mlp.down_proj (5376, 21504) → rank 5376 k₀=1413 (11793s elapsed, ETA 1827s)
+  [357/410] model.language_model.layers.52.self_attn.k_proj (4096, 5376) → rank 4096 k₀=384 (11809s elapsed, ETA 1791s)
+  [358/410] model.language_model.layers.52.self_attn.q_proj (8192, 5376) → rank 5376 k₀=651 (11824s elapsed, ETA 1755s)
+  [359/410] model.language_model.layers.52.self_attn.v_proj (4096, 5376) → rank 4096 k₀=446 (11838s elapsed, ETA 1720s)
+  [360/410] model.language_model.layers.52.self_attn.o_proj (5376, 8192) → rank 5376 k₀=619 (11857s elapsed, ETA 1684s)
+  [361/410] model.language_model.layers.52.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1181 (11880s elapsed, ETA 1650s)
+  [362/410] model.language_model.layers.52.mlp.up_proj (21504, 5376) → rank 5376 k₀=1617 (11903s elapsed, ETA 1616s)
+  [363/410] model.language_model.layers.52.mlp.down_proj (5376, 21504) → rank 5376 k₀=1256 (12006s elapsed, ETA 1592s)
+  [364/410] model.language_model.layers.53.self_attn.k_proj (2048, 5376) → rank 2048 k₀=48 (12013s elapsed, ETA 1555s)
+  [365/410] model.language_model.layers.53.self_attn.q_proj (16384, 5376) → rank 5376 k₀=162 (12034s elapsed, ETA 1521s)
+  [366/410] model.language_model.layers.53.self_attn.o_proj (5376, 16384) → rank 5376 k₀=968 (12079s elapsed, ETA 1489s)
+  [367/410] model.language_model.layers.53.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1021 (12101s elapsed, ETA 1455s)
+  [368/410] model.language_model.layers.53.mlp.up_proj (21504, 5376) → rank 5376 k₀=1543 (12123s elapsed, ETA 1420s)
+  [369/410] model.language_model.layers.53.mlp.down_proj (5376, 21504) → rank 5376 k₀=1354 (12226s elapsed, ETA 1395s)
+  [370/410] model.language_model.layers.54.self_attn.k_proj (4096, 5376) → rank 4096 k₀=210 (12242s elapsed, ETA 1360s)
+  [371/410] model.language_model.layers.54.self_attn.q_proj (8192, 5376) → rank 5376 k₀=410 (12260s elapsed, ETA 1325s)
+  [372/410] model.language_model.layers.54.self_attn.v_proj (4096, 5376) → rank 4096 k₀=382 (12275s elapsed, ETA 1290s)
+  [373/410] model.language_model.layers.54.self_attn.o_proj (5376, 8192) → rank 5376 k₀=609 (12298s elapsed, ETA 1256s)
+  [374/410] model.language_model.layers.54.mlp.gate_proj (21504, 5376) → rank 5376 k₀=1035 (12321s elapsed, ETA 1222s)
+  [375/410] model.language_model.layers.54.mlp.up_proj (21504, 5376) → rank 5376 k₀=1570 (12347s elapsed, ETA 1189s)
+  [376/410] model.language_model.layers.54.mlp.down_proj (5376, 21504) → rank 5376 k₀=1339 (12446s elapsed, ETA 1162s)
+  [377/410] model.language_model.layers.55.self_attn.k_proj (4096, 5376) → rank 4096 k₀=211 (12461s elapsed, ETA 1127s)
+  [378/410] model.language_model.layers.55.self_attn.q_proj (8192, 5376) → rank 5376 k₀=386 (12479s elapsed, ETA 1092s)
+  [379/410] model.language_model.layers.55.self_attn.v_proj (4096, 5376) → rank 4096 k₀=433 (12494s elapsed, ETA 1058s)
+  [380/410] model.language_model.layers.55.self_attn.o_proj (5376, 8192) → rank 5376 k₀=532 (12514s elapsed, ETA 1024s)
+  [381/410] model.language_model.layers.55.mlp.gate_proj (21504, 5376) → rank 5376 k₀=952 (12537s elapsed, ETA 990s)
+  [382/410] model.language_model.layers.55.mlp.up_proj (21504, 5376) → rank 5376 k₀=1583 (12562s elapsed, ETA 956s)
+  [383/410] model.language_model.layers.55.mlp.down_proj (5376, 21504) → rank 5376 k₀=1343 (12663s elapsed, ETA 928s)
+  [384/410] model.language_model.layers.56.self_attn.k_proj (4096, 5376) → rank 4096 k₀=175 (12680s elapsed, ETA 894s)
+  [385/410] model.language_model.layers.56.self_attn.q_proj (8192, 5376) → rank 5376 k₀=365 (12698s elapsed, ETA 860s)
+  [386/410] model.language_model.layers.56.self_attn.v_proj (4096, 5376) → rank 4096 k₀=363 (12712s elapsed, ETA 825s)
+  [387/410] model.language_model.layers.56.self_attn.o_proj (5376, 8192) → rank 5376 k₀=549 (12732s elapsed, ETA 792s)
+  [388/410] model.language_model.layers.56.mlp.gate_proj (21504, 5376) → rank 5376 k₀=867 (12757s elapsed, ETA 758s)
+  [389/410] model.language_model.layers.56.mlp.up_proj (21504, 5376) → rank 5376 k₀=1402 (12780s elapsed, ETA 725s)
+  [390/410] model.language_model.layers.56.mlp.down_proj (5376, 21504) → rank 5376 k₀=1486 (12886s elapsed, ETA 696s)
+  [391/410] model.language_model.layers.57.self_attn.k_proj (4096, 5376) → rank 4096 k₀=89 (12900s elapsed, ETA 662s)
+  [392/410] model.language_model.layers.57.self_attn.q_proj (8192, 5376) → rank 5376 k₀=216 (12916s elapsed, ETA 628s)
+  [393/410] model.language_model.layers.57.self_attn.v_proj (4096, 5376) → rank 4096 k₀=594 (12932s elapsed, ETA 594s)
+  [394/410] model.language_model.layers.57.self_attn.o_proj (5376, 8192) → rank 5376 k₀=607 (12954s elapsed, ETA 560s)
+  [395/410] model.language_model.layers.57.mlp.gate_proj (21504, 5376) → rank 5376 k₀=716 (12980s elapsed, ETA 527s)
+  [396/410] model.language_model.layers.57.mlp.up_proj (21504, 5376) → rank 5376 k₀=1275 (13008s elapsed, ETA 494s)
+  [397/410] model.language_model.layers.57.mlp.down_proj (5376, 21504) → rank 5376 k₀=1471 (13105s elapsed, ETA 463s)
+  [398/410] model.language_model.layers.58.self_attn.k_proj (4096, 5376) → rank 4096 k₀=118 (13119s elapsed, ETA 430s)
+  [399/410] model.language_model.layers.58.self_attn.q_proj (8192, 5376) → rank 5376 k₀=190 (13135s elapsed, ETA 396s)
+  [400/410] model.language_model.layers.58.self_attn.v_proj (4096, 5376) → rank 4096 k₀=347 (13151s elapsed, ETA 363s)
+  [401/410] model.language_model.layers.58.self_attn.o_proj (5376, 8192) → rank 5376 k₀=364 (13172s elapsed, ETA 329s)
+  [402/410] model.language_model.layers.58.mlp.gate_proj (21504, 5376) → rank 5376 k₀=451 (13199s elapsed, ETA 296s)
+  [403/410] model.language_model.layers.58.mlp.up_proj (21504, 5376) → rank 5376 k₀=960 (13226s elapsed, ETA 263s)
+  [404/410] model.language_model.layers.58.mlp.down_proj (5376, 21504) → rank 5376 k₀=1417 (13329s elapsed, ETA 232s)
+  [405/410] model.language_model.layers.59.self_attn.k_proj (2048, 5376) → rank 2048 k₀=60 (13336s elapsed, ETA 198s)
+  [406/410] model.language_model.layers.59.self_attn.q_proj (16384, 5376) → rank 5376 k₀=94 (13359s elapsed, ETA 165s)
+  [407/410] model.language_model.layers.59.self_attn.o_proj (5376, 16384) → rank 5376 k₀=540 (13409s elapsed, ETA 132s)
+  [408/410] model.language_model.layers.59.mlp.gate_proj (21504, 5376) → rank 5376 k₀=219 (13436s elapsed, ETA 99s)
+  [409/410] model.language_model.layers.59.mlp.up_proj (21504, 5376) → rank 5376 k₀=753 (13464s elapsed, ETA 66s)
+  [410/410] model.language_model.layers.59.mlp.down_proj (5376, 21504) → rank 5376 k₀=1009 (13573s elapsed, ETA 33s)
+
+  Pre-GPU audit:
+  Model tensor audit: 82.22 GB total
+    torch.bfloat16: 82.22 GB
+    torch.float32: 0.00 GB
+  Model: 82.2 GB, GPU total: 102.0 GB
+
+  Skipping decomposed save (--no-save-decomposed)
+
+  Moving model to cuda...
+  [MEM] after model.to(device): 83.6GB alloc / 84.0GB reserved / 102.0GB total
+  ✓ Gradient checkpointing enabled
+  Learnable params: 2,042,880
+  Frozen params:    41,663,167,531
+  Harmonic λ: 0.01 [type-aware (F/L per type)]
+  attn_o weight: 10.0× (pinned at (1/φ)^(1/3))
+
+  Post-decomposition eval...
+  Post-decomp val loss: 17.7047 (PPL 48869369.6)
+  [MEM] after eval: 83.6GB alloc / 85.8GB reserved / 102.0GB total
+
+  Testing backward pass (1 microbatch)...
+`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+  [MEM] after test backward: 83.7GB alloc / 84.0GB reserved / 102.0GB total
+  ✓ Backward pass OK
+
+  Effective batch: 8,192 tokens/step
+  Batch: 1 × 512 × 16 accum
+
+======================================================================
+  Spectral Fine-Tuning: RAI-gemma4-fullrank
+  2,042,880 learnable params (per_mode)
+  Harmonic: harmonic-λ=0.01
+======================================================================
+
+  step     0 | loss 120.8454 | hreg 103.9970 | lr 0.00e+00 | 736 tok/s | mem 84GB
+  ► eval     0 | val 17.3366 | ppl 33821631.1 | train_ppl 485165195.4 ★
+  step    10 | loss 120.8052 | hreg 103.9961 | lr 2.50e-05 | 721 tok/s | mem 84GB
+  step    20 | loss 120.4566 | hreg 103.9936 | lr 5.00e-05 | 734 tok/s | mem 84GB
+  step    30 | loss 120.2934 | hreg 103.9895 | lr 7.50e-05 | 738 tok/s | mem 84GB
+  step    40 | loss 120.5739 | hreg 103.9837 | lr 1.00e-04 | 739 tok/s | mem 84GB
+  step    50 | loss 120.0932 | hreg 103.9763 | lr 1.25e-04 | 740 tok/s | mem 84GB
+  step    60 | loss 119.5475 | hreg 103.9670 | lr 1.50e-04 | 740 tok/s | mem 84GB
+  step    70 | loss 118.9909 | hreg 103.9527 | lr 1.75e-04 | 740 tok/s | mem 84GB
+  step    80 | loss 118.2298 | hreg 103.9378 | lr 2.00e-04 | 741 tok/s | mem 84GB
+  step    90 | loss 117.8432 | hreg 103.9240 | lr 2.25e-04 | 741 tok/s | mem 84GB
+  step   100 | loss 117.2570 | hreg 103.9082 | lr 2.50e-04 | 741 tok/s | mem 84GB
+  ► eval   100 | val 14.0082 | ppl 1212530.8 | train_ppl 485165195.4 ★
+  step   110 | loss 116.9381 | hreg 103.8933 | lr 2.75e-04 | 739 tok/s | mem 84GB
+  step   120 | loss 115.8846 | hreg 103.8665 | lr 3.00e-04 | 739 tok/s | mem 84GB
+  step   130 | loss 115.1822 | hreg 103.8304 | lr 3.25e-04 | 740 tok/s | mem 84GB
+  step   140 | loss 114.5036 | hreg 103.7962 | lr 3.50e-04 | 740 tok/s | mem 84GB
+  step   150 | loss 113.7077 | hreg 103.7521 | lr 3.75e-04 | 740 tok/s | mem 84GB
+  step   160 | loss 112.8639 | hreg 103.7053 | lr 4.00e-04 | 740 tok/s | mem 84GB
+  step   170 | loss 112.3353 | hreg 103.6462 | lr 4.25e-04 | 741 tok/s | mem 84GB
+  step   180 | loss 111.7586 | hreg 103.5815 | lr 4.50e-04 | 741 tok/s | mem 84GB
+  step   190 | loss 111.2425 | hreg 103.5138 | lr 4.75e-04 | 741 tok/s | mem 84GB
+  step   200 | loss 111.0191 | hreg 103.4380 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  ► eval   200 | val 7.7975 | ppl 2434.4 | train_ppl 485165195.4 ★
+  step   210 | loss 110.5457 | hreg 103.3406 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   220 | loss 110.1881 | hreg 103.2197 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   230 | loss 109.9686 | hreg 103.1062 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   240 | loss 109.7303 | hreg 103.0022 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   250 | loss 109.5589 | hreg 102.9180 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   260 | loss 109.3856 | hreg 102.8380 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   270 | loss 109.2855 | hreg 102.7612 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   280 | loss 109.1267 | hreg 102.6939 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  step   290 | loss 108.9870 | hreg 102.6209 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  step   300 | loss 109.0671 | hreg 102.5399 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  ► eval   300 | val 6.1617 | ppl 474.2 | train_ppl 485165195.4 ★
+  step   310 | loss 108.3976 | hreg 102.4599 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   320 | loss 108.3768 | hreg 102.3786 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   330 | loss 108.2325 | hreg 102.2887 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   340 | loss 108.2000 | hreg 102.2069 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   350 | loss 108.1867 | hreg 102.1131 | lr 5.00e-04 | 740 tok/s | mem 84GB
+  step   360 | loss 108.0149 | hreg 102.0165 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  step   370 | loss 107.6460 | hreg 101.9256 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  step   380 | loss 107.7681 | hreg 101.8239 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  step   390 | loss 107.5320 | hreg 101.7346 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  step   400 | loss 107.6127 | hreg 101.6505 | lr 5.00e-04 | 741 tok/s | mem 84GB
+  ► eval   400 | val 5.5067 | ppl 246.3 | train_ppl 485165195.4 ★
+  step   410 | loss 107.4879 | hreg 101.5733 | lr 4.99e-04 | 740 tok/s | mem 84GB
+  step   420 | loss 106.9782 | hreg 101.4721 | lr 4.99e-04 | 740 tok/s | mem 84GB
+  step   430 | loss 107.0593 | hreg 101.3659 | lr 4.99e-04 | 740 tok/s | mem 84GB
+  step   440 | loss 106.7366 | hreg 101.2802 | lr 4.99e-04 | 740 tok/s | mem 84GB
+  step   450 | loss 106.9139 | hreg 101.1913 | lr 4.99e-04 | 740 tok/s | mem 84GB
+  step   460 | loss 106.5287 | hreg 101.0588 | lr 4.99e-04 | 740 tok/s | mem 84GB
+  step   470 | loss 106.3508 | hreg 100.9186 | lr 4.99e-04 | 740 tok/s | mem 84GB
+  step   480 | loss 106.2682 | hreg 100.8032 | lr 4.99e-04 | 741 tok/s | mem 84GB
+  step   490 | loss 106.0883 | hreg 100.6940 | lr 4.99e-04 | 741 tok/s | mem 84GB
+  step   500 | loss 106.0042 | hreg 100.5759 | lr 4.99e-04 | 741 tok/s | mem 84GB
+  ► eval   500 | val 5.0824 | ppl 161.2 | train_ppl 485165195.4 ★
+
+  --- Samples at step 500 ---
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+  Q: The most important thing about the Singularity is
+  A:  singularityularityularityularityularityularityularityularityularityularityularityityularityityularityityityularityityityularityularityularityularityityularityularityularityularityityularityularityularityularityularityularityularityularityularityityityularityityityityarityularityularityularityularit
+
+  Q: When I think about my father, I remember
+  A:  the stories- and love- and love- that they had a the the the the the the the the that they their the the the of the they their the the the the they are the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the the
+
+  Q: The exponential growth of technology means that
+  A:  the,,,The of the of theofofof ofof of the of of the of of ofofof of ofof ofofofofof of of ofofofof ofofofof ofofofofofofofofofofofofofofofofofofofofofofofofofof ofofofof ofofofofof ofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofofof
+
+  --- End samples ---
+
+  step   510 | loss 105.8734 | hreg 100.4593 | lr 4.99e-04 | 735 tok/s | mem 84GB
+  step   520 | loss 105.7536 | hreg 100.3385 | lr 4.99e-04 | 735 tok/s | mem 84GB
+  step   530 | loss 105.7279 | hreg 100.2268 | lr 4.99e-04 | 735 tok/s | mem 84GB
+  step   540 | loss 105.4863 | hreg 100.1364 | lr 4.99e-04 | 735 tok/s | mem 84GB
+  step   550 | loss 105.2416 | hreg 100.0394 | lr 4.99e-04 | 735 tok/s | mem 84GB
+  step   560 | loss 105.2957 | hreg 99.9316 | lr 4.99e-04 | 736 tok/s | mem 84GB
+  step   570 | loss 105.2161 | hreg 99.8273 | lr 4.98e-04 | 736 tok/s | mem 84GB
+  step   580 | loss 105.0746 | hreg 99.7268 | lr 4.98e-04 | 736 tok/s | mem 84GB
+  step   590 | loss 104.7048 | hreg 99.6330 | lr 4.98e-04 | 736 tok/s | mem 84GB
+  step   600 | loss 104.6676 | hreg 99.5330 | lr 4.98e-04 | 736 tok/s | mem 84GB
+  ► eval   600 | val 4.9923 | ppl 147.3 | train_ppl 485165195.4 ★
+  step   610 | loss 104.7057 | hreg 99.4433 | lr 4.98e-04 | 735 tok/s | mem 84GB

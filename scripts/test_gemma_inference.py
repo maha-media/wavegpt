@@ -54,7 +54,7 @@ def main():
         print(f"  Spectral checkpoint: {len(spectral_sd)} keys")
         rank_sd = spectral_sd  # use for scaffold
     else:
-        # Get rank info from decomposed shards (look at .spectrum keys)
+        # Get rank info from decomposed shards (look at .log_spectrum/.spectrum keys)
         print(f"  --skip-checkpoint: extracting ranks from decomposed shards")
         from safetensors.torch import load_file
         with open(shard_dir / "index.json") as f:
@@ -63,7 +63,7 @@ def main():
         for shard_name in index["shards"]:
             shard = load_file(str(shard_dir / shard_name), device="cpu")
             for k, v in shard.items():
-                if k.endswith(".spectrum"):
+                if k.endswith(".log_spectrum") or k.endswith(".spectrum"):
                     rank_sd[k] = v
             del shard
         print(f"  Found {len(rank_sd)} spectrum keys in shards")
