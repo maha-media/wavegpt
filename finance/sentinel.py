@@ -188,3 +188,30 @@ class SentinelMonitor:
             self.run_fast_poll(),
             self.run_slow_sweep(),
         )
+
+
+async def main():
+    import argparse
+    import os
+    import sys
+    from dotenv import load_dotenv
+
+    parser = argparse.ArgumentParser(description='Sentinel — Social Monitor')
+    parser.add_argument('--live', action='store_true')
+    args = parser.parse_args()
+
+    load_dotenv(Path(__file__).parent / '.env')
+    exa_key = os.environ.get('EXA_API_KEY')
+    if not exa_key:
+        print("ERROR: EXA_API_KEY not set in .env")
+        sys.exit(1)
+
+    from stream_trader import TECH7, DEFENSIVES
+    watched = TECH7 + DEFENSIVES
+
+    monitor = SentinelMonitor(exa_api_key=exa_key, watched_tickers=watched)
+    await monitor.run()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

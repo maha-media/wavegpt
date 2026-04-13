@@ -416,3 +416,48 @@ class Speculator:
                         print(f"  [Speculator] WATCH {ticker}: {decision.get('reasoning', '')[:80]}")
 
             await asyncio.sleep(10)
+
+
+async def main():
+    import argparse
+    from dotenv import load_dotenv
+
+    parser = argparse.ArgumentParser(description='Speculator — Autonomous Trading')
+    parser.add_argument('--execute', action='store_true')
+    parser.add_argument('--live', action='store_true')
+    args = parser.parse_args()
+
+    load_dotenv(Path(__file__).parent / '.env')
+
+    is_sandbox = not args.live
+    dry_run = not args.execute
+
+    from tastytrade import Session, Account
+    session = Session(
+        provider_secret=os.environ['TASTYTRADE_CLIENT_SECRET'],
+        refresh_token=os.environ['TASTYTRADE_REFRESH_TOKEN'],
+        is_test=is_sandbox,
+    )
+    accounts = await Account.get(session)
+    account = accounts[0]
+    bal = await account.get_balances(session)
+    capital = float(bal.net_liquidating_value)
+
+    from stream_trader import LocalPortfolio, SignalEngine, ALL_STREAM
+    import yfinance as yf
+
+    hist = yf.download(ALL_STREAM + ['^VIX', 'TLT', 'SHY'], period='120d',
+                       interval='1d', auto_adjust=True)
+    hist_closes = hist['Close'].dropna(how='all')
+    engine = SignalEngine(hist_closes)
+    portfolio = LocalPortfolio(capital)
+
+    from config import SPEC_POOL_PCT
+    pool = SpecPool(capital, SPEC_POOL_PCT)
+
+    spec = Speculator(session, account, portfolio, pool, engine, dry_run)
+    await spec.run()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
