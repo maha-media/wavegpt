@@ -1,14 +1,29 @@
-"""Phase 1 continued pretraining (CPT) with harmonic regularization.
+"""Phase 1 continued pretraining (CPT) with attn_o LR protection.
 
 Full-weight bf16 training of an HF causal LM on a curated corpus, with a
 forgetting-guard eval against a held-out slice (e.g. wikitext). FSDP is
-supplied externally via `accelerate launch`; this script just calls
-`Accelerator()` and `accelerator.prepare(...)`.
+supplied externally via ``accelerate launch``; this script just calls
+``Accelerator()`` and ``accelerator.prepare(...)``.
 
-The `--smoke` mode swaps the HF model for a tiny toy built from
-SpectralLinear layers named q_proj/k_proj/v_proj/o_proj so that
-harmonic_regularization(type_aware=True) exercises the real code path
-(not a stub).
+**Design note — why no harmonic regularizer here.** An earlier version of
+this trainer added ``harmonic_regularization()`` to the CE loss to pull
+every layer's spectrum toward its φ-harmonic target (and ``attn_o`` toward
+1/3 with a multiplier). We removed it. The universal 1/3 exponent on
+``attn_o`` already exists in the pretrained weights — pretraining ran long
+enough for SGD to find the φ-attractor. Our job during CPT is to **not
+erase it**, not to pull it toward anything. A harmonic term in the loss
+NaNs at scale (memory: ``feedback_no_phi_constraint.md``) and contradicts
+the core thesis that φ is emergent, not constrainable.
+
+Instead, ``attn_o`` is protected the value-agnostic way: a smaller LR on
+those parameters. Other types train at ``--lr``; ``attn_o`` at
+``--lr * --attn-o-lr-mult`` (default 0.1). This preserves whatever
+exponent pretraining landed on. If Gemma-4's ``attn_o`` had pretrained to
+α=0.25 for some reason, we'd be preserving 0.25.
+
+The ``--smoke`` mode swaps the HF model for a tiny toy built from
+SpectralLinear layers named q_proj/k_proj/v_proj/o_proj so the parameter
+grouping (``o_proj`` → reduced LR) exercises the real code path.
 """
 from __future__ import annotations
 
@@ -25,12 +40,46 @@ import torch.nn as nn
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from wavegpt.dataloader import WaveDataLoader
-from wavegpt.harmonic_prior import harmonic_regularization
 from wavegpt.spectral_linear import SpectralLinear
 
 
+# Parameter names (any substring) whose owning module is an attn_o projection.
+# Matches HF conventions: GPT-style `c_proj`, LLaMA/Gemma-style `o_proj`,
+# Qwen/BERT-style `out_proj`. See CLAUDE.md layer-type conventions.
+_ATTN_O_NAME_PARTS = (".o_proj.", ".out_proj.", ".c_proj.")
+
+
+def _is_attn_o_param(qualified_name: str) -> bool:
+    return any(part in qualified_name for part in _ATTN_O_NAME_PARTS)
+
+
+def build_param_groups(model: nn.Module, base_lr: float, attn_o_mult: float):
+    """Split parameters into two groups: attn_o (LR = base_lr * attn_o_mult)
+    and everything else (LR = base_lr). Returns (groups, n_attn_o, n_other)
+    for logging.
+    """
+    attn_o_params, other_params = [], []
+    n_attn_o = n_other = 0
+    for name, p in model.named_parameters():
+        if not p.requires_grad:
+            continue
+        if _is_attn_o_param(name):
+            attn_o_params.append(p)
+            n_attn_o += p.numel()
+        else:
+            other_params.append(p)
+            n_other += p.numel()
+    groups = []
+    if attn_o_params:
+        groups.append({"params": attn_o_params, "lr": base_lr * attn_o_mult,
+                       "name": "attn_o"})
+    if other_params:
+        groups.append({"params": other_params, "lr": base_lr, "name": "other"})
+    return groups, n_attn_o, n_other
+
+
 # ---------------------------------------------------------------------------
-# Toy model for --smoke (CPU-runnable, exercises harmonic_regularization)
+# Toy model for --smoke (CPU-runnable, exercises parameter-group routing)
 # ---------------------------------------------------------------------------
 
 class _SmokeAttnBlock(nn.Module):
@@ -56,11 +105,7 @@ class _SmokeAttnBlock(nn.Module):
 
 
 class SmokeModel(nn.Module):
-    """Tiny toy model used only in --smoke mode.
-
-    Returns an object with `.loss` so the training loop can treat it like
-    an HF CausalLMOutput.
-    """
+    """Tiny toy model used only in --smoke mode."""
 
     def __init__(self, vocab: int = 65536, dim: int = 32, rank: int = 8, n_blocks: int = 2):
         super().__init__()
@@ -143,8 +188,9 @@ def main():
     p.add_argument('--lr', type=float, default=1e-5)
     p.add_argument('--window', type=int, default=2048)
     p.add_argument('--batch-size', type=int, default=2)
-    p.add_argument('--harmonic-lambda', type=float, default=0.01)
-    p.add_argument('--attn-o-weight', type=float, default=10.0)
+    p.add_argument('--attn-o-lr-mult', type=float, default=0.1,
+                   help='LR multiplier for attn_o parameters (o_proj / out_proj / c_proj). '
+                        'Smaller = stronger preservation of the pretrained 1/3 exponent.')
     p.add_argument('--max-steps', type=int, default=6000)
     p.add_argument('--eval-every', type=int, default=100)
     p.add_argument('--eval-batches', type=int, default=8)
@@ -158,7 +204,6 @@ def main():
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # --smoke forces CPU + tiny window/batch; real path uses Accelerator (FSDP).
     if args.smoke:
         args.window = min(args.window, 64)
         args.batch_size = 1
@@ -181,7 +226,16 @@ def main():
     val_loader = WaveDataLoader(args.val_bin, args.batch_size, args.window, device='cpu')
     forget_loader = WaveDataLoader(args.forget_bin, args.batch_size, args.window, device='cpu')
 
-    optim = torch.optim.AdamW(model.parameters(), lr=args.lr, betas=(0.9, 0.95))
+    param_groups, n_attn_o, n_other = build_param_groups(
+        model, args.lr, args.attn_o_lr_mult
+    )
+    if is_main:
+        print(
+            f"[phase1_cpt] param groups: attn_o={n_attn_o:,} params @ lr={args.lr * args.attn_o_lr_mult:.2e} | "
+            f"other={n_other:,} params @ lr={args.lr:.2e}",
+            flush=True,
+        )
+    optim = torch.optim.AdamW(param_groups, betas=(0.9, 0.95))
 
     if accelerator is not None:
         model, optim = accelerator.prepare(model, optim)
@@ -193,25 +247,23 @@ def main():
         if is_main:
             log_path.write_text(json.dumps(log, indent=2))
 
-    # ---------- eval-only shortcut ----------
     if args.eval_only:
         val_loss, val_ppl = eval_ppl(model, val_loader, args.eval_batches, device)
         forget_loss, forget_ppl = eval_ppl(model, forget_loader, args.eval_batches, device)
         log.append({
             'step': 0,
             'train_loss': None,
-            'harmonic_loss': None,
             'val_loss': val_loss,
             'val_ppl': val_ppl,
             'forget_loss': forget_loss,
             'forget_ppl': forget_ppl,
-            'lr': args.lr,
+            'lr_other': args.lr,
+            'lr_attn_o': args.lr * args.attn_o_lr_mult,
         })
         flush_log()
         print(f"[eval-only] val_ppl={val_ppl:.3f} forget_ppl={forget_ppl:.3f}", flush=True)
         return
 
-    # ---------- training ----------
     model.train()
     best_val_ppl = float('inf')
     non_improving = 0
@@ -222,15 +274,7 @@ def main():
         x, _ = next(train_loader)
         x = x.to(device)
         out = model(input_ids=x, labels=x)
-        ce = out.loss
-
-        hp = harmonic_regularization(
-            model,
-            type_aware=True,
-            attn_o_weight=args.attn_o_weight,
-        )
-        hp = hp.to(ce.device) if isinstance(hp, torch.Tensor) else torch.tensor(float(hp), device=ce.device)
-        loss = ce + args.harmonic_lambda * hp
+        loss = out.loss
 
         if accelerator is not None:
             accelerator.backward(loss)
@@ -239,31 +283,28 @@ def main():
         optim.step()
         optim.zero_grad()
 
-        # eval boundary: every eval-every steps AND at the last step
         if step % args.eval_every == 0 or step == args.max_steps:
             val_loss, val_ppl = eval_ppl(model, val_loader, args.eval_batches, device)
             forget_loss, forget_ppl = eval_ppl(model, forget_loader, args.eval_batches, device)
             entry = {
                 'step': step,
-                'train_loss': float(ce.item()),
-                'harmonic_loss': float(hp.item()) if isinstance(hp, torch.Tensor) else float(hp),
+                'train_loss': float(loss.item()),
                 'val_loss': val_loss,
                 'val_ppl': val_ppl,
                 'forget_loss': forget_loss,
                 'forget_ppl': forget_ppl,
-                'lr': args.lr,
+                'lr_other': args.lr,
+                'lr_attn_o': args.lr * args.attn_o_lr_mult,
                 'elapsed_s': time.time() - t0,
             }
             log.append(entry)
             flush_log()
             print(
-                f"[step {step}/{args.max_steps}] train={ce.item():.4f} "
-                f"hp={entry['harmonic_loss']:.4e} val_ppl={val_ppl:.3f} "
-                f"forget_ppl={forget_ppl:.3f}",
+                f"[step {step}/{args.max_steps}] train={loss.item():.4f} "
+                f"val_ppl={val_ppl:.3f} forget_ppl={forget_ppl:.3f}",
                 flush=True,
             )
 
-            # Soft forgetting-guard
             if forget_base is None:
                 forget_base = forget_ppl
             elif forget_base > 0 and forget_ppl / forget_base > 1.10:
@@ -273,7 +314,6 @@ def main():
                     flush=True,
                 )
 
-            # best-on-val checkpoint
             if val_ppl < best_val_ppl:
                 best_val_ppl = val_ppl
                 non_improving = 0
