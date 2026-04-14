@@ -35,6 +35,7 @@ def spectral_decompose(
     max_rank: int | None = None,
     k0_mult: float = 0.0,
     k0_pad: int = 0,
+    layer_filter=None,
 ) -> nn.Module:
     """
     Replace all nn.Linear layers with SpectralLinear (in-place).
@@ -88,6 +89,8 @@ def spectral_decompose(
     _t0 = _time.time()
     _total = len(replacements)
     for _i, full_name in enumerate(replacements):
+        if layer_filter is not None and not layer_filter(full_name, _i):
+            continue
         linear = _get_submodule(model, full_name)
 
         if adaptive:
