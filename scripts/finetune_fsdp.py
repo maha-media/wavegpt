@@ -169,6 +169,112 @@ def inline_decompose_and_save(args, device):
     return shards_dir
 
 
+def inline_decompose_and_save_parallel(args, device, world_rank, world_size):
+    """All ranks decompose ``idx % world_size == world_rank`` layers in parallel.
+
+    Each rank loads its own copy of the HF model (safetensors mmap shares the
+    raw weight bytes via the OS page cache), decomposes its assigned slice,
+    and writes its shards under unique filenames. Rank 0 gathers the per-rank
+    shard lists via ``all_gather_object`` and writes the unified ``index.json``.
+
+    Preserves the ``{'shards': [...]}`` list format consumed by the existing
+    load path — no load-side changes required.
+    """
+    import shutil
+    from transformers import AutoModelForCausalLM
+    from safetensors.torch import save_file
+    from wavegpt.spectral_surgery import spectral_decompose
+
+    shards_dir = Path(args.inline_shards_dir) / f"pid_{os.getpid()}"
+    if world_rank == 0:
+        if shards_dir.exists():
+            shutil.rmtree(shards_dir)
+        shards_dir.mkdir(parents=True, exist_ok=True)
+    dist.barrier()  # ensure dir exists before other ranks write
+
+    def log0(msg):
+        if world_rank == 0:
+            print(msg, flush=True)
+
+    log0(f'[parallel-decompose] all {world_size} ranks loading HF model: {args.hf_model}')
+    model = AutoModelForCausalLM.from_pretrained(
+        args.hf_model, torch_dtype=torch.bfloat16,
+        trust_remote_code=args.trust_remote_code,
+    )
+
+    skip_patterns = ['embed_tokens', 'lm_head', 'visual', 'vision', 'wte', 'wpe']
+    log0(f'[parallel-decompose] decomposing: each rank owns every {world_size}-th layer')
+    spectral_decompose(
+        model,
+        rank=None,
+        mode=args.mode,
+        skip_patterns=skip_patterns,
+        keep_residual=True,
+        residual_dtype=torch.float32,
+        layer_filter=lambda name, idx: (idx % world_size) == world_rank,
+    )
+
+    # Collect only the layers this rank actually decomposed.
+    # Unowned linears remain nn.Linear; owned ones became SpectralLinear.
+    sd = {}
+    for name, mod in model.named_modules():
+        if isinstance(mod, SpectralLinear):
+            sd[f'{name}.U'] = mod.U
+            sd[f'{name}.V'] = mod.V
+            sd[f'{name}.log_spectrum'] = mod.log_spectrum.data
+            if mod.residual is not None:
+                sd[f'{name}.residual'] = mod.residual
+            if mod.bias is not None:
+                sd[f'{name}.bias'] = mod.bias
+
+    print(f'[parallel-decompose rank {world_rank}] owns {len(sd)} tensors '
+          f'({sum(1 for k in sd if k.endswith(".U"))} layers)', flush=True)
+
+    # Shard this rank's tensors at ~4 GB each, with rank-prefixed filenames
+    # so every file across all ranks has a unique name.
+    SHARD_MAX = 4 * 1024 ** 3
+    my_shards = []
+    cur_shard = {}
+    cur_bytes = 0
+    for k, v in sd.items():
+        size = v.numel() * v.element_size()
+        if cur_bytes + size > SHARD_MAX and cur_shard:
+            shard_name = f'rank{world_rank}_shard_{len(my_shards):04d}.safetensors'
+            save_file(cur_shard, str(shards_dir / shard_name))
+            my_shards.append(shard_name)
+            cur_shard = {}
+            cur_bytes = 0
+        cur_shard[k] = v
+        cur_bytes += size
+    if cur_shard:
+        shard_name = f'rank{world_rank}_shard_{len(my_shards):04d}.safetensors'
+        save_file(cur_shard, str(shards_dir / shard_name))
+        my_shards.append(shard_name)
+
+    print(f'[parallel-decompose rank {world_rank}] wrote {len(my_shards)} shards', flush=True)
+
+    # Free the model before the gather — each rank still holds ~62 GB CPU RSS.
+    del model, sd
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    # Gather each rank's shard list on all ranks (rank 0 writes the index).
+    gathered = [None] * world_size
+    dist.all_gather_object(gathered, my_shards)
+
+    if world_rank == 0:
+        all_shards = []
+        for rank_shards in gathered:
+            all_shards.extend(rank_shards)
+        with open(shards_dir / 'index.json', 'w') as f:
+            json.dump({'shards': all_shards}, f)
+        log0(f'[parallel-decompose] unified index.json: '
+             f'{len(all_shards)} shards across {world_size} ranks')
+
+    dist.barrier()
+    return shards_dir
+
+
 # ---------------------------------------------------------------------------
 # Buffer to frozen parameter conversion for FSDP sharding
 # ---------------------------------------------------------------------------
@@ -363,6 +469,9 @@ def main():
                         help='Rank 0 runs SVD from --hf-model and writes shards to /dev/shm')
     parser.add_argument('--inline-shards-dir', default='/dev/shm/spectral_shards',
                         help='Where rank 0 writes inline-SVD shards (tmpfs recommended)')
+    parser.add_argument('--no-parallel-decompose', action='store_true',
+                        help='Force legacy rank-0-only inline decompose (for debugging). '
+                             'By default, when world_size>1, all ranks decompose in parallel.')
     parser.add_argument("--hf-model", default=None,
                         help="HF model name (auto-detected from config if omitted)")
     parser.add_argument("--data-dir", required=True)
@@ -439,12 +548,20 @@ def main():
     # 1b. Inline decomposition (rank 0 writes shards to /dev/shm, all ranks read)
     # ===================================================================
     if args.inline_decompose:
-        shards_dir_str = [None]
-        if is_main:
-            shards_dir = inline_decompose_and_save(args, device)
-            shards_dir_str[0] = str(shards_dir)
-        dist.broadcast_object_list(shards_dir_str, src=0)
-        args.decomposed = str(Path(shards_dir_str[0]) / 'index.json')
+        use_parallel = (world_size > 1) and not args.no_parallel_decompose
+        if use_parallel:
+            log(f"  Inline decompose: parallel path ({world_size} ranks)")
+            shards_dir = inline_decompose_and_save_parallel(
+                args, device, world_rank, world_size)
+            args.decomposed = str(shards_dir / 'index.json')
+        else:
+            log(f"  Inline decompose: legacy serial path (rank 0 only)")
+            shards_dir_str = [None]
+            if is_main:
+                shards_dir = inline_decompose_and_save(args, device)
+                shards_dir_str[0] = str(shards_dir)
+            dist.broadcast_object_list(shards_dir_str, src=0)
+            args.decomposed = str(Path(shards_dir_str[0]) / 'index.json')
         dist.barrier()
         log(f"  Inline shards ready at {args.decomposed}")
 
