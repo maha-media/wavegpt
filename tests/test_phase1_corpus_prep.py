@@ -4,17 +4,11 @@ import sys
 from pathlib import Path
 
 
-def test_chunking_and_oversample(tmp_path):
+def _run_dry(tmp_path, tier, probes, raw_text=None):
     raw = tmp_path / "raw"
     raw.mkdir()
-    (raw / "src.txt").write_text(" ".join(["word"] * 10000))
-    tier = {"gap_categories": ["idiom"]}
+    (raw / "src.txt").write_text(raw_text if raw_text is not None else " ".join(["word"] * 10000))
     (tmp_path / "tier.json").write_text(json.dumps(tier))
-    probes = {
-        "probes": [
-            {"id": "x", "category": "idiom", "question": "q", "expected": "word"}
-        ]
-    }
     (tmp_path / "probes.json").write_text(json.dumps(probes))
     out = tmp_path / "out"
     repo = Path(__file__).resolve().parents[1]
@@ -44,6 +38,17 @@ def test_chunking_and_oversample(tmp_path):
         text=True,
         cwd=str(repo),
     )
+    return r, out
+
+
+def test_dry_run_manifest_and_oversample_detection(tmp_path):
+    tier = {"gap_categories": ["idiom"]}
+    probes = {
+        "probes": [
+            {"id": "x", "category": "idiom", "question": "q", "expected": "word"}
+        ]
+    }
+    r, out = _run_dry(tmp_path, tier, probes)
     assert r.returncode == 0, r.stderr
     manifest = json.loads((out / "manifest.json").read_text())
     assert manifest["n_chunks"] > 0
@@ -53,3 +58,25 @@ def test_chunking_and_oversample(tmp_path):
     assert "n_tokens" in manifest
     assert "source_files" in manifest
     assert any("src.txt" in s for s in manifest["source_files"])
+
+
+def test_oversample_excludes_non_matching_category(tmp_path):
+    # Two gap categories: "idiom" (probe expects "word", which IS in the corpus)
+    # and "obscure" (probe expects "quetzalcoatl", which is NOT in the corpus).
+    # Only "idiom" should be reported as oversampled.
+    tier = {"gap_categories": ["idiom", "obscure"]}
+    probes = {
+        "probes": [
+            {"id": "x", "category": "idiom", "question": "q", "expected": "word"},
+            {
+                "id": "y",
+                "category": "obscure",
+                "question": "q",
+                "expected": "quetzalcoatl",
+            },
+        ]
+    }
+    r, out = _run_dry(tmp_path, tier, probes)
+    assert r.returncode == 0, r.stderr
+    manifest = json.loads((out / "manifest.json").read_text())
+    assert manifest["oversampled_categories"] == ["idiom"]

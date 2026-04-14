@@ -1,9 +1,30 @@
 #!/usr/bin/env python3
-"""Phase 1 corpus prep — chunk biographical text into 2k windows, oversample gap categories."""
+"""Phase 1 corpus prep — chunk biographical text into 2k windows, oversample gap categories.
+
+Reads raw `.txt`/`.md` sources under `--raw-dir`, tokenizes with the HF tokenizer,
+splits into overlapping chunks of `--window` tokens (stride = window - overlap),
+and duplicates chunks that contain matches for any probe in a gap category (as
+listed in `--tier-json`) `--oversample-factor` times. Base chunks are shuffled
+with a fixed seed before the last 5% are reserved as val; extras are appended
+to train only. Emits `train.bin`, `val.bin`, and `manifest.json`.
+
+Usage:
+    python3 scripts/phase1_corpus_prep.py \\
+        --raw-dir data/ray/raw \\
+        --tier-json runs/probes/ray_baseline/tier.json \\
+        --probes runs/probes/ray_baseline/probe_baseline.json \\
+        --output-dir data/ray/phase1
+
+`--dry-run` skips tokenizer load and bin writes (for offline tests / CI); it
+writes only a manifest whose `oversampled_categories` is computed by the same
+chunk-based matcher the real path uses (word-group simulated chunks over the
+raw text).
+"""
 from __future__ import annotations
 
 import argparse
 import json
+import random
 import sys
 from pathlib import Path
 
@@ -34,6 +55,11 @@ def chunk_tokens(tokens: list[int], window: int, overlap: int) -> list[list[int]
 
 
 def probe_matches(chunk_text: str, probe_expected: str) -> bool:
+    """Return True if any word (≥3 chars) of `probe_expected` appears as a
+    substring of `chunk_text` (case-insensitive). Deliberately loose heuristic:
+    word-level, ≥3 chars, substring match — fine for a research oversampling
+    pass but callers should not treat a True result as semantic equivalence.
+    """
     expected = probe_expected.strip().lower()
     if not expected:
         return False
@@ -43,6 +69,48 @@ def probe_matches(chunk_text: str, probe_expected: str) -> bool:
         if len(token) >= 3 and token in chunk_lower:
             return True
     return False
+
+
+def detect_oversampled_categories(
+    chunk_texts: list[str],
+    gap_categories: list[str],
+    probes: list[dict],
+) -> list[str]:
+    """Return the subset of `gap_categories` for which at least one chunk text
+    matches at least one probe in that category. Single source of truth shared
+    by the dry-run and real code paths.
+    """
+    result = []
+    for cat in gap_categories:
+        cat_probes = [p for p in probes if p.get("category") == cat]
+        if not cat_probes:
+            continue
+        for chunk_text in chunk_texts:
+            if any(probe_matches(chunk_text, p.get("expected", "")) for p in cat_probes):
+                result.append(cat)
+                break
+    return result
+
+
+def fake_word_chunks(full_text: str, window: int, overlap: int) -> list[str]:
+    """Dry-run stand-in for tokenized chunks: split `full_text` on whitespace
+    and group into window-sized word groups with the same stride the real path
+    uses. Keeps dry-run and real path match-detection logic identical.
+    """
+    words = full_text.split()
+    if not words:
+        return []
+    if len(words) < window:
+        return [" ".join(words)]
+    stride = max(1, window - overlap)
+    chunks = []
+    i = 0
+    while i + window <= len(words):
+        chunks.append(" ".join(words[i : i + window]))
+        i += stride
+    if i < len(words) and len(words) - i > overlap:
+        chunks.append(" ".join(words[-window:]))
+    return chunks
 
 
 def main():
@@ -57,6 +125,7 @@ def main():
     ap.add_argument("--output-dir", required=True)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--trust-remote-code", action="store_true")
+    ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
     raw_dir = Path(args.raw_dir)
@@ -69,21 +138,22 @@ def main():
 
     source_files = find_source_files(raw_dir)
     print(f"Found {len(source_files)} source files", flush=True)
+    if not source_files:
+        print(f"No .txt/.md files under {raw_dir}; aborting.", flush=True)
+        sys.exit(1)
 
     texts = [p.read_text(encoding="utf-8", errors="replace") for p in source_files]
     full_text = "\n\n".join(texts)
 
-    oversampled_categories = []
-    for cat in gap_categories:
-        cat_probes = [p for p in probes if p.get("category") == cat]
-        if any(probe_matches(full_text, p.get("expected", "")) for p in cat_probes):
-            oversampled_categories.append(cat)
-
     if args.dry_run:
-        fake_chunks = max(1, len(full_text.split()) // (args.window - args.overlap))
-        fake_tokens = fake_chunks * args.window
+        sim_chunks = fake_word_chunks(full_text, args.window, args.overlap)
+        oversampled_categories = detect_oversampled_categories(
+            sim_chunks, gap_categories, probes
+        )
+        fake_n_chunks = max(1, len(sim_chunks))
+        fake_tokens = fake_n_chunks * args.window
         manifest = {
-            "n_chunks": fake_chunks,
+            "n_chunks": fake_n_chunks,
             "n_tokens": fake_tokens,
             "oversampled_categories": oversampled_categories,
             "window": args.window,
@@ -108,18 +178,28 @@ def main():
     chunks = chunk_tokens(tokens, args.window, args.overlap)
     print(f"Base chunks: {len(chunks)}", flush=True)
 
+    chunk_texts = [tok.decode(c) for c in chunks]
+    oversampled_categories = detect_oversampled_categories(
+        chunk_texts, gap_categories, probes
+    )
+
     extras: list[list[int]] = []
     for cat in oversampled_categories:
         cat_probes = [p for p in probes if p.get("category") == cat]
-        for chunk in chunks:
-            chunk_text = tok.decode(chunk)
+        for chunk, chunk_text in zip(chunks, chunk_texts):
             if any(probe_matches(chunk_text, p.get("expected", "")) for p in cat_probes):
                 extras.extend([chunk] * args.oversample_factor)
     print(f"Oversample extras: {len(extras)} chunks", flush=True)
 
-    n_val = max(1, len(chunks) // 20)
-    val_chunks = chunks[-n_val:]
-    train_chunks = chunks[:-n_val] + extras
+    # Shuffle base chunks with a fixed seed so val isn't tied to file order.
+    # Extras are appended to train post-split — do NOT shuffle them in.
+    rng = random.Random(args.seed)
+    shuffled = list(chunks)
+    rng.shuffle(shuffled)
+
+    n_val = max(1, len(shuffled) // 20)
+    val_chunks = shuffled[-n_val:]
+    train_chunks = shuffled[:-n_val] + extras
 
     train_tokens: list[int] = [t for c in train_chunks for t in c]
     val_tokens: list[int] = [t for c in val_chunks for t in c]
