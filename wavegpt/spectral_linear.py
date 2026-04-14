@@ -174,7 +174,10 @@ class SpectralLinear(nn.Module):
         xV = x @ V                                   # (..., rank) in x.dtype
         # Full fp32 chain: bf16 matmul kernels accumulate in fp32 internally,
         # but our factored 3-matmul path doesn't get that — do it explicitly.
-        out = ((xV.float() * spectrum) @ U.t().float()).to(x.dtype)
+        # autocast(enabled=False) prevents outer autocast(bf16) context from
+        # silently downcasting fp32 matmul inputs back to bf16.
+        with torch.amp.autocast(device_type='cuda', enabled=False):
+            out = ((xV.float() * spectrum) @ U.t().float()).to(x.dtype)
         if self.residual is not None:
             if res_prefetched is not None:
                 res = res_prefetched
@@ -350,19 +353,31 @@ class SpectralLinear(nn.Module):
         has_bias: bool = False,
         has_residual: bool = False,
         dtype: torch.dtype = torch.bfloat16,
+        residual_dtype: torch.dtype | None = None,
+        device: torch.device | str | None = None,
     ) -> 'SpectralLinear':
         """
         Create SpectralLinear with correct shapes but dummy data.
         Used for fast loading from saved state_dict (no SVD needed).
         Call model.load_state_dict() after to fill real values.
+
+        residual_dtype lets the scaffold allocate the residual shell in a
+        dtype independent of U/V (e.g. fp32 residual with bf16 U/V) so that
+        load_state_dict preserves fp32 precision from the shards — required
+        to avoid bf16 overflow through 60 stacked decoder layers.
+
+        device='meta' allocates zero-byte shells — used on non-rank-0 FSDP
+        ranks so only rank 0 holds the full CPU copy before FSDP broadcast.
         """
         rank = min(rank, min(out_dim, in_dim))
-        U = torch.zeros(out_dim, rank, dtype=dtype)
-        V = torch.zeros(in_dim, rank, dtype=dtype)
+        U = torch.zeros(out_dim, rank, dtype=dtype, device=device)
+        V = torch.zeros(in_dim, rank, dtype=dtype, device=device)
         # S=ones → log(S)=zeros — placeholder, overwritten by load_state_dict
-        S = torch.ones(rank, dtype=torch.float32)
-        bias = torch.zeros(out_dim, dtype=dtype) if has_bias else None
-        residual = torch.zeros(out_dim, in_dim, dtype=dtype) if has_residual else None
+        S = torch.ones(rank, dtype=torch.float32, device=device)
+        bias = torch.zeros(out_dim, dtype=dtype, device=device) if has_bias else None
+        res_dtype = residual_dtype if residual_dtype is not None else dtype
+        residual = (torch.zeros(out_dim, in_dim, dtype=res_dtype, device=device)
+                    if has_residual else None)
         return cls(U, S, V, mode=mode, alpha_fit=INV_PHI, bias=bias,
                    residual=residual, k0=0.0)
 
