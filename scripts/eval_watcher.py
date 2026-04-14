@@ -158,15 +158,29 @@ def load_base_model(hf_model: str, decomposed_path: Path, rank: int,
         if (i + 1) % 5 == 0 or i == len(index['shards']) - 1:
             print(f'  {i+1}/{len(index["shards"])} shards loaded', flush=True)
 
-    print('[boot] moving model to cuda:0...', flush=True)
-    model = model.to('cuda:0').eval()
+    n_gpus = torch.cuda.device_count()
+    if n_gpus == 0:
+        raise RuntimeError('No CUDA device visible — set CUDA_VISIBLE_DEVICES.')
+    if n_gpus == 1:
+        print('[boot] moving model to cuda:0...', flush=True)
+        model = model.to('cuda:0').eval()
+    else:
+        print(f'[boot] dispatching model across {n_gpus} GPUs via accelerate...',
+              flush=True)
+        from accelerate import dispatch_model, infer_auto_device_map
+        max_memory = {i: '70GiB' for i in range(n_gpus)}
+        device_map = infer_auto_device_map(model, max_memory=max_memory,
+                                           no_split_module_classes=['Gemma4TextDecoderLayer'])
+        model = dispatch_model(model, device_map=device_map)
+        model.eval()
     print('[boot] model ready on GPU', flush=True)
     return model, tokenizer, config
 
 
 def reload_spectrum(model, checkpoint_path: Path) -> int:
     """Load the 8 MB spectrum dict into the already-booted model. Returns key count."""
-    sd = torch.load(str(checkpoint_path), map_location='cuda:0')
+    # Load to CPU; load_state_dict copies values to each param's current device.
+    sd = torch.load(str(checkpoint_path), map_location='cpu')
     if isinstance(sd, dict) and 'spectrum' in sd and isinstance(sd['spectrum'], dict):
         sd = sd['spectrum']
     missing, unexpected = model.load_state_dict(sd, strict=False)
