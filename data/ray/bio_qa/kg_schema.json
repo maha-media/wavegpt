@@ -1,0 +1,136 @@
+{
+  "entities": {
+    "fields": [
+      "_id",
+      "aliases",
+      "description",
+      "embedding",
+      "entity_id",
+      "first_mentioned",
+      "last_mentioned",
+      "mention_count",
+      "metadata",
+      "name",
+      "source_chunks",
+      "type"
+    ],
+    "types": {
+      "_id": "ObjectId",
+      "entity_id": "str",
+      "name": "str",
+      "aliases": "list",
+      "type": "str",
+      "description": "str",
+      "first_mentioned": "str",
+      "last_mentioned": "str",
+      "mention_count": "int",
+      "source_chunks": "list",
+      "embedding": "list",
+      "metadata": "dict"
+    },
+    "n_sampled": 50
+  },
+  "relationships": {
+    "fields": [
+      "_id",
+      "description",
+      "first_observed",
+      "last_observed",
+      "source_chunks",
+      "source_entity",
+      "target_entity",
+      "type",
+      "weight"
+    ],
+    "types": {
+      "_id": "ObjectId",
+      "source_entity": "str",
+      "target_entity": "str",
+      "type": "str",
+      "description": "str",
+      "weight": "float",
+      "source_chunks": "list",
+      "first_observed": "NoneType",
+      "last_observed": "NoneType"
+    },
+    "n_sampled": 50
+  },
+  "temporal_facts": {
+    "fields": [
+      "_id",
+      "claim",
+      "confidence",
+      "entity_refs",
+      "evolution",
+      "fact_id",
+      "first_stated",
+      "last_stated",
+      "source_chunks",
+      "status",
+      "target_date"
+    ],
+    "types": {
+      "_id": "ObjectId",
+      "fact_id": "str",
+      "claim": "str",
+      "entity_refs": "list",
+      "first_stated": "str",
+      "last_stated": "str",
+      "source_chunks": "list",
+      "evolution": "list",
+      "status": "str",
+      "target_date": "str",
+      "confidence": "float"
+    },
+    "n_sampled": 50
+  },
+  "chunks": {
+    "fields": [
+      "_id",
+      "all_speakers",
+      "avg_confidence",
+      "chunk_id",
+      "chunk_index",
+      "chunk_type",
+      "content_quality",
+      "context_prefix",
+      "embedding",
+      "end_time",
+      "entity_refs",
+      "ingested_at",
+      "keywords",
+      "l0_abstract",
+      "l0_embedding",
+      "primary_speaker",
+      "source_date",
+      "source_id",
+      "start_time",
+      "text",
+      "token_count"
+    ],
+    "types": {
+      "_id": "ObjectId",
+      "chunk_id": "str",
+      "source_id": "str",
+      "text": "str",
+      "context_prefix": "str",
+      "chunk_type": "str",
+      "chunk_index": "int",
+      "start_time": "float",
+      "end_time": "float",
+      "primary_speaker": "str",
+      "all_speakers": "list",
+      "avg_confidence": "float",
+      "token_count": "int",
+      "keywords": "list",
+      "entity_refs": "list",
+      "l0_abstract": "str",
+      "embedding": "list",
+      "l0_embedding": "list",
+      "source_date": "NoneType",
+      "ingested_at": "str",
+      "content_quality": "str"
+    },
+    "n_sampled": 50
+  }
+}

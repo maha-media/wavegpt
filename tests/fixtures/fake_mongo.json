@@ -1,0 +1,82 @@
+{
+  "entities": [
+    {
+      "_id": "ent_001",
+      "name": "Ray Kurzweil",
+      "type": "person",
+      "aliases": ["Raymond Kurzweil"],
+      "first_seen_chunk": "chunk_012"
+    },
+    {
+      "_id": "ent_002",
+      "name": "Fredric Kurzweil",
+      "type": "person",
+      "aliases": ["Fred Kurzweil"],
+      "first_seen_chunk": "chunk_003"
+    },
+    {
+      "_id": "ent_003",
+      "name": "MIT",
+      "type": "organization",
+      "aliases": ["Massachusetts Institute of Technology"],
+      "first_seen_chunk": "chunk_045"
+    }
+  ],
+  "relationships": [
+    {
+      "_id": "rel_001",
+      "subject": "ent_001",
+      "predicate": "bio_father",
+      "object": "ent_002",
+      "source_chunk": "chunk_003",
+      "confidence": 0.98
+    },
+    {
+      "_id": "rel_002",
+      "subject": "ent_001",
+      "predicate": "attended",
+      "object": "ent_003",
+      "source_chunk": "chunk_045",
+      "confidence": 0.95
+    }
+  ],
+  "temporal_facts": [
+    {
+      "_id": "tf_001",
+      "entity": "ent_001",
+      "fact": "born",
+      "date": "1948-02-12",
+      "source_chunk": "chunk_001"
+    },
+    {
+      "_id": "tf_002",
+      "entity": "ent_002",
+      "fact": "died",
+      "date": "1970-08-07",
+      "source_chunk": "chunk_078"
+    }
+  ],
+  "chunks": [
+    {
+      "_id": "chunk_001",
+      "source_id": "src_bio_01",
+      "text": "Raymond Kurzweil was born in Queens, New York on February 12, 1948.",
+      "token_count": 16,
+      "position": 0
+    },
+    {
+      "_id": "chunk_003",
+      "source_id": "src_bio_01",
+      "text": "His father, Fredric Kurzweil, was a concert pianist and conductor who emigrated from Austria.",
+      "token_count": 18,
+      "position": 2
+    },
+    {
+      "_id": "chunk_045",
+      "source_id": "src_bio_02",
+      "text": "Ray attended MIT, where he studied computer science under Marvin Minsky.",
+      "token_count": 14,
+      "position": 12
+    }
+  ]
+}
