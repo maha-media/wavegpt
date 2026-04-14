@@ -51,7 +51,8 @@ def parse_args():
                    help='path to shards/ dir with index.json')
     p.add_argument('--rank', type=int, default=0,
                    help='0 = infer per-layer ranks from state_dict')
-    p.add_argument('--mode', default='full')
+    p.add_argument('--mode', default='per_mode',
+                   help='SpectralLinear mode; trainer uses per_mode')
     p.add_argument('--poll-seconds', type=float, default=30.0)
     p.add_argument('--max-new-tokens', type=int, default=512)
     p.add_argument('--temperature', type=float, default=0.7)
