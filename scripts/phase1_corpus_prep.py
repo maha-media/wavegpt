@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 import sys
 from pathlib import Path
 
@@ -54,20 +55,57 @@ def chunk_tokens(tokens: list[int], window: int, overlap: int) -> list[list[int]
     return chunks
 
 
-def probe_matches(chunk_text: str, probe_expected: str) -> bool:
-    """Return True if any word (≥3 chars) of `probe_expected` appears as a
-    substring of `chunk_text` (case-insensitive). Deliberately loose heuristic:
-    word-level, ≥3 chars, substring match — fine for a research oversampling
-    pass but callers should not treat a True result as semantic equivalence.
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+# Drop stopwords + subject-name tokens so a Ray corpus doesn't match every
+# chunk on "Kurzweil". English function words and a few geographic/temporal
+# fillers that show up constantly in biographical prose.
+_STOPWORDS = frozenset([
+    "ray", "kurzweil", "raymond",
+    "the", "and", "for", "with", "from", "that", "this", "into", "over",
+    "not", "any", "all", "our", "who", "was", "are", "but", "one", "two",
+    "has", "had", "have", "been", "were", "what", "when", "where", "why",
+    "how", "just", "only", "some", "more", "such", "also", "can", "will",
+    "new", "york", "city", "year", "years", "time", "born", "his", "her",
+    "him", "she", "they", "them", "their", "there", "about", "after",
+    "before", "because", "which", "while", "would", "could", "should",
+])
+
+
+def _rare_tokens(text: str) -> set[str]:
+    """Extract distinctive tokens from `text`: lower-cased alnum runs, with
+    stopwords + subject-name tokens removed. Words must be ≥5 chars;
+    all-digit tokens ≥4 chars (so "1948", "2045" survive but "1st" doesn't).
     """
-    expected = probe_expected.strip().lower()
-    if not expected:
+    out: set[str] = set()
+    for tok in _TOKEN_RE.findall(text.lower()):
+        if tok in _STOPWORDS:
+            continue
+        if tok.isdigit():
+            if len(tok) >= 4:
+                out.add(tok)
+        elif len(tok) >= 5:
+            out.add(tok)
+    return out
+
+
+def probe_matches(chunk_text: str, probe_expected: str) -> bool:
+    """Return True if `chunk_text` contains ≥2 distinct rare tokens from
+    `probe_expected`. Rare = not a stopword, not a subject-name token, word
+    ≥5 chars or digit-run ≥4. The two-token floor prevents a single token
+    like "Kurzweil" (stripped by the stoplist) or a generic word like "new"
+    from triggering a whole-corpus match.
+    """
+    expected_tokens = _rare_tokens(probe_expected)
+    if len(expected_tokens) < 2:
         return False
     chunk_lower = chunk_text.lower()
-    for token in expected.split():
-        token = token.strip(".,;:!?\"'()[]")
-        if len(token) >= 3 and token in chunk_lower:
-            return True
+    hits = 0
+    for tok in expected_tokens:
+        if tok in chunk_lower:
+            hits += 1
+            if hits >= 2:
+                return True
     return False
 
 

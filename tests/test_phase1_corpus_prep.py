@@ -42,17 +42,27 @@ def _run_dry(tmp_path, tier, probes, raw_text=None):
 
 
 def test_dry_run_manifest_and_oversample_detection(tmp_path):
-    tier = {"gap_categories": ["idiom"]}
+    raw_text = " ".join(
+        ["filler"] * 500
+        + ["fredric", "austrian", "pianist", "concert", "conductor"]
+        + ["filler"] * 500
+    )
+    tier = {"gap_categories": ["biographical"]}
     probes = {
         "probes": [
-            {"id": "x", "category": "idiom", "question": "q", "expected": "word"}
+            {
+                "id": "x",
+                "category": "biographical",
+                "question": "q",
+                "expected": "Fredric Kurzweil, an Austrian-Jewish concert pianist and conductor.",
+            }
         ]
     }
-    r, out = _run_dry(tmp_path, tier, probes)
+    r, out = _run_dry(tmp_path, tier, probes, raw_text=raw_text)
     assert r.returncode == 0, r.stderr
     manifest = json.loads((out / "manifest.json").read_text())
     assert manifest["n_chunks"] > 0
-    assert manifest["oversampled_categories"] == ["idiom"]
+    assert manifest["oversampled_categories"] == ["biographical"]
     assert manifest["window"] == 2048
     assert manifest["overlap"] == 128
     assert "n_tokens" in manifest
@@ -61,22 +71,52 @@ def test_dry_run_manifest_and_oversample_detection(tmp_path):
 
 
 def test_oversample_excludes_non_matching_category(tmp_path):
-    # Two gap categories: "idiom" (probe expects "word", which IS in the corpus)
-    # and "obscure" (probe expects "quetzalcoatl", which is NOT in the corpus).
-    # Only "idiom" should be reported as oversampled.
-    tier = {"gap_categories": ["idiom", "obscure"]}
+    # Two gap categories. "biographical" probe has ≥2 distinctive tokens
+    # ("fredric", "pianist") present in the corpus → matches. "obscure"
+    # expects words that aren't there → no match.
+    raw_text = " ".join(
+        ["filler"] * 500 + ["fredric", "austrian", "pianist"] + ["filler"] * 500
+    )
+    tier = {"gap_categories": ["biographical", "obscure"]}
     probes = {
         "probes": [
-            {"id": "x", "category": "idiom", "question": "q", "expected": "word"},
+            {
+                "id": "x",
+                "category": "biographical",
+                "question": "q",
+                "expected": "Fredric Kurzweil was a concert pianist.",
+            },
             {
                 "id": "y",
                 "category": "obscure",
                 "question": "q",
-                "expected": "quetzalcoatl",
+                "expected": "quetzalcoatl tenochtitlan",
             },
         ]
     }
-    r, out = _run_dry(tmp_path, tier, probes)
+    r, out = _run_dry(tmp_path, tier, probes, raw_text=raw_text)
     assert r.returncode == 0, r.stderr
     manifest = json.loads((out / "manifest.json").read_text())
-    assert manifest["oversampled_categories"] == ["idiom"]
+    assert manifest["oversampled_categories"] == ["biographical"]
+
+
+def test_subject_name_alone_does_not_match(tmp_path):
+    # A probe whose only candidate tokens are the subject name ("Kurzweil")
+    # must NOT match every chunk of a Ray corpus — that was the bug that
+    # produced a 16x whole-corpus duplicate instead of a targeted oversample.
+    raw_text = " ".join(["kurzweil"] + ["filler"] * 3000)
+    tier = {"gap_categories": ["biographical"]}
+    probes = {
+        "probes": [
+            {
+                "id": "x",
+                "category": "biographical",
+                "question": "q",
+                "expected": "Ray Kurzweil.",
+            }
+        ]
+    }
+    r, out = _run_dry(tmp_path, tier, probes, raw_text=raw_text)
+    assert r.returncode == 0, r.stderr
+    manifest = json.loads((out / "manifest.json").read_text())
+    assert manifest["oversampled_categories"] == []
