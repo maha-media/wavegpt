@@ -149,15 +149,37 @@ class SpectralLinear(nn.Module):
         """Forward pass: reconstruct W from spectrum + frozen bases."""
         spectrum = self.get_spectrum()               # keep fp32 for precision
         dev = x.device
-        # Handle CPU-offloaded and/or quantized buffers
-        V = self._dequant('V', dev)
-        U = self._dequant('U', dev)
+        # Use prefetched GPU tensors if available (from PrefetchPipeline),
+        # otherwise fall back to synchronous transfer.
+        cache = getattr(self, '_prefetch_cache', None)
+        if cache:
+            V_pre = cache.pop('V', None)
+            U_pre = cache.pop('U', None)
+            res_prefetched = cache.pop('residual', None)
+            # Handle dequantization for prefetched int8 buffers
+            if V_pre is not None and V_pre.dtype == torch.int8:
+                V_scale = cache.pop('V_scale', None) or getattr(self, 'V_scale').to(dev)
+                V = V_pre.to(torch.bfloat16) * V_scale.unsqueeze(0)
+            else:
+                V = V_pre if V_pre is not None else self._dequant('V', dev)
+            if U_pre is not None and U_pre.dtype == torch.int8:
+                U_scale = cache.pop('U_scale', None) or getattr(self, 'U_scale').to(dev)
+                U = U_pre.to(torch.bfloat16) * U_scale.unsqueeze(0)
+            else:
+                U = U_pre if U_pre is not None else self._dequant('U', dev)
+        else:
+            V = self._dequant('V', dev)
+            U = self._dequant('U', dev)
+            res_prefetched = None
         xV = x @ V                                   # (..., rank) in x.dtype
-        # Spectrum multiply in fp32 to avoid bf16 overflow (σ₁≈14, 60 layers)
-        xVs = (xV.float() * spectrum).to(x.dtype)
-        out = xVs @ U.t()                            # (..., out_dim)
+        # Full fp32 chain: bf16 matmul kernels accumulate in fp32 internally,
+        # but our factored 3-matmul path doesn't get that — do it explicitly.
+        out = ((xV.float() * spectrum) @ U.t().float()).to(x.dtype)
         if self.residual is not None:
-            res = self.residual.to(dev, non_blocking=True) if self.residual.device != dev else self.residual
+            if res_prefetched is not None:
+                res = res_prefetched
+            else:
+                res = self.residual.to(dev, non_blocking=True) if self.residual.device != dev else self.residual
             out = out + x @ res.t()
         if self.bias is not None:
             bias = self.bias.to(dev, non_blocking=True) if self.bias.device != dev else self.bias
@@ -351,6 +373,7 @@ class SpectralLinear(nn.Module):
         rank: int | None = None,
         mode: str = 'per_mode',
         keep_residual: bool = False,
+        residual_dtype: torch.dtype | None = None,
     ) -> 'SpectralLinear':
         """
         Decompose a trained nn.Linear into SpectralLinear.
@@ -360,11 +383,17 @@ class SpectralLinear(nn.Module):
         Falls back to simple power-law fit if scipy unavailable.
         """
         orig_dtype = linear.weight.data.dtype  # preserve original dtype (e.g. BF16)
-        W = linear.weight.data.float().cpu()  # (out, in) — SVD needs float32
+        W = linear.weight.data.float()  # (out, in) — SVD needs float32
+        # GPU-accelerated SVD if CUDA available and matrix fits in VRAM
+        svd_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        W_svd = W.to(svd_device)
         out_dim, in_dim = W.shape
         max_rank = min(out_dim, in_dim)
 
-        U_full, S_full, Vh_full = torch.linalg.svd(W, full_matrices=False)
+        U_full, S_full, Vh_full = torch.linalg.svd(W_svd, full_matrices=False)
+        U_full, S_full, Vh_full = U_full.cpu(), S_full.cpu(), Vh_full.cpu()
+        del W_svd
+        W = W.cpu()
         total_energy = (S_full ** 2).sum()
 
         if rank is None:
@@ -400,7 +429,8 @@ class SpectralLinear(nn.Module):
         residual = None
         if keep_residual:
             W_approx = (U * S.unsqueeze(0)) @ V.t()
-            residual = (W - W_approx).to(orig_dtype).contiguous()
+            residual_cast_dtype = residual_dtype if residual_dtype is not None else orig_dtype
+            residual = (W - W_approx).to(residual_cast_dtype).contiguous()
 
         # Cast geometry to original dtype (e.g. BF16) to save memory
         # S (spectrum) stays float32 — it's the learnable parameter
