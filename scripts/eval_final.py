@@ -273,7 +273,7 @@ def render_samples_md(title: str, header_note: str,
     return '\n'.join(lines) + '\n'
 
 
-def render_final_md(result: dict) -> str:
+def render_final_md(result: dict, output_dir: Path | str | None = None) -> str:
     lines = []
     overall = _mark(result['all_pass'])
     lines.append(f'# Final Eval — {overall}')
@@ -343,6 +343,32 @@ def render_final_md(result: dict) -> str:
         lines.append(f'| {t} | {alpha_s} | {info["base"]:.4f} | {dp_s} | '
                      f'{info["tolerance_pct"]:.0f} | {_mark(info["pass"])} |')
     lines.append('')
+
+    # Copy-paste next-step hint — ONLY when human grading is still pending.
+    if result.get('all_pass') is None and output_dir is not None:
+        out = Path(output_dir)
+        gene_md = out / 'gene_samples.md'
+        voice_md = out / 'voice_samples.md'
+        dormancy_md = out / 'dormancy_samples.md'
+        lines.append('## Next step')
+        lines.append('')
+        lines.append('Human grading required. Score each probe in:')
+        lines.append('')
+        if gene_md.exists():
+            lines.append(f'- `{gene_md}`')
+        lines.append(f'- `{voice_md}`')
+        lines.append(f'- `{dormancy_md}`')
+        lines.append('')
+        lines.append(
+            'Edit each `**score:** ?` line to a number '
+            '(0/1/2 for gene, 1-5 for voice, 1-5 for dormancy where '
+            '1 = no persona leak, 5 = full Ray-voice leak).')
+        lines.append('')
+        lines.append('Then re-run:')
+        lines.append('')
+        lines.append(f'    python3 scripts/eval_final.py --grade-file {out} '
+                     f'--output-dir {out}')
+        lines.append('')
     return '\n'.join(lines) + '\n'
 
 
@@ -351,6 +377,7 @@ def render_final_md(result: dict) -> str:
 # ---------------------------------------------------------------------------
 
 _SCORE_RE = re.compile(r'^\*\*score:\*\*\s*(\S+)\s*$', re.MULTILINE)
+_HEADING_RE = re.compile(r'^##\s+(\S+)', re.MULTILINE)
 
 
 def parse_grades_from_md(path: Path) -> list[int]:
@@ -366,6 +393,53 @@ def parse_grades_from_md(path: Path) -> list[int]:
         except ValueError:
             raise SystemExit(f'{path}: could not parse score {tok!r} as int')
     return grades
+
+
+def parse_gene_grades_from_md(path: Path,
+                              probe_meta: list[dict] | None = None) -> list[dict]:
+    """Re-parse a graded gene_samples.md back into probe_scores records.
+
+    Each sample in the md is delimited by `## <id>`; returns one dict per
+    *scored* sample with `{id, category, score}`. Unscored (`?`) samples are
+    skipped.
+
+    If `probe_meta` (list of `{id, category}`) is supplied, categories are
+    joined by id. Otherwise category defaults to 'unknown' — callers that
+    need accurate category breakdown must pass meta.
+    """
+    txt = Path(path).read_text()
+    # Find each `## <id>` heading and the following `**score:** N` line.
+    heading_matches = list(_HEADING_RE.finditer(txt))
+    score_matches = list(_SCORE_RE.finditer(txt))
+    if not heading_matches:
+        return []
+    meta_by_id = {m['id']: m for m in (probe_meta or [])}
+
+    records: list[dict] = []
+    for hi, hm in enumerate(heading_matches):
+        probe_id = hm.group(1).strip()
+        start = hm.end()
+        end = heading_matches[hi + 1].start() if hi + 1 < len(heading_matches) else len(txt)
+        # First score line inside this section.
+        section_score = None
+        for sm in score_matches:
+            if start <= sm.start() < end:
+                section_score = sm.group(1).strip()
+                break
+        if section_score in (None, '?', ''):
+            continue
+        try:
+            score_val = int(section_score)
+        except ValueError:
+            raise SystemExit(
+                f'{path}: could not parse score {section_score!r} as int')
+        meta = meta_by_id.get(probe_id, {})
+        records.append({
+            'id': probe_id,
+            'category': meta.get('category', 'unknown'),
+            'score': score_val,
+        })
+    return records
 
 
 def count_score_placeholders(path: Path) -> tuple[int, int]:
@@ -631,11 +705,28 @@ def main():
             probe_scores = auto.get('probe_scores', [])
             alphas = auto.get('alphas', {})
 
+        # If gene_samples.md exists AND contains at least one numeric score,
+        # re-parse it and OVERRIDE the stale probe_scores baked into
+        # gate_auto.json (the human may have scored the md AFTER generation).
+        gene_md = (grade_root / 'gene_samples.md') if grade_root.is_dir() \
+                  else (grade_root.parent / 'gene_samples.md')
+        if gene_md.exists():
+            scored, _unscored = count_score_placeholders(gene_md)
+            if scored > 0:
+                # Join against baked-in categories so category_rates stay right.
+                probe_meta = [
+                    {'id': ps.get('id'), 'category': ps.get('category')}
+                    for ps in probe_scores
+                ]
+                md_scores = parse_gene_grades_from_md(gene_md, probe_meta=probe_meta)
+                if md_scores:
+                    probe_scores = md_scores
+
         result = _finalize(probe_scores, alphas, voice_grades, dormancy_grades,
                            None, None, base_alphas, phase0_baseline)
 
         (out_dir / 'eval_final.json').write_text(json.dumps(result, indent=2))
-        (out_dir / 'eval_final.md').write_text(render_final_md(result))
+        (out_dir / 'eval_final.md').write_text(render_final_md(result, out_dir))
 
         if result['all_pass']:
             print('[eval_final] result=PASS (graded)', flush=True)
@@ -724,7 +815,7 @@ def main():
                        base_alphas, phase0_baseline)
 
     (out_dir / 'eval_final.json').write_text(json.dumps(result, indent=2))
-    (out_dir / 'eval_final.md').write_text(render_final_md(result))
+    (out_dir / 'eval_final.md').write_text(render_final_md(result, out_dir))
 
     if result['all_pass'] is None:
         print(f'[eval_final] human grading pending — fill in '

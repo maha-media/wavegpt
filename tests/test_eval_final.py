@@ -354,3 +354,153 @@ def test_grade_file_finalizes_result(tmp_path):
     assert result["voice_fidelity"]["pass"] is True
     assert result["dormancy"]["pass"] is True
     assert abs(result["voice_fidelity"]["mean"] - 4.6) < 1e-6
+
+
+def test_grade_file_finalizes_gene_from_md(tmp_path):
+    """If gene_samples.md is graded AFTER generation, grading-mode must re-parse it
+    and override the stale probe_scores in gate_auto.json."""
+    _base_fixture_files(tmp_path)
+    # STALE probe_scores baked into gate_auto.json: every score 0 (gate 1 fails).
+    stale_probe_scores = [
+        {"id": f"bio_{i}", "category": "biographical", "score": 0} for i in range(6)
+    ] + [
+        {"id": f"car_{i}", "category": "career", "score": 0} for i in range(4)
+    ]
+    fixture = {
+        "probe_scores": stale_probe_scores,
+        "alphas": {"attn_o": 0.335, "attn_q": 0.41, "attn_k": 0.42,
+                   "attn_v": 0.38, "mlp_up": 0.55, "mlp_down": 0.52,
+                   "mlp_gate": 0.54},
+        "voice_samples": [
+            {"id": f"v{i}", "question": "q", "generated": f"text {i}"}
+            for i in range(5)
+        ],
+        "dormancy_samples": [
+            {"id": f"v{i}", "question": "q", "generated": f"text {i}"}
+            for i in range(5)
+        ],
+    }
+    _write(tmp_path / "fixture.json", fixture)
+    out = tmp_path / "eval_out"
+
+    # Generation pass writes gene_samples.md (all `?`), gate_auto.json (stale 0s),
+    # voice_samples.md / dormancy_samples.md.
+    r = _run(_common_args(tmp_path, out, tmp_path / "fixture.json"))
+    assert r.returncode == 2, f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}"
+
+    # Sanity: gate_auto.json still has the stale 0s (generation mode persists
+    # whatever the fixture supplied).
+    auto = json.loads((out / "gate_auto.json").read_text())
+    assert all(ps["score"] == 0 for ps in auto["probe_scores"])
+
+    # Fabricate a graded gene_samples.md: 10 probes, all score=2 → should pass.
+    gene_samples = [{"id": ps["id"], "question": "q", "generated": "gen"}
+                    for ps in stale_probe_scores]
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts"))
+    from eval_final import render_samples_md  # type: ignore
+    gene_md_path = out / "gene_samples.md"
+    gene_md_path.write_text(render_samples_md(
+        "Gate 1 — gene_strength probes (with activator sysprompt)",
+        "**Score each 0 / 1 / 2 — edit the `**score:**` line.**",
+        gene_samples))
+
+    # Replace every `**score:** ?` with `**score:** 2`.
+    lines = gene_md_path.read_text().splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith("**score:**"):
+            lines[i] = "**score:** 2"
+    gene_md_path.write_text("\n".join(lines) + "\n")
+
+    # Grade voice + dormancy too so gates 2 & 3 finalize.
+    def _grade_md(path, grades):
+        txt = path.read_text().splitlines()
+        it = iter(grades)
+        for i, line in enumerate(txt):
+            if line.startswith("**score:**"):
+                txt[i] = f"**score:** {next(it)}"
+        path.write_text("\n".join(txt) + "\n")
+
+    _grade_md(out / "voice_samples.md", [5, 5, 4, 4, 5])
+    _grade_md(out / "dormancy_samples.md", [1, 1, 2, 1, 2])
+
+    # Grading mode: gene_samples.md should OVERRIDE the stale scores.
+    r2 = _run([
+        "--dry-run", "--dry-run-fixture", str(tmp_path / "fixture.json"),
+        "--model-dir", str(tmp_path / "fake_model"),
+        "--activator", str(tmp_path / "activator.txt"),
+        "--probes", str(tmp_path / "probes.json"),
+        "--voice-probes", str(tmp_path / "voice_probes.json"),
+        "--base-alphas", str(tmp_path / "base_alphas.json"),
+        "--phase0-baseline", str(tmp_path / "phase0_baseline.json"),
+        "--output-dir", str(out),
+        "--grade-file", str(out),
+    ])
+    assert r2.returncode == 0, f"stdout:\n{r2.stdout}\nstderr:\n{r2.stderr}"
+    result = json.loads((out / "eval_final.json").read_text())
+    # Gate 1 finalized from the MD re-parse, NOT from gate_auto.json.
+    assert result["gene_strength"]["pass"] is True
+    assert abs(result["gene_strength"]["correct_rate"] - 1.0) < 1e-6
+    assert abs(result["gene_strength"]["strong_rate"] - 1.0) < 1e-6
+    assert result["gene_strength"]["n"] == 10
+    assert result["all_pass"] is True
+
+
+def test_pending_next_step_hint_in_md(tmp_path):
+    """When human grading is pending, eval_final.md must include a copy-paste
+    `## Next step` section with the concrete paths. It must NOT appear when
+    all gates have resolved."""
+    _base_fixture_files(tmp_path)
+    probe_scores = [
+        {"id": f"bio_{i}", "category": "biographical", "score": 2} for i in range(6)
+    ] + [
+        {"id": f"car_{i}", "category": "career", "score": 2} for i in range(4)
+    ]
+    fixture = {
+        "probe_scores": probe_scores,
+        "alphas": {"attn_o": 0.335, "attn_q": 0.41, "attn_k": 0.42,
+                   "attn_v": 0.38, "mlp_up": 0.55, "mlp_down": 0.52,
+                   "mlp_gate": 0.54},
+        "voice_samples": [
+            {"id": f"v{i}", "question": "q", "generated": f"t{i}"} for i in range(5)
+        ],
+        "dormancy_samples": [
+            {"id": f"v{i}", "question": "q", "generated": f"t{i}"} for i in range(5)
+        ],
+    }
+    _write(tmp_path / "fixture.json", fixture)
+    out = tmp_path / "eval_out"
+    r = _run(_common_args(tmp_path, out, tmp_path / "fixture.json"))
+    assert r.returncode == 2
+    md_pending = (out / "eval_final.md").read_text()
+    assert "## Next step" in md_pending
+    assert "voice_samples.md" in md_pending
+    assert "dormancy_samples.md" in md_pending
+    assert "--grade-file" in md_pending
+
+    # Now finalize and verify the hint is gone.
+    def _grade_md(path, grades):
+        txt = path.read_text().splitlines()
+        it = iter(grades)
+        for i, line in enumerate(txt):
+            if line.startswith("**score:**"):
+                txt[i] = f"**score:** {next(it)}"
+        path.write_text("\n".join(txt) + "\n")
+
+    _grade_md(out / "voice_samples.md", [5, 5, 4, 4, 5])
+    _grade_md(out / "dormancy_samples.md", [1, 1, 2, 1, 2])
+
+    r2 = _run([
+        "--dry-run", "--dry-run-fixture", str(tmp_path / "fixture.json"),
+        "--model-dir", str(tmp_path / "fake_model"),
+        "--activator", str(tmp_path / "activator.txt"),
+        "--probes", str(tmp_path / "probes.json"),
+        "--voice-probes", str(tmp_path / "voice_probes.json"),
+        "--base-alphas", str(tmp_path / "base_alphas.json"),
+        "--phase0-baseline", str(tmp_path / "phase0_baseline.json"),
+        "--output-dir", str(out),
+        "--grade-file", str(out),
+    ])
+    assert r2.returncode == 0
+    md_final = (out / "eval_final.md").read_text()
+    assert "## Next step" not in md_final
