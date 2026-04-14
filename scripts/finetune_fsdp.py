@@ -120,11 +120,10 @@ def inline_decompose_and_save(args, device):
     print(f'[inline-decompose] decomposing (GPU SVD, ~50 min for 31B)...', flush=True)
     spectral_decompose(
         model,
-        rank=None,  # 95% energy default
+        rank=args.rank,  # 99999 → full-rank SVD (v1 lossless, residual ≈ 0)
         mode=args.mode,
         skip_patterns=skip_patterns,
-        keep_residual=True,
-        residual_dtype=torch.float32,
+        keep_residual=args.keep_residual,
     )
 
     # Collect spectral state_dict
@@ -206,11 +205,10 @@ def inline_decompose_and_save_parallel(args, device, world_rank, world_size):
     log0(f'[parallel-decompose] decomposing: each rank owns every {world_size}-th layer')
     spectral_decompose(
         model,
-        rank=None,
+        rank=args.rank,  # 99999 → full-rank SVD (v1 lossless, residual ≈ 0)
         mode=args.mode,
         skip_patterns=skip_patterns,
-        keep_residual=True,
-        residual_dtype=torch.float32,
+        keep_residual=args.keep_residual,
         layer_filter=lambda name, idx: (idx % world_size) == world_rank,
     )
 
