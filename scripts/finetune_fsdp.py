@@ -30,6 +30,7 @@ import signal
 import sys
 import time
 import traceback
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
@@ -410,7 +411,9 @@ def main():
     # ===================================================================
     # 1. Init distributed
     # ===================================================================
-    dist.init_process_group(backend='nccl')
+    # 2h timeout: rank 0 does ~55min GPU SVD before first collective (broadcast).
+    # Default 10min NCCL timeout causes ranks 1-N to fail waiting.
+    dist.init_process_group(backend='nccl', timeout=timedelta(hours=2))
     local_rank = int(os.environ.get('LOCAL_RANK', 0))
     world_rank = dist.get_rank()
     world_size = dist.get_world_size()
