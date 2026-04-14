@@ -445,6 +445,15 @@ def main():
         dist.barrier()
         log(f"  Inline shards ready at {args.decomposed}")
 
+    if args.inline_decompose and is_main:
+        import atexit
+        _shards_dir_path = Path(args.decomposed).parent
+        def _cleanup_inline_shards():
+            import shutil
+            if str(_shards_dir_path).startswith('/dev/shm'):
+                shutil.rmtree(_shards_dir_path, ignore_errors=True)
+        atexit.register(_cleanup_inline_shards)
+
     # ===================================================================
     # 2. Resolve HF model name
     # ===================================================================
@@ -883,6 +892,14 @@ def main():
     del full_sd
 
     log(f"{'=' * 70}")
+
+    if args.inline_decompose and is_main:
+        import shutil
+        shards_dir = Path(args.decomposed).parent
+        if shards_dir.exists() and str(shards_dir).startswith('/dev/shm'):
+            log(f"  [cleanup] removing inline shards at {shards_dir}")
+            shutil.rmtree(shards_dir, ignore_errors=True)
+
     dist.destroy_process_group()
 
 
