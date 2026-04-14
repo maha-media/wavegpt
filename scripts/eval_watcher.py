@@ -122,7 +122,10 @@ def load_base_model(hf_model: str, decomposed_path: Path, rank: int,
     tokenizer = AutoTokenizer.from_pretrained(hf_model, trust_remote_code=trust_remote_code)
 
     print('[boot] building model skeleton from_config (CPU, ~10 min)...', flush=True)
-    model = AutoModelForCausalLM.from_config(config, torch_dtype=torch.bfloat16)
+    # attn_implementation='eager' avoids the flex-attention mask_function path
+    # that requires torch>=2.6 (pod has torch 2.4).
+    model = AutoModelForCausalLM.from_config(
+        config, torch_dtype=torch.bfloat16, attn_implementation='eager')
 
     index_path = decomposed_path / 'index.json'
     with open(index_path) as f:
