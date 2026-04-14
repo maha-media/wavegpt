@@ -68,11 +68,26 @@ def split_into_chunks(text, min_len=200, max_len=1500):
     return chunks
 
 
-def format_chat(chunk, prompt_idx):
-    """Format a text chunk as a Gemma IT chat turn."""
+def format_chat_with_mask(chunk, prompt_idx, tokenizer):
+    """Tokenize chat-formatted chunk and return (tokens, mask).
+
+    Mask is 1.0 on tokens in the model's response (chunk content), 0.0 elsewhere.
+    """
     prompt = PROMPTS[prompt_idx % len(PROMPTS)]
-    # Gemma IT format: <bos><|turn>user\n{prompt}<turn|>\n<|turn>model\n{response}<turn|>
-    return f"<|turn>user\n{prompt}<turn|>\n<|turn>model\n{chunk}<turn|>"
+    user_prefix = f"<|turn>user\n{prompt}<turn|>\n<|turn>model\n"
+    model_suffix = "<turn|>"
+
+    prefix_tokens = tokenizer.encode(user_prefix, add_special_tokens=True)
+    content_tokens = tokenizer.encode(chunk, add_special_tokens=False)
+    suffix_tokens = tokenizer.encode(model_suffix, add_special_tokens=False)
+
+    tokens = prefix_tokens + content_tokens + suffix_tokens
+    mask = (
+        [0.0] * len(prefix_tokens)
+        + [1.0] * len(content_tokens)
+        + [0.0] * len(suffix_tokens)
+    )
+    return tokens, mask
 
 
 def main():
@@ -115,17 +130,20 @@ def main():
 
         # Format as chat and tokenize
         all_tokens = []
+        all_mask = []
         for i, chunk in enumerate(chunks):
-            chat_text = format_chat(chunk, i)
-            tokens = tok.encode(chat_text, add_special_tokens=True)
+            tokens, mask = format_chat_with_mask(chunk, i, tok)
             all_tokens.extend(tokens)
+            all_mask.extend(mask)
 
         print(f"  Chat tokens: {len(all_tokens):,} ({len(all_tokens)/len(raw_tokens):.2f}x original)")
+        print(f"  Mask coverage: {sum(all_mask)/len(all_mask)*100:.1f}% of tokens are assistant-response")
 
-        # Save
         Path(outp).parent.mkdir(parents=True, exist_ok=True)
         write_datafile(outp, all_tokens)
-        print(f"  Saved: {outp}")
+        mask_path = Path(outp).parent / f"{split}_mask.npy"
+        np.save(mask_path, np.array(all_mask, dtype=np.float32))
+        print(f"  Saved: {outp}, {mask_path}")
 
         # Show sample
         sample = tok.decode(all_tokens[:300], skip_special_tokens=False)
