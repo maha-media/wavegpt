@@ -29,6 +29,7 @@ def spectral_decompose(
     mode: str = 'per_mode',
     skip_patterns: list[str] | None = None,
     keep_residual: bool = False,
+    residual_dtype: torch.dtype | None = None,
     base_rank: int = 192,
     adaptive_beta: float = 2.0,
     max_rank: int | None = None,
@@ -109,7 +110,8 @@ def spectral_decompose(
             layer_rank = max(layer_rank, 32)  # minimum rank
 
         spec = SpectralLinear.from_linear(
-            linear, rank=layer_rank, mode=mode, keep_residual=keep_residual,
+            linear, rank=layer_rank, mode=mode,
+            keep_residual=keep_residual, residual_dtype=residual_dtype,
         )
 
         # Progress logging
