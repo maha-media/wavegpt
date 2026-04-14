@@ -73,6 +73,27 @@ SSH: `ssh -i /home/jrmor/.runpod/ssh/RunPod-Key-Go -o StrictHostKeyChecking=no -
 8. **φ-Codec works** — Full SVD + φ-curve prediction + tiered quantization (32/16/8-bit) at 0.34% mean error across 599 layers of Gemma 4-31B. Recomposed model generates coherent text and preserves training voice. The φ-structure is a practical compression prior, not just a theoretical observation.
 9. **SpectralLinear needs fp32 spectrum multiply** — The factored forward pass `(x @ V) * S @ U^T` splits one matmul into three bf16 ops, accumulating precision loss that the original fused `x @ W` kernel doesn't. With σ₁≈14 through 60 layers, certain inputs hit resonant paths that overflow bf16 max (65504) → NaN. Fix: keep spectrum in fp32, upcast `xV.float() * spectrum` then downcast. This is NOT bad data — same inputs work with nn.Linear. The NaN is an artifact of factored bf16 arithmetic.
 10. **Generation with CPU offloading is prohibitively slow** — ~12s/token because each token requires swapping 410 layers (137.9GB) CPU↔GPU. Skip generation during offloaded training (`not args.offload` guard). Eval val PPL is sufficient for monitoring.
+11. **Always use GPU SVD for decomposition** — CPU SVD on 31B model (410 layers, full-rank) takes ~11 hours. GPU SVD (`torch.linalg.svd` on CUDA) takes ~50 minutes — 13x speedup. `SpectralLinear.from_linear()` auto-detects CUDA. Never run `decompose_only.py` on a CPU-only machine.
+12. **Gemma 4 decomposed + residual needs ≥2 GPUs for inference** — Gemma-4-31B bf16 is ~62 GB, plus per-layer residuals (`keep_residual=True`) push the resident footprint to ~137 GB. `model.to('cuda:0')` OOMs at ~80 GB. The watcher dispatches across two visible GPUs via `accelerate.dispatch_model` with `no_split_module_classes=['Gemma4TextDecoderLayer']`; split across GPUs 4+5 lands at ~69/68 GB.
+13. **Gemma 4 generate() on torch < 2.6 needs `attn_implementation='eager'`** — the default attention path uses `or_mask_function` / `and_mask_function` from flex-attention which require torch ≥ 2.6. Pod has torch 2.4. Every `model.generate()` raises `GENERATION FAILED: ... require torch>=2.6`. Build the model via `from_config(..., attn_implementation='eager')` to bypass the flex-attention mask builder.
+
+## Continuous eval watcher
+
+`scripts/eval_watcher.py` runs alongside FSDP training to prove the Kurzweil voice is emerging (CLAUDE.md lesson #1: val PPL alone doesn't tell you the model is speaking).
+
+- **Pinned to idle GPUs** via `CUDA_VISIBLE_DEVICES=4,5` — leaves 0-3 to the 4-way FSDP trainer
+- **Boot (~18 min):** scaffold 410 SpectralLinear shells, stream 35 shards into U/V/residual (CPU), then `accelerate.dispatch_model` across both visible GPUs (~137 GB total)
+- **Watch loop:** polls `best_spectral.pt` mtime every 30 s; on change, waits for file-size stability, `torch.load`s the 8 MB spectrum dict (`map_location='cpu'` so dispatched params keep their devices), reads latest `{step,val_ppl,val_loss}` from `training_log.json`, runs the 10 Kurzweil prompts (`torch.manual_seed(42+i)`, `temperature=0.7`, `top_p=0.9`, `max_new_tokens=512`) and appends a `## Step N` section to `runs/<RUN>/eval_samples.md`
+- **Manual kill only** — `kill $(cat /root/eval_watcher.pid)`
+- **Invocation:**
+  ```
+  CUDA_VISIBLE_DEVICES=4,5 nohup python3 -u scripts/eval_watcher.py \
+      --run-dir runs/RAI-gemma4-lossless \
+      --hf-model google/gemma-4-31b-it \
+      --decomposed-path runs/RAI-gemma4-lossless/shards \
+      --rank 0 --mode per_mode --trust-remote-code \
+      > /root/eval_watcher.log 2>&1 &
+  ```
 
 ## Current state
 
