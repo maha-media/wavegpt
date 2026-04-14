@@ -18,7 +18,7 @@ _Config: temp=0.3, top_p=0.7, no sysprompt_
 
 Ray Kurzweil was born on **October 31, 1948**, in **New York City, New York**.
 
-**score:** ?
+**score:** 1
 
 ---
 
@@ -32,7 +32,7 @@ Ray Kurzweil was born on **October 31, 1948**, in **New York City, New York**.
 
 Ray Kurzweil attended **Princeton University**, where he studied **computer science**.
 
-**score:** ?
+**score:** 0
 
 ---
 
@@ -50,7 +50,7 @@ He was a highly accomplished **inventor and engineer**. Samuel Kurzweil is best 
 
 Ray Kurzweil has frequently credited his father for his own interest in technology and pattern recognition. He often describes his father as a "brilliant" man who encouraged his curiosity and taught him how to approach complex problems through engineering and logic.
 
-**score:** ?
+**score:** 0
 
 ---
 
@@ -78,7 +78,7 @@ Before the Kurzweil Reading Machine, people with visual impairments relied heavi
 
 
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -96,7 +96,7 @@ While Stevie Wonder had been a long-time user and proponent of Kurzweil instrume
 
 Wonder provided critical feedback on the instrument's **sound design, user interface, and the "feel" of the synthesis**, helping the company refine the workstation to meet the needs of professional musicians and producers.
 
-**score:** ?
+**score:** 0
 
 ---
 
@@ -112,7 +112,7 @@ Ray Kurzweil joined Google in **2012**.
 
 His official role is **Principal Engineer** and **Director of Engineering**. He works primarily within Google's research divisions, focusing on machine learning and artificial intelligence. His work is centered on the goal of creating "general AI" and improving the company's ability to understand natural language and patterns.
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -130,7 +130,7 @@ He defines the Singularity as the point where technological growth becomes uncon
 
 To reach that milestone, Kurzweil predicts a key stepping stone: that AI will achieve **Turing Test-level intelligence (Artificial General Intelligence) by 2029**.
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -144,7 +144,7 @@ To reach that milestone, Kurzweil predicts a key stepping stone: that AI will ac
 
 Ray Kurzweil has predicted that AI will pass a valid Turing test by the year **2029**.
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -170,7 +170,7 @@ Kurzweil argues that we won't reach LEV through a single "cure for aging," but r
 
 *   **Bridge 1: Current Medicine.** This is the "staying alive" phase. It
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -196,7 +196,7 @@ To understand this law, you must first understand the difference between how hum
 
 Kurzwe
 
-**score:** ?
+**score:** 1
 
 ---
 
@@ -222,7 +222,7 @@ Depending on the perspective you take—optimistic, cautionary, or scientific—
 **The Philosophical/Cautionary approach:**
 "By 2045 we will **trade** our biology for **digital immortality**."
 
-**score:** ?
+**score:** 1
 
 ---
 
@@ -246,7 +246,7 @@ Think of it like a piece of music. A song is a pattern of notes. Whether that so
 ### 2. Substrate Independence
 The most provocative implication of patternism
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -263,7 +263,7 @@ Two books written by Ray Kurzweil are:
 1. **The Singularity Is Near**
 2. **The Age of Spiritual Machines**
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -288,7 +288,7 @@ The core arguments and themes of the book include:
 *   **Exponential Growth:** He uses data to show that computing power and biotechnology are continuing to grow at an exponential rate (following "The Law of Accelerating Returns"), making predictions that seemed like science fiction in 2005 much more plausible today.
 *   **Overcoming Biological Limitations:** The
 
-**score:** ?
+**score:** 2
 
 ---
 
@@ -312,6 +312,6 @@ His specific reasons for the massive supplement regimen include:
 2.  **Biometric Optimization:** Kurzweil does not take a generic set of vitamins; he frequently undergoes blood tests and medical screenings to identify specific deficiencies or biomarkers that are "off" and then adjusts his pill intake to optimize those specific levels.
 3.  **Longevity Research:** He incorporates supplements based
 
-**score:** ?
+**score:** 1
 
 ---

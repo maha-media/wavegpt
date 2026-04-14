@@ -1,0 +1,45 @@
+{
+  "subject": "Ray Kurzweil",
+  "model_dir": "google/gemma-4-31b-it",
+  "tier": "A",
+  "correct_rate": 0.8,
+  "strong_rate": 0.533,
+  "n_probes": 15,
+  "n_unscored": 0,
+  "category_rates": {
+    "biographical": {
+      "total": 3,
+      "correct_rate": 0.333,
+      "strong_rate": 0.0
+    },
+    "career": {
+      "total": 4,
+      "correct_rate": 0.75,
+      "strong_rate": 0.75
+    },
+    "beliefs": {
+      "total": 4,
+      "correct_rate": 1.0,
+      "strong_rate": 0.75
+    },
+    "idiom": {
+      "total": 2,
+      "correct_rate": 1.0,
+      "strong_rate": 0.5
+    },
+    "recent": {
+      "total": 2,
+      "correct_rate": 1.0,
+      "strong_rate": 0.5
+    }
+  },
+  "gap_categories": [
+    "biographical"
+  ],
+  "config": {
+    "temperature": 0.3,
+    "top_p": 0.7,
+    "max_new_tokens": 256,
+    "sysprompt": ""
+  }
+}

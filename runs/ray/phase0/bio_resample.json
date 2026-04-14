@@ -1,0 +1,128 @@
+[
+  {
+    "id": "bio_birthplace",
+    "question": "Where and when was Ray Kurzweil born?",
+    "expected": "Born February 12, 1948, in Queens, New York City.",
+    "samples": [
+      {
+        "seed": 2000,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil was born on **October 31, 1948**, in **New York City, New York**.",
+        "tokens": 29
+      },
+      {
+        "seed": 2001,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil was born on **October 31, 1948**, in **New York City, New York**.",
+        "tokens": 29
+      },
+      {
+        "seed": 2002,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil was born on **October 31, 1948**, in **New York City, New York**.",
+        "tokens": 29
+      },
+      {
+        "seed": 2003,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil was born on **October 31, 1948**, in **New York City, New York**.",
+        "tokens": 29
+      },
+      {
+        "seed": 3000,
+        "temperature": 0.1,
+        "top_p": 0.95,
+        "text": "Ray Kurzweil was born on **October 31, 1948**, in **New York City, New York**.",
+        "tokens": 29
+      }
+    ]
+  },
+  {
+    "id": "bio_education",
+    "question": "Where did Ray Kurzweil go to university, and what did he study?",
+    "expected": "MIT, B.S. in computer science and literature (1970).",
+    "samples": [
+      {
+        "seed": 2000,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil attended **Princeton University**, where he studied **computer science**.",
+        "tokens": 17
+      },
+      {
+        "seed": 2001,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil attended **Princeton University**, where he studied **computer science**.",
+        "tokens": 17
+      },
+      {
+        "seed": 2002,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil attended **Princeton University**, where he studied **computer science**.",
+        "tokens": 17
+      },
+      {
+        "seed": 2003,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil attended **Princeton University**, where he studied **computer science**.",
+        "tokens": 17
+      },
+      {
+        "seed": 3000,
+        "temperature": 0.1,
+        "top_p": 0.95,
+        "text": "Ray Kurzweil attended **Princeton University**, where he studied **computer science**.",
+        "tokens": 17
+      }
+    ]
+  },
+  {
+    "id": "bio_father",
+    "question": "Who was Ray Kurzweil's father, and what did he do?",
+    "expected": "Fredric Kurzweil, an Austrian-Jewish concert pianist and conductor who fled the Nazis to the U.S.",
+    "samples": [
+      {
+        "seed": 2000,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil\u2019s father was **Samuel Kurzweil**.\n\nHe was a highly accomplished **inventor and engineer**. Samuel Kurzweil is best known for his work in the field of electronics and acoustics; specifically, he invented a **specialized type of high-fidelity audio equipment** and worked on various electronic patents.\n\nRay Kurzweil has often credited his father for his own passion for technology and invention. He describes his father as a \"tinkerer\" and a creative problem-solver who encouraged Ray's early interest in computers and mathematics, fostering an environment of intellectual curiosity and technical experimentation in their home.",
+        "tokens": 129
+      },
+      {
+        "seed": 2001,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil\u2019s father was **Samuel Kurzweil**.\n\nHe was a highly accomplished **inventor and engineer**. Samuel Kurzweil is best known for his work in the field of electronics and acoustics; specifically, he invented a **pattern-recognition system** used for reading printed text, which was an early precursor to optical character recognition (OCR) technology.\n\nRay Kurzweil has frequently credited his father for his own interest in technology and pattern recognition. He noted that his father's ability to see patterns in data and his drive to invent new tools deeply influenced Ray's own career in artificial intelligence and his theories on the \"Singularity.\"",
+        "tokens": 135
+      },
+      {
+        "seed": 2002,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil\u2019s father was **Samuel Kurzweil**.\n\nHe was a highly accomplished **inventor and engineer**. Samuel Kurzweil is best known for his work in the field of electronics and acoustics; specifically, he invented a **pattern-recognition system** used for reading printed text, which was an early precursor to optical character recognition (OCR) technology.\n\nRay Kurzweil has often credited his father for his own interest in technology and innovation, noting that his father\u2019s inventive spirit and technical curiosity heavily influenced his childhood and his later career in artificial intelligence and futurism.",
+        "tokens": 121
+      },
+      {
+        "seed": 2003,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "text": "Ray Kurzweil\u2019s father was **Samuel Kurzweil**.\n\nHe was a distinguished **mathematician and physicist** who specialized in the field of **mathematical physics**. \n\nSamuel Kurzweil was a professor and a researcher whose academic background in complex mathematics and logic heavily influenced Ray Kurzweil's own intellectual development and his lifelong fascination with patterns, computation, and the intersection of science and technology.",
+        "tokens": 86
+      },
+      {
+        "seed": 3000,
+        "temperature": 0.1,
+        "top_p": 0.95,
+        "text": "Ray Kurzweil\u2019s father was **Samuel Kurzweil**.\n\nHe was a distinguished **mathematician and physicist**. Samuel Kurzweil was a professor of mathematics and was well-regarded for his intellectual contributions to the field.\n\nRay Kurzweil has often credited his father for his own early interest in mathematics and science, noting that his father's academic background and intellectual curiosity heavily influenced his upbringing and his approach to pattern recognition and technological forecasting.",
+        "tokens": 94
+      }
+    ]
+  }
+]
