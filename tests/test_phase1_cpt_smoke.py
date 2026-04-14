@@ -48,6 +48,9 @@ def test_cpt_one_step(tmp_path):
     assert "val_ppl" in last
     assert "train_loss" in last
     assert "step" in last
+    assert last["harmonic_loss"] > 0, "harmonic regularizer is returning zero (stub regression?)"
+    assert log[0]["harmonic_loss"] != last["harmonic_loss"], \
+        "harmonic_loss unchanged across steps — regularizer not coupled to training"
 
 
 def test_cpt_eval_only(tmp_path):
