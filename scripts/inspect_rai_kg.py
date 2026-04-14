@@ -12,7 +12,9 @@ def inspect_collection(docs, sample=50):
     for d in docs[:sample]:
         for k, v in d.items():
             fields[k] += 1
-            types.setdefault(k, type(v).__name__)
+            t = type(v).__name__
+            if k not in types or types[k] == "NoneType":
+                types[k] = t
     return {
         "fields": sorted(fields.keys()),
         "types": types,
@@ -40,6 +42,9 @@ def main():
             name: list(db[name].find().limit(50))
             for name in ["entities", "relationships", "temporal_facts", "chunks"]
         }
+        for name, docs in collections.items():
+            if not docs:
+                raise SystemExit(f"ERROR: collection {name!r} is empty or missing — aborting")
 
     schema = {name: inspect_collection(docs) for name, docs in collections.items()}
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
