@@ -1,0 +1,322 @@
+{
+  "mongo_uri": "mongodb://172.23.208.1:27017",
+  "db": "digital_rai",
+  "groups": {
+    "books": [
+      {
+        "source_name": "The Age of Intelligent Machines",
+        "status": "ok",
+        "chunks": 739,
+        "chars": 1618272,
+        "path": "data/ray/raw/books/The_Age_of_Intelligent_Machines.txt"
+      },
+      {
+        "source_name": "The Age of Spiritual Machines",
+        "status": "ok",
+        "chunks": 238,
+        "chars": 610637,
+        "path": "data/ray/raw/books/The_Age_of_Spiritual_Machines.txt"
+      },
+      {
+        "source_name": "How to Create a Mind",
+        "status": "ok",
+        "chunks": 173,
+        "chars": 629286,
+        "path": "data/ray/raw/books/How_to_Create_a_Mind.txt"
+      },
+      {
+        "source_name": "The Singularity Is Near",
+        "status": "ok",
+        "chunks": 455,
+        "chars": 1469124,
+        "path": "data/ray/raw/books/The_Singularity_Is_Near.txt"
+      },
+      {
+        "source_name": "The Singularity Is Nearer",
+        "status": "ok",
+        "chunks": 95,
+        "chars": 544094,
+        "path": "data/ray/raw/books/The_Singularity_Is_Nearer.txt"
+      },
+      {
+        "source_name": "Transcend",
+        "status": "ok",
+        "chunks": 2,
+        "chars": 4258,
+        "path": "data/ray/raw/books/Transcend.txt"
+      },
+      {
+        "source_name": "Fantastic Voyage",
+        "status": "ok",
+        "chunks": 399,
+        "chars": 1171001,
+        "path": "data/ray/raw/books/Fantastic_Voyage.txt"
+      },
+      {
+        "source_name": "A Chronicle of Ideas",
+        "status": "ok",
+        "chunks": 536,
+        "chars": 1044894,
+        "path": "data/ray/raw/books/A_Chronicle_of_Ideas.txt"
+      },
+      {
+        "source_name": "Where Does the Time Go",
+        "status": "ok",
+        "chunks": 107,
+        "chars": 238580,
+        "path": "data/ray/raw/books/Where_Does_the_Time_Go.txt"
+      },
+      {
+        "source_name": "Danielle Chronicles of a Superheroine",
+        "status": "ok",
+        "chunks": 306,
+        "chars": 742674,
+        "path": "data/ray/raw/books/Danielle_Chronicles_of_a_Superheroine.txt"
+      }
+    ],
+    "voice": [
+      {
+        "source_name": "TED Talk Official Written Script",
+        "status": "ok",
+        "chunks": 3,
+        "chars": 8006,
+        "path": "data/ray/raw/voice/TED_Talk_Official_Written_Script.txt"
+      },
+      {
+        "source_name": "TED Talk 2024 Transcript",
+        "status": "ok",
+        "chunks": 5,
+        "chars": 9866,
+        "path": "data/ray/raw/voice/TED_Talk_2024_Transcript.txt"
+      },
+      {
+        "source_name": "Next Big Idea Club Bookbite",
+        "status": "ok",
+        "chunks": 1,
+        "chars": 3056,
+        "path": "data/ray/raw/voice/Next_Big_Idea_Club_Bookbite.txt"
+      },
+      {
+        "source_name": "Next Big Idea Book Club Speech Script",
+        "status": "ok",
+        "chunks": 4,
+        "chars": 9002,
+        "path": "data/ray/raw/voice/Next_Big_Idea_Book_Club_Speech_Script.txt"
+      },
+      {
+        "source_name": "Lex Fridman Podcast #321 Transcript",
+        "status": "ok",
+        "chunks": 19,
+        "chars": 39696,
+        "path": "data/ray/raw/voice/Lex_Fridman_Podcast_321_Transcript.txt"
+      },
+      {
+        "source_name": "SERICEO Speech Script",
+        "status": "ok",
+        "chunks": 7,
+        "chars": 15871,
+        "path": "data/ray/raw/voice/SERICEO_Speech_Script.txt"
+      },
+      {
+        "source_name": "Robert A. Muh Award Speech Script",
+        "status": "ok",
+        "chunks": 13,
+        "chars": 26438,
+        "path": "data/ray/raw/voice/Robert_A._Muh_Award_Speech_Script.txt"
+      },
+      {
+        "source_name": "National Federation of the Blind Speech 2024",
+        "status": "ok",
+        "chunks": 3,
+        "chars": 5792,
+        "path": "data/ray/raw/voice/National_Federation_of_the_Blind_Speech_2024.txt"
+      },
+      {
+        "source_name": "National Federation of the Blind Speech 2025",
+        "status": "ok",
+        "chunks": 3,
+        "chars": 6529,
+        "path": "data/ray/raw/voice/National_Federation_of_the_Blind_Speech_2025.txt"
+      },
+      {
+        "source_name": "Washington Post Interview Prep Notes",
+        "status": "ok",
+        "chunks": 8,
+        "chars": 17483,
+        "path": "data/ray/raw/voice/Washington_Post_Interview_Prep_Notes.txt"
+      },
+      {
+        "source_name": "2025 Writing Compilation",
+        "status": "ok",
+        "chunks": 44,
+        "chars": 99074,
+        "path": "data/ray/raw/voice/2025_Writing_Compilation.txt"
+      },
+      {
+        "source_name": "Google Statement \u2014 Leaving Google",
+        "status": "ok",
+        "chunks": 1,
+        "chars": 1982,
+        "path": "data/ray/raw/voice/Google_Statement_Leaving_Google.txt"
+      },
+      {
+        "source_name": "Academy for Teachers Speech Script",
+        "status": "ok",
+        "chunks": 5,
+        "chars": 11411,
+        "path": "data/ray/raw/voice/Academy_for_Teachers_Speech_Script.txt"
+      },
+      {
+        "source_name": "AI Stories",
+        "status": "ok",
+        "chunks": 4,
+        "chars": 8171,
+        "path": "data/ray/raw/voice/AI_Stories.txt"
+      },
+      {
+        "source_name": "27 Quotes by Ray Kurzweil",
+        "status": "ok",
+        "chunks": 2,
+        "chars": 3383,
+        "path": "data/ray/raw/voice/27_Quotes_by_Ray_Kurzweil.txt"
+      },
+      {
+        "source_name": "RAY-RAI Key Phrases and Concepts",
+        "status": "ok",
+        "chunks": 3,
+        "chars": 8168,
+        "path": "data/ray/raw/voice/RAY-RAI_Key_Phrases_and_Concepts.txt"
+      },
+      {
+        "source_name": "The Law of Accelerating Returns \u2014 Economics Essay",
+        "status": "ok",
+        "chunks": 50,
+        "chars": 139372,
+        "path": "data/ray/raw/voice/The_Law_of_Accelerating_Returns_Economics_Essay.txt"
+      },
+      {
+        "source_name": "Ray Kurzweil Reader",
+        "status": "ok",
+        "chunks": 117,
+        "chars": 258544,
+        "path": "data/ray/raw/voice/Ray_Kurzweil_Reader.txt"
+      },
+      {
+        "source_name": "Ray Kurzweil Interview \u2014 Academy of Achievement",
+        "status": "ok",
+        "chunks": 23,
+        "chars": 46672,
+        "path": "data/ray/raw/voice/Ray_Kurzweil_Interview_Academy_of_Achievement.txt"
+      },
+      {
+        "source_name": "TIME \u2014 2045: The Year Man Becomes Immortal",
+        "status": "ok",
+        "chunks": 5,
+        "chars": 11100,
+        "path": "data/ray/raw/voice/TIME_2045_The_Year_Man_Becomes_Immortal.txt"
+      },
+      {
+        "source_name": "TIME \u2014 At TIME 100 Impact Dinner",
+        "status": "ok",
+        "chunks": 2,
+        "chars": 4297,
+        "path": "data/ray/raw/voice/TIME_At_TIME_100_Impact_Dinner.txt"
+      },
+      {
+        "source_name": "TIME 100 Impact Dinner Panel Transcript",
+        "status": "ok",
+        "chunks": 10,
+        "chars": 20819,
+        "path": "data/ray/raw/voice/TIME_100_Impact_Dinner_Panel_Transcript.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Inside the Kurzweil SXSW Keynote",
+        "status": "ok",
+        "chunks": 2,
+        "chars": 3416,
+        "path": "data/ray/raw/voice/TIME_Inside_the_Kurzweil_SXSW_Keynote.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Can We Talk",
+        "status": "ok",
+        "chunks": 2,
+        "chars": 4351,
+        "path": "data/ray/raw/voice/TIME_Can_We_Talk.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Will My PC Be Smarter Than I Am",
+        "status": "ok",
+        "chunks": 4,
+        "chars": 8570,
+        "path": "data/ray/raw/voice/TIME_Will_My_PC_Be_Smarter_Than_I_Am.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Interview with Ray Kurzweil 2010",
+        "status": "ok",
+        "chunks": 3,
+        "chars": 8618,
+        "path": "data/ray/raw/voice/TIME_Interview_with_Ray_Kurzweil_2010.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Future Proofing",
+        "status": "ok",
+        "chunks": 1,
+        "chars": 2405,
+        "path": "data/ray/raw/voice/TIME_Future_Proofing.txt"
+      },
+      {
+        "source_name": "TIME \u2014 An Interview With Ray Kurzweil",
+        "status": "ok",
+        "chunks": 11,
+        "chars": 23425,
+        "path": "data/ray/raw/voice/TIME_An_Interview_With_Ray_Kurzweil.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Dont Fear Artificial Intelligence",
+        "status": "ok",
+        "chunks": 2,
+        "chars": 4721,
+        "path": "data/ray/raw/voice/TIME_Dont_Fear_Artificial_Intelligence.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Robots Will Demand Rights",
+        "status": "ok",
+        "chunks": 1,
+        "chars": 1168,
+        "path": "data/ray/raw/voice/TIME_Robots_Will_Demand_Rights.txt"
+      },
+      {
+        "source_name": "TIME \u2014 Inside the Mind of Futurist Ray Kurzweil",
+        "status": "ok",
+        "chunks": 7,
+        "chars": 10466,
+        "path": "data/ray/raw/voice/TIME_Inside_the_Mind_of_Futurist_Ray_Kurzweil.txt"
+      },
+      {
+        "source_name": "TIME \u2014 The Promise and Peril of AI",
+        "status": "ok",
+        "chunks": 5,
+        "chars": 8790,
+        "path": "data/ray/raw/voice/TIME_The_Promise_and_Peril_of_AI.txt"
+      }
+    ],
+    "bio_facts": [
+      {
+        "source_name": "Wikipedia \u2014 Ray Kurzweil Biography",
+        "status": "ok",
+        "chunks": 14,
+        "chars": 32112,
+        "path": "data/ray/raw/bio_facts/Wikipedia_Ray_Kurzweil_Biography.txt"
+      },
+      {
+        "source_name": "Kurzweil Bio Short",
+        "status": "ok",
+        "chunks": 1,
+        "chars": 1040,
+        "path": "data/ray/raw/bio_facts/Kurzweil_Bio_Short.txt"
+      }
+    ]
+  },
+  "total_chars": 8936634,
+  "total_chunks": 3435
+}

@@ -18,3 +18,7 @@ scripts/data/
 # 5-min data too large for GitHub (>100MB)
 finance/data/market_5min.parquet
 finance/data/features_5min.pt
+# Ray corpus raw text — copyright-sensitive, rebuild via scripts/export_ray_corpus_txt.py
+data/ray/raw/books/
+data/ray/raw/voice/
+data/ray/raw/bio_facts/
