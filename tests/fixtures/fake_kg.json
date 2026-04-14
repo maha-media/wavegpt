@@ -1,0 +1,100 @@
+{
+  "entities": [
+    {
+      "_id": "ent_001",
+      "entity_id": "ray_kurzweil_id",
+      "name": "Ray Kurzweil",
+      "aliases": ["Raymond Kurzweil", "Ray", "Kurzweil"],
+      "type": "person",
+      "description": "",
+      "mention_count": 281,
+      "source_chunks": ["chunk_ray_001"]
+    },
+    {
+      "_id": "ent_002",
+      "entity_id": "reading_machine_id",
+      "name": "Kurzweil Reading Machine",
+      "aliases": [],
+      "type": "invention",
+      "description": "OCR reading device",
+      "mention_count": 12,
+      "source_chunks": ["chunk_ray_001"]
+    },
+    {
+      "_id": "ent_003",
+      "entity_id": "singularity_id",
+      "name": "Singularity",
+      "aliases": [],
+      "type": "concept",
+      "description": "technological singularity",
+      "mention_count": 7,
+      "source_chunks": ["chunk_ray_002"]
+    },
+    {
+      "_id": "ent_004",
+      "entity_id": "weather_id",
+      "name": "Weather",
+      "aliases": [],
+      "type": "misc",
+      "description": "atmospheric conditions",
+      "mention_count": 2,
+      "source_chunks": ["chunk_ray_003"]
+    }
+  ],
+  "relationships": [
+    {
+      "_id": "rel_001",
+      "source_entity": "ray_kurzweil_id",
+      "target_entity": "reading_machine_id",
+      "type": "created",
+      "description": "Kurzweil Reading Machine",
+      "weight": 2.0,
+      "source_chunks": ["chunk_ray_001"],
+      "first_observed": null,
+      "last_observed": null
+    },
+    {
+      "_id": "rel_002",
+      "source_entity": "ray_kurzweil_id",
+      "target_entity": "singularity_id",
+      "type": "predicts",
+      "description": "Singularity",
+      "weight": 1.5,
+      "source_chunks": ["chunk_ray_002"],
+      "first_observed": null,
+      "last_observed": null
+    },
+    {
+      "_id": "rel_003",
+      "source_entity": "ray_kurzweil_id",
+      "target_entity": "weather_id",
+      "type": "grubbles",
+      "description": "Weather",
+      "weight": 1.0,
+      "source_chunks": ["chunk_ray_003"],
+      "first_observed": null,
+      "last_observed": null
+    }
+  ],
+  "temporal_facts": [],
+  "chunks": [
+    {
+      "_id": "c1",
+      "chunk_id": "chunk_ray_001",
+      "text": "I founded Kurzweil Computer Products in 1974 and built the Kurzweil Reading Machine, the first omnifont OCR device that could read printed text aloud to the blind.",
+      "token_count": 30
+    },
+    {
+      "_id": "c2",
+      "chunk_id": "chunk_ray_002",
+      "text": "Ray Kurzweil predicts the Singularity will arrive by 2045, when biological and machine intelligence merge.",
+      "token_count": 18
+    },
+    {
+      "_id": "c3",
+      "chunk_id": "chunk_ray_003",
+      "text": "Weather patterns are irrelevant to the discussion.",
+      "token_count": 8
+    }
+  ]
+}
