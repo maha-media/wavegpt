@@ -145,6 +145,10 @@ def generate_pairs(manual: dict) -> tuple[list[dict], Counter]:
         for template in templates:
             variants = expand_template(template)
             for q in variants:
+                if "{" in q or "}" in q or "|" in q:
+                    raise ValueError(
+                        f"probe {pid!r} template left unexpanded markers: {q!r}"
+                    )
                 body = cleaned_bodies[body_cursor % len(cleaned_bodies)]
                 body_cursor += 1
                 pairs.append({
