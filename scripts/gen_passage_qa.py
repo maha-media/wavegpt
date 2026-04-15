@@ -122,6 +122,15 @@ _NP_RE = re.compile(
 )
 _LONG_TOKEN_RE = re.compile(r"\b([A-Za-z]{6,})\b")
 
+# Sentence-opener function words that should NOT serve as topical seeds.
+# If the capitalized-NP fallback's first token is one of these, reject the
+# match and keep searching (or fall through to the long-token last resort).
+_SEED_STOPWORDS = frozenset({
+    "After", "Although", "As", "Because", "Before", "But", "During",
+    "However", "If", "Since", "Still", "Then", "Throughout", "Though",
+    "Thus", "Until", "When", "While", "Yet",
+})
+
 
 # ---- Chunking ------------------------------------------------------------
 
@@ -157,18 +166,19 @@ def _chunk_paragraphs(paragraphs: list[str]) -> list[tuple[str, list[int]]]:
     for i, p in enumerate(paragraphs):
         w = _word_count(p)
 
-        # Oversize single paragraph: flush current, emit this one alone
-        # (truncated at HARD_TRUNCATE word boundary).
-        if w > MAX_WORDS and not cur_parts:
-            if w > HARD_TRUNCATE:
-                p = " ".join(p.split()[:HARD_TRUNCATE])
-                w = HARD_TRUNCATE
-            chunks.append((p, [i]))
-            continue
-
         # Adding this paragraph would overflow: flush first, then start new.
         if cur_words + w > MAX_WORDS and cur_parts:
             flush()
+
+        # Fresh buffer + paragraph already too big: truncate to HARD_TRUNCATE
+        # and emit alone. Unconditional — any oversize paragraph gets capped.
+        if w > MAX_WORDS and not cur_parts:
+            toks = p.split()
+            if len(toks) > HARD_TRUNCATE:
+                p = " ".join(toks[:HARD_TRUNCATE])
+                w = HARD_TRUNCATE
+            chunks.append((p, [i]))
+            continue
 
         cur_parts.append(p)
         cur_idxs.append(i)
@@ -199,12 +209,16 @@ def _pick_seed(chunk: str) -> str | None:
             idx = low.find(concept.lower())
             return chunk[idx:idx + len(concept)]
 
-    # 2. Fallback: first decent noun-phrase (capitalized + tail).
-    m = _NP_RE.search(chunk)
-    if m:
+    # 2. Fallback: first decent noun-phrase (capitalized + tail). Skip any
+    #    match whose first token is a sentence-opener function word.
+    for m in _NP_RE.finditer(chunk):
         phrase = m.group(1).strip()
-        if len(phrase) >= MIN_SEED_CHARS:
-            return phrase
+        if len(phrase) < MIN_SEED_CHARS:
+            continue
+        tokens = phrase.split()
+        if tokens and tokens[0] in _SEED_STOPWORDS:
+            continue
+        return phrase
 
     # 3. Last resort: first >=6-char alpha token.
     m = _LONG_TOKEN_RE.search(chunk)
