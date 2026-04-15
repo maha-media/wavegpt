@@ -1,0 +1,27 @@
+{
+  "total_pairs": 4074,
+  "train_pairs": 3870,
+  "val_pairs": 204,
+  "train_tokens": 1389476,
+  "val_tokens": 75215,
+  "train_mask_coverage": 0.9558927250272765,
+  "val_mask_coverage": 0.9577344944492455,
+  "source_files": [
+    {
+      "filename": "kg_pairs.jsonl",
+      "pair_count": 152
+    },
+    {
+      "filename": "passage_pairs.jsonl",
+      "pair_count": 3419
+    },
+    {
+      "filename": "probe_pairs.jsonl",
+      "pair_count": 503
+    }
+  ],
+  "tokenizer": "google/gemma-4-31b-it",
+  "seed": 42,
+  "train_frac": 0.95,
+  "generated_at": "2026-04-15T00:32:24.672354Z"
+}
