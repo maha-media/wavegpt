@@ -135,7 +135,9 @@ def merge_corpora(
     inject_train, inject_train_mask = _load_split(inject_dir, "train")
     inject_val, inject_val_mask = _load_split(inject_dir, "val")
 
-    # A single k for the corpus (use train totals — dominant signal)
+    # A single k computed from train-split totals. Val ratio follows if the
+    # val split size tracks train; if val is disproportionately small or large
+    # (rare) the val inject ratio may drift a few percent from --target-inject-ratio.
     k = compute_oversample_k(len(base_train), len(inject_train), target_ratio)
 
     train_tokens, train_mask = _merge_split(
@@ -147,7 +149,9 @@ def merge_corpora(
         k=k, chunk_size=chunk_size, seed=seed + 1,
     )
 
+    # write_datafile truthy-checks `tokens` (ndarray raises ValueError), so .tolist().
     write_datafile(str(output_dir / "train.bin"), train_tokens.tolist())
+    # write_datafile truthy-checks `tokens` (ndarray raises ValueError), so .tolist().
     write_datafile(str(output_dir / "val.bin"), val_tokens.tolist())
     np.save(output_dir / "train_mask.npy", train_mask.astype(np.float32))
     np.save(output_dir / "val_mask.npy", val_mask.astype(np.float32))
@@ -172,7 +176,7 @@ def merge_corpora(
         "val_total_tokens": val_total,
         "chunk_size": int(chunk_size),
         "seed": int(seed),
-        "generated_at": dt.datetime.utcnow().isoformat() + "Z",
+        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
     return manifest

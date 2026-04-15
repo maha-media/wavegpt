@@ -130,6 +130,26 @@ def test_merge_corpora_ratio_alignment_determinism(tmp_path):
     assert np.array_equal(np.load(out_dir2 / "val_mask.npy"), val_mask)
 
 
+def test_merge_corpora_k_clamp_when_inject_dominates(tmp_path):
+    base_dir = tmp_path / "base"
+    inject_dir = tmp_path / "inject"
+    out_dir = tmp_path / "out"
+    _write_corpus(base_dir, train_tokens=[1] * 100, val_tokens=[1] * 20,
+                  train_mask_val=0.5, val_mask_val=0.5)
+    _write_corpus(inject_dir, train_tokens=[2] * 1000, val_tokens=[2] * 200,
+                  train_mask_val=1.0, val_mask_val=1.0)
+    manifest = merge_corpora(
+        base_dir=base_dir, inject_dir=inject_dir, output_dir=out_dir,
+        target_ratio=0.30, seed=42, chunk_size=64,
+    )
+    # ceil(0.30*100 / (0.70*1000)) = ceil(0.0428...) = 1 (clamped)
+    assert manifest["k"] == 1
+    assert (out_dir / "train.bin").exists()
+    assert (out_dir / "train_mask.npy").exists()
+    assert (out_dir / "val.bin").exists()
+    assert (out_dir / "val_mask.npy").exists()
+
+
 def test_merge_corpora_rejects_misaligned_mask(tmp_path):
     base_dir = tmp_path / "base"
     inject_dir = tmp_path / "inject"
