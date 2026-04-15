@@ -6,11 +6,23 @@ Covers:
 - Every row carries the full required schema.
 - Every answer contains the canonical target entity name verbatim.
 - Non-Ray subjects are filtered (we don't emit them).
+- `_looks_like_citation` flags bibliography / table / OCR noise.
 """
+import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
+
+
+def _load_gen_kg_qa():
+    """Import scripts/gen_kg_qa.py as a module (not on sys.path normally)."""
+    repo = Path(__file__).resolve().parents[1]
+    path = repo / "scripts" / "gen_kg_qa.py"
+    spec = importlib.util.spec_from_file_location("gen_kg_qa", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    return mod
 
 
 REQUIRED_KEYS = {
@@ -108,3 +120,33 @@ def test_kg_qa_fixture(tmp_path):
         assert len(qs) >= 3, (
             f"type {t!r}: expected >=3 distinct question paraphrases, got {len(qs)}"
         )
+
+
+def test_looks_like_citation():
+    """`_looks_like_citation` must flag URL / table / OCR-noise strings and
+    leave clean Ray prose alone."""
+    mod = _load_gen_kg_qa()
+    f = mod._looks_like_citation
+
+    # Positive cases — must flag.
+    assert f(
+        "Lanier, 'One Half of a Manifesto.' IBM Systems Journal, "
+        "findarticles.com/p/articles/mi_m0ISJ/..."
+    ), "URL-bearing bibliography entry should be flagged"
+    assert f(
+        "| | 1976 | Kurzweil Computer Products introduces the first "
+        "omnifont OCR | reading machine |"
+    ), "markdown-table row should be flagged"
+    assert f(
+        "In 1976, Kurzwe1I Computer Products introduced the first "
+        "omnifont OCR reading machine."
+    ), "OCR-noise 'Kurzwe1I' should be flagged"
+
+    # Negative cases — must NOT flag clean Ray prose.
+    assert not f(
+        "I founded Kurzweil Computer Products in 1974 and built the "
+        "Kurzweil Reading Machine, the first omnifont OCR device."
+    ), "clean first-person Ray prose should pass"
+    assert not f(
+        "Ray Kurzweil was born on February 12, 1948 in Queens, New York."
+    ), "clean third-person date/place phrase should pass"

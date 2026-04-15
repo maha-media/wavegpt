@@ -10,6 +10,14 @@ Emits one JSON object per line to --output, following the schema:
         "category": str,
     }
 
+Emits N pairs per Ray-sourced relationship (one per template). A typical
+live run produces ~200 pairs from ~12-15 distinct relations × 8 templates.
+This is intentional — the paraphrase redundancy is training signal (same
+answer, many question phrasings). Do NOT dedupe on `answer` alone. Dedupe
+on (question, answer) tuples is a safe no-op (exact duplicates shouldn't
+appear since questions rotate per template). Only revisit this if Task 5
+reports training skew.
+
 Scope: ONLY emits pairs where `source_entity` resolves to Ray Kurzweil
 (by entity_id, exact name match, or alias match — case-insensitive).
 
@@ -41,9 +49,51 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 import sys
 from collections import Counter
 from pathlib import Path
+
+
+# ---- Citation / OCR-noise filter ----------------------------------------
+
+# Detects a capital-letter, digit, capital-letter splice inside a brand
+# name (e.g. "Kurzwe1I", "IBM3M"). OCR noise fingerprint.
+_OCR_SPLICE_RE = re.compile(r"[A-Z]\d[A-Z]")
+
+
+def _looks_like_citation(text: str) -> bool:
+    """Return True if `text` looks like a bibliography entry, a markdown
+    table row, or OCR-corrupted text — things we do NOT want to teach the
+    model as Ray's voice.
+
+    Kept deliberately narrow. Three signals only:
+      1. URL-ish substring (http://, https://, www., .com/, .org/, .edu/).
+      2. Markdown table pipe-bar separators (" | " appears >=2 times OR
+         a line starts with "|").
+      3. OCR-noise fingerprint: literal "Kurzwe1I" (case-insensitive) OR
+         any capital-letter-digit-capital-letter splice (e.g. "Kurzwe1I").
+    """
+    if not text:
+        return False
+
+    low = text.lower()
+    if ("http://" in low or "https://" in low or "www." in low
+            or ".com/" in low or ".org/" in low or ".edu/" in low):
+        return True
+
+    if text.count(" | ") >= 2:
+        return True
+    for line in text.splitlines():
+        if line.lstrip().startswith("|"):
+            return True
+
+    if "kurzwe1i" in low:
+        return True
+    if _OCR_SPLICE_RE.search(text):
+        return True
+
+    return False
 
 
 # ---- Question templates --------------------------------------------------
@@ -157,9 +207,10 @@ def _build_answer(
     rel: dict,
     target_entity: dict | None,
     chunks_by_id: dict[str, dict],
-) -> tuple[str, str] | None:
-    """Return (answer_text, canonical_target_name) or None if the rel is
-    unusable (no chunk text, or no meaningful target name).
+) -> tuple[str, str] | str:
+    """Return (answer_text, canonical_target_name) on success, or a short
+    string tag describing the rejection reason on failure. Callers use the
+    tag to bucket `rejected` counter keys.
     """
     # Prefer the relationship description as the canonical target — the live
     # KG often has noisy target entities (single-letter fragments) where the
@@ -171,7 +222,7 @@ def _build_answer(
 
     candidates = [n for n in (desc, tgt_name) if n and len(n) >= 3]
     if not candidates:
-        return None
+        return "no_target_name"
 
     # Concat chunk text.
     chunk_texts = []
@@ -181,7 +232,7 @@ def _build_answer(
             chunk_texts.append(ch["text"].strip())
     raw = " ".join(chunk_texts).strip()
     if not raw:
-        return None
+        return "no_chunk_text"
 
     # Pick a canonical name that appears in the chunk text, if any.
     canonical = None
@@ -192,20 +243,25 @@ def _build_answer(
     if canonical is None:
         # None of the candidates appears — drop the rel, because the eval
         # would fail the verbatim-target assertion downstream anyway.
-        return None
+        return "canonical_not_in_chunk"
 
     answer = raw[:ANSWER_CHAR_CAP].rstrip()
     # Guarantee the canonical name appears in the emitted (possibly
     # truncated) answer. If truncation chopped it off, re-window around
-    # the first occurrence.
-    if canonical not in answer:
+    # the first occurrence. Case-insensitive so that capitalization drift
+    # between the KG `description`/`target.name` and the chunk text
+    # doesn't spuriously drop real rels.
+    if canonical.lower() not in answer.lower():
         idx = raw.lower().find(canonical.lower())
         start = max(0, idx - 100)
         end = min(len(raw), idx + len(canonical) + (ANSWER_CHAR_CAP - 100 - len(canonical)))
         answer = raw[start:end].strip()
-        if canonical not in answer:
-            # Last-ditch: just prepend the canonical.
-            return None
+        if canonical.lower() not in answer.lower():
+            # Last-ditch: give up rather than fabricate.
+            return "canonical_lost_after_rewindow"
+
+    if _looks_like_citation(answer):
+        return "citation_or_ocr"
 
     return answer, canonical
 
@@ -238,8 +294,8 @@ def generate_pairs(
 
         tgt = entities_by_id.get(rel.get("target_entity"))
         built = _build_answer(rel, tgt, chunks_by_id)
-        if built is None:
-            rejected[f"{rtype}:no_usable_answer"] += 1
+        if isinstance(built, str):
+            rejected[f"{rtype}:{built}"] += 1
             continue
         answer, canonical = built
 
